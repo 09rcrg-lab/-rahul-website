@@ -183,4 +183,34 @@ Digital Safety और Social Media Security के बारे में जा
 </body>
 </html><a class="button" href="https://www.instagram.com/kevin_mitnick__36/" target="_blank">
 📷 Instagram
-</a>
+</a><section>
+
+<h2>📱 Instagram Profile Finder</h2>
+
+<input
+type="text"
+id="username"
+placeholder="Instagram Username"
+style="padding:12px;width:250px;border-radius:8px;border:1px solid #00ff66;background:#111;color:#00ff66;">
+
+<br><br>
+
+<button
+onclick="openInstagram()"
+class="button">
+🔍 Open Instagram Profile
+</button>
+
+</section>
+
+<script>
+function openInstagram(){
+  let user = document.getElementById("username").value.trim();
+
+  if(user){
+    window.open("https://www.instagram.com/" + user + "/", "_blank");
+  }else{
+    alert("Please enter an Instagram username.");
+  }
+}
+</script>
