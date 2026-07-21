@@ -244,21 +244,7 @@ style="border-radius:50%;border:3px solid #00ff66;">
 <p>👥 Followers: <span id="followers">0</span></p>
 
 <p>➡ Following: <span id="following">0</span></p>
-
-<p>📷 Posts: <span id="posts">0</span></p>
-
-</section>
-
-<script>
-
-document.getElementById("loginBtn").onclick = function(){
-
-window.location.href =
-"https://rahul-instagram-api.09rcrg.workers.dev/login";
-
-}
-
-</script>export default {
+<p>📷 Posts: <span id="posts">0</span></p>export default {
   async fetch(request) {
     return new Response(
       JSON.stringify({
@@ -274,3 +260,5 @@ window.location.href =
     );
   }
 }
+
+
