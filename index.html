@@ -213,4 +213,64 @@ function openInstagram(){
     alert("Please enter an Instagram username.");
   }
 }
-</script>
+</script><section>
+
+<h2>📷 Instagram Login</h2>
+
+<p>
+अपने Instagram अकाउंट का डेटा सुरक्षित तरीके से देखने के लिए नीचे Login करें।
+</p>
+
+<a class="button" id="loginBtn">
+🔐 Login with Instagram
+</a>
+
+</section>
+
+<section id="profileCard" style="display:none;">
+
+<h2>👤 Instagram Profile</h2>
+
+<img id="profilePic"
+width="120"
+style="border-radius:50%;border:3px solid #00ff66;">
+
+<h3 id="profileName"></h3>
+
+<p id="profileUsername"></p>
+
+<p id="profileBio"></p>
+
+<p>👥 Followers: <span id="followers">0</span></p>
+
+<p>➡ Following: <span id="following">0</span></p>
+
+<p>📷 Posts: <span id="posts">0</span></p>
+
+</section>
+
+<script>
+
+document.getElementById("loginBtn").onclick = function(){
+
+window.location.href =
+"https://rahul-instagram-api.09rcrg.workers.dev/login";
+
+}
+
+</script>export default {
+  async fetch(request) {
+    return new Response(
+      JSON.stringify({
+        status: "OK",
+        message: "Rahul Instagram API Server is Ready"
+      }),
+      {
+        headers: {
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*"
+        }
+      }
+    );
+  }
+}
