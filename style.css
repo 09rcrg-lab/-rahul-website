@@ -140,4 +140,25 @@ nav{
     font-size:34px;
 }
 
-}
+}// Rahul Social Hub - Script
+
+document.addEventListener("DOMContentLoaded", () => {
+
+  console.log("Rahul Social Hub Loaded");
+
+  // Welcome Message
+  setTimeout(() => {
+    alert("👋 Welcome to Rahul Social Hub!");
+  }, 1000);
+
+  // Smooth Button Click Effect
+  document.querySelectorAll("button").forEach(btn => {
+    btn.addEventListener("click", () => {
+      btn.style.transform = "scale(0.95)";
+      setTimeout(() => {
+        btn.style.transform = "scale(1)";
+      }, 150);
+    });
+  });
+
+});
