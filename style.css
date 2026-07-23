@@ -1,0 +1,195 @@
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial, Helvetica, sans-serif;
+}
+
+body{
+    background:#050505;
+    color:#fff;
+    line-height:1.6;
+}
+
+header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:18px 30px;
+    background:#101010;
+    border-bottom:2px solid #00ff66;
+    position:sticky;
+    top:0;
+    z-index:1000;
+}
+
+.logo{
+    color:#00ff66;
+    font-size:28px;
+    font-weight:bold;
+}
+
+nav a{
+    color:white;
+    text-decoration:none;
+    margin-left:18px;
+}
+
+nav a:hover{
+    color:#00ff66;
+}
+
+.hero{
+    text-align:center;
+    padding:80px 20px;
+}
+
+.hero h1{
+    font-size:50px;
+    color:#00ff66;
+}
+
+.hero p{
+    margin-top:15px;
+    color:#ccc;
+    font-size:20px;
+}
+
+.btn{
+    display:inline-block;
+    margin:15px;
+    padding:15px 30px;
+    background:#00ff66;
+    color:#000;
+    border-radius:10px;
+    text-decoration:none;
+    font-weight:bold;
+}
+
+.btn:hover{
+    box-shadow:0 0 20px #00ff66;
+}
+
+
+.cards,
+.dashboard-grid,
+.extra-grid,
+.stats-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+    gap:20px;
+    padding:20px;
+}
+
+
+.card,
+.box,
+.extra-card,
+.stat-box{
+    background:#111;
+    border:1px solid #00ff66;
+    border-radius:15px;
+    padding:25px;
+    transition:.3s;
+}
+
+
+.card:hover,
+.box:hover,
+.extra-card:hover,
+.stat-box:hover{
+    transform:translateY(-8px);
+    box-shadow:0 0 20px #00ff66;
+}
+
+
+h2,h3{
+    color:#00ff66;
+}
+
+
+button{
+    background:#00ff66;
+    color:#000;
+    border:none;
+    padding:12px 25px;
+    border-radius:8px;
+    cursor:pointer;
+    font-weight:bold;
+}
+
+
+button:hover{
+    background:#00cc55;
+}
+
+
+footer{
+    margin-top:50px;
+    text-align:center;
+    padding:25px;
+    background:#101010;
+    color:#aaa;
+}
+
+
+.auth{
+    padding:60px 20px;
+    text-align:center;
+}
+
+
+.auth-box{
+    max-width:400px;
+    margin:auto;
+    background:#111;
+    padding:25px;
+    border-radius:15px;
+    border:1px solid #00ff66;
+}
+
+
+.auth-box input{
+    width:100%;
+    padding:15px;
+    margin:10px 0;
+    background:#000;
+    color:white;
+    border:1px solid #00ff66;
+    border-radius:8px;
+}
+
+
+.live-section,
+.dashboard,
+.extras{
+    padding:60px 20px;
+    text-align:center;
+}
+
+
+.notice{
+    margin-top:40px;
+    padding:15px;
+    background:#00ff66;
+    color:#000;
+    border-radius:10px;
+    font-weight:bold;
+}
+
+
+@media(max-width:768px){
+
+header{
+    flex-direction:column;
+}
+
+nav{
+    margin-top:10px;
+}
+
+.hero h1{
+    font-size:34px;
+}
+
+}
