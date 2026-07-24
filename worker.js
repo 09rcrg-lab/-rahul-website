@@ -1,5 +1,5 @@
 export default {
-  async fetch(request) {
+  async fetch(request, env) {
 
     const url = new URL(request.url);
 
@@ -22,9 +22,14 @@ export default {
 
     if (url.pathname === "/api/test") {
 
+      const result = await env.DB
+        .prepare("SELECT name FROM sqlite_master WHERE type='table'")
+        .all();
+
       return new Response(
         JSON.stringify({
-          message: "API Working Successfully ✅"
+          message: "D1 Database Connected ✅",
+          tables: result.results
         }),
         {
           headers: {
