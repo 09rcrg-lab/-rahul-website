@@ -299,7 +299,8 @@ password:password
 });
 
 const result = await response.json();
-
+alert(response.status);
+alert(JSON.stringify(result));
 document.getElementById("message").innerHTML =
 result.message || "User Registered Successfully ✅";
 
