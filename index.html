@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -41,6 +43,33 @@ text-decoration:none;
 margin:0 10px;
 }
 
+.hero{
+text-align:center;
+padding:80px 20px;
+}
+
+.hero h1{
+font-size:45px;
+color:#00ff66;
+}
+
+.hero p{
+margin-top:15px;
+font-size:20px;
+color:#ccc;
+}
+
+.btn{
+display:inline-block;
+margin:15px;
+padding:15px 30px;
+background:#00ff66;
+color:#000;
+font-weight:bold;
+text-decoration:none;
+border-radius:8px;
+}
+
 </style>
 
 </head>
@@ -68,36 +97,67 @@ Join Rahul Social Hub and start your earning journey.
 
 <a class="btn" href="#register">Register</a>
 
+<a class="btn" href="#register">Login</a>
+
+</section>
+
+
+<section class="cards">
+
+<div class="card">
+
+<h2>🎯 Daily Tasks</h2>
+<p>Complete simple tasks and earn reward points.</p>
+
+</div>
+
+
+<div class="card">
+
+<h2>👥 Referral</h2>
+<p>Invite friends and earn extra rewards.</p>
+
+</div>
+
+
+<div class="card">
+
+<h2>💰 Wallet</h2>
+<p>Track your earnings securely.</p>
+
+</div>
+
+
+<div class="card">
+
+<h2>💸 Withdraw</h2>
+<p>Request withdrawal when eligible.</p>
+
+</div>
+
 </section>
 
 
 <style>
 
-.hero{
+.cards{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+gap:20px;
+padding:40px;
+}
+
+.card{
+background:#111;
+padding:30px;
+border-radius:15px;
 text-align:center;
-padding:80px 20px;
+border:1px solid #00ff66;
 }
 
-.hero h1{
-font-size:45px;
+.card h2{
 color:#00ff66;
-}
-
-.hero p{
-margin-top:15px;
-font-size:20px;
-color:#ccc;
-}
-
-.btn{
-display:inline-block;
-margin:15px;
-padding:15px 30px;
-background:#00ff66;
-color:#000;
-font-weight:bold;
-text-decoration:none;
-border-radius:8px;
+margin-bottom:15px;
 }
 
 </style><section id="register" class="auth">
@@ -156,58 +216,71 @@ border-radius:8px;
 width:100%;
 padding:15px;
 background:#00ff66;
+color:#000;
 border:none;
 border-radius:8px;
 font-weight:bold;
 cursor:pointer;
 }
 
-</style><script>
+</style>e<section class="live-section">
 
-async function registerUser(){
+<h2>📊 Live Platform Stats</h2>
 
-let username = document.getElementById("username").value;
-let email = document.getElementById("email").value;
-let password = document.getElementById("password").value;
+<div class="stats-grid">
 
+<div class="stat-box">
+<h3>👥 Users</h3>
+<h1>1,245</h1>
+</div>
 
-let response = await fetch("https://rahulsocialhub-db.09rcrg.workers.dev/api/register",{
+<div class="stat-box">
+<h3>💰 Rewards Paid</h3>
+<h1>₹52,890</h1>
+</div>
 
-method:"POST",
+<div class="stat-box">
+<h3>🎯 Tasks Completed</h3>
+<h1>18,420</h1>
+</div>
 
-headers:{
-"Content-Type":"application/json"
-},
+<div class="stat-box">
+<h3>⭐ Online Users</h3>
+<h1 id="online">126</h1>
+</div>
 
-body:JSON.stringify({
+</div>
 
-username:username,
-email:email,
-password:password
-
-})
-
-});
-
-
-let result = await response.json();
-
-
-document.getElementById("message").innerHTML =
-result.message || "User Registered Successfully ✅";
+</section>
 
 
+<style>
+
+.live-section{
+padding:60px 20px;
+text-align:center;
 }
 
-</script>
+.live-section h2{
+color:#00ff66;
+margin-bottom:30px;
+}
 
+.stats-grid{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+gap:20px;
+}
 
-<footer>
+.stat-box{
+background:#111;
+border:1px solid #00ff66;
+padding:25px;
+border-radius:15px;
+}
 
-© 2026 Rahul Social Hub
+.stat-box h3{
+color:#00ff66;
+}
 
-</footer>
-
-
-</body>
-</html>
+</style>
