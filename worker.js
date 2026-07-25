@@ -40,9 +40,9 @@ export default {
     if (url.pathname === "/api/register" && request.method === "POST") {
 
       try {
-
-        const data = await request.json();
+const data = await request.json();
 console.log(data);
+
         await env.DB.prepare(
           "INSERT INTO users(username,email,password) VALUES(?,?,?)"
         )
