@@ -436,38 +436,51 @@ margin-top:40px;
 
 async function registerUser(){
 
-let username=document.getElementById("username").value;
-let email=document.getElementById("email").value;
-let password=document.getElementById("password").value;
+let username = document.getElementById("username").value;
+let email = document.getElementById("email").value;
+let password = document.getElementById("password").value;
+
+document.querySelector("button").disabled = true;
 
 alert("Sending data...");
 alert("Fetch Start");
+
+try {
+
 let response = await fetch("https://rahulsocialhub-db.09rcrg.workers.dev/api/register", {
 method:"POST",
-
 headers:{
 "Content-Type":"application/json"
 },
-
 body:JSON.stringify({
-
 username:username,
 email:email,
 password:password
-
 })
-
 });
+
 alert(response.status);
 
 let result = await response.json();
-if (!response.ok) {
-    alert(JSON.stringify(result));
-    return;
+
+if(!response.ok){
+document.querySelector("button").disabled = false;
+alert(JSON.stringify(result));
+return;
 }
 
-document.getElementById("message").innerHTML =
-result.message || "User Registered Successfully ✅";
+document.getElementById("message").innerHTML = result.message;
+alert("User Registered Successfully ✅");
+
+} catch(err){
+
+alert(err.message);
+
+}
+
+document.querySelector("button").disabled = false;
+
+}
 
 }
 
