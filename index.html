@@ -283,4 +283,60 @@ border-radius:15px;
 color:#00ff66;
 }
 
-</style>
+</style><script>
+
+async function registerUser(){
+
+let username = document.getElementById("username").value;
+let email = document.getElementById("email").value;
+let password = document.getElementById("password").value;
+
+
+let response = await fetch("https://rahulsocialhub-db.09rcrg.workers.dev/api/register",{
+
+method:"POST",
+
+headers:{
+"Content-Type":"application/json"
+},
+
+body:JSON.stringify({
+
+username: username,
+email: email,
+password: password
+
+})
+
+});
+
+
+let result = await response.json();
+
+
+document.getElementById("message").innerHTML =
+result.message || "User Registered Successfully ✅";
+
+}
+
+
+setInterval(()=>{
+
+document.getElementById("online").innerHTML =
+Math.floor(Math.random()*80)+100;
+
+},3000);
+
+
+</script>
+
+
+<footer>
+
+© 2026 Rahul Social Hub
+
+</footer>
+
+
+</body>
+</html>
