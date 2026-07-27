@@ -10,201 +10,53 @@ async function registerUser() {
     document.getElementById("message").innerHTML =
       "❌ Please fill all fields.";
     return;
-  }  try {
+  }try {
 
-    const response = await fetch(
-      "https://rahulsocialhub-db.09rcrg.workers.dev/api/register",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
+ const response = await fetch("https://rahulsocialhub-db.09rcrg.workers.dev/api/register", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      username,
+      email,
+      password
+    })
+  });
 
-        body: JSON.stringify({
-          username: username,
-          email: email,
-          password: password
-        })
-      }
-    );
+  const result = await response.json();  if (result.success) {
 
-
-    const data = await response.json();
-
-
-    if (data.success) {
-
-      document.getElementById("message").innerHTML =
-        "✅ Registration successful!";
-
-
-      localStorage.setItem("user", JSON.stringify({
-        username: username,
-        email: email
-      }));
-
-
-      setTimeout(() => {
-        window.location.href = "dashboard.html";
-      }, 1000);
-
-
-    } else {
-
-      document.getElementById("message").innerHTML =
-        "❌ " + data.error;
-
-    }
-
-
-  } catch (error) {
-
-    console.log(error);
+    localStorage.setItem("userEmail", email);
+    localStorage.setItem("username", username);
 
     document.getElementById("message").innerHTML =
-      "❌ Server connection error.";
+      "✅ Registration Successful... Redirecting...";
 
-  }
+    setTimeout(() => {
 
-}// Login Function
+      document.getElementById("register").style.display = "none";
+      document.getElementById("dashboard").style.display = "block";
 
-async function loginUser(){
+      const welcome = document.getElementById("welcomeUser");
 
-  const email = document.getElementById("loginEmail").value.trim();
-  const password = document.getElementById("loginPassword").value.trim();
-  const message = document.getElementById("loginMessage");
-
-
-  if(!email || !password){
-
-    message.innerHTML = "❌ Please fill all fields.";
-    return;
-
-  }
-
-
-  try{
-
-    const response = await fetch(
-      "https://rahulsocialhub-db.09rcrg.workers.dev/api/login",
-      {
-
-        method:"POST",
-
-        headers:{
-          "Content-Type":"application/json"
-        },
-
-        body:JSON.stringify({
-          email:email,
-          password:password
-        })
-
+      if (welcome) {
+        welcome.innerText = username;
       }
-    );
 
+    }, 1500);
 
-    const data = await response.json();
+  } else {
 
+    document.getElementById("message").innerHTML =
+      "❌ " + result.message;
 
-    if(data.success){
+  }  } catch (error) {
 
+    console.error(error);
 
-      localStorage.setItem("user", JSON.stringify(data.user));
-
-
-      message.innerHTML =
-      "✅ Login successful";
-
-
-      setTimeout(()=>{
-
-        window.location.href="dashboard.html";
-
-      },1000);
-
-
-    }else{
-
-
-      message.innerHTML =
-      "❌ " + (data.error || "Login failed");
-
-
-    }
-
-
-  }catch(error){
-
-
-    console.log(error);
-
-    message.innerHTML =
-    "❌ Server error";
-
-
-  }
-
-
-}// Dashboard Load Function
-
-function loadDashboard(){
-
-  const user = localStorage.getItem("user");
-
-
-  if(!user){
-
-    window.location.href = "login.html";
-    return;
-
-  }
-
-
-  const userData = JSON.parse(user);
-
-
-  const name = document.getElementById("userName");
-  const email = document.getElementById("userEmail");
-
-
-  if(name){
-
-    name.innerHTML = userData.username;
-
-  }
-
-
-  if(email){
-
-    email.innerHTML = userData.email;
+    document.getElementById("message").innerHTML =
+      "❌ Server Error";
 
   }
 
 }
-
-
-
-// Logout Function
-
-function logoutUser(){
-
-  localStorage.removeItem("user");
-
-  window.location.href = "index.html";
-
-}
-
-
-
-// Auto Run On Page Load
-
-document.addEventListener("DOMContentLoaded", function(){
-
-  if(window.location.pathname.includes("dashboard")){
-
-    loadDashboard();
-
-  }
-
-});
