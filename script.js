@@ -97,4 +97,59 @@ localStorage.setItem("username", username);
 
     location.reload();
 
+}// Login User
+async function loginUser() {
+
+  const email = document.getElementById("loginEmail").value.trim();
+  const password = document.getElementById("loginPassword").value.trim();
+
+  if (!email || !password) {
+    alert("❌ Please enter Email and Password");
+    return;
+  }
+
+  try {
+
+    const response = await fetch("https://rahulsocialhub-db.09rcrg.workers.dev/api/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        email,
+        password
+      })
+    });
+
+    const result = await response.json();
+
+    if (result.success) {
+
+      localStorage.setItem("user", JSON.stringify(result.user));
+      localStorage.setItem("username", result.user.username);
+      localStorage.setItem("userEmail", result.user.email);
+
+      document.getElementById("register").style.display = "none";
+      document.getElementById("dashboard").style.display = "block";
+
+      const welcome = document.getElementById("welcomeUser");
+
+      if (welcome) {
+        welcome.innerText = result.user.username;
+      }
+
+      alert("✅ Login Successful");
+
+    } else {
+
+      alert("❌ " + result.message);
+
+    }
+
+  } catch (err) {
+
+    alert("❌ Connection Error");
+
+  }
+
 }
