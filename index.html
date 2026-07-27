@@ -1,170 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>Rahul Social Hub</title>
 
-<style>
-
-*{
-margin:0;
-padding:0;
-box-sizing:border-box;
-font-family:Arial,sans-serif;
-}
-
-body{
-background:#050505;
-color:#fff;
-}
-
-header{
-padding:20px;
-display:flex;
-justify-content:space-between;
-align-items:center;
-background:#0b0b0b;
-border-bottom:1px solid #00ff66;
-}
-
-.logo{
-font-size:28px;
-font-weight:bold;
-color:#00ff66;
-}
-
-nav a{
-color:white;
-text-decoration:none;
-margin:0 10px;
-}
-
-.hero{
-text-align:center;
-padding:80px 20px;
-}
-
-.hero h1{
-font-size:45px;
-color:#00ff66;
-}
-
-.hero p{
-margin-top:15px;
-font-size:20px;
-color:#ccc;
-}
-
-.btn{
-display:inline-block;
-margin:15px;
-padding:15px 30px;
-background:#00ff66;
-color:#000;
-font-weight:bold;
-text-decoration:none;
-border-radius:8px;
-}
-
-.cards{
-display:grid;
-grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
-gap:20px;
-padding:40px;
-}
-
-.card{
-background:#111;
-padding:30px;
-border-radius:15px;
-text-align:center;
-border:1px solid #00ff66;
-}
-
-.card h2{
-color:#00ff66;
-margin-bottom:15px;
-}
-
-.auth{
-padding:60px 20px;
-text-align:center;
-}
-
-.auth h2{
-color:#00ff66;
-margin-bottom:20px;
-}
-
-.auth-box{
-max-width:400px;
-margin:auto;
-background:#111;
-padding:25px;
-border-radius:15px;
-border:1px solid #00ff66;
-}
-
-.auth-box input{
-width:100%;
-padding:15px;
-margin:10px 0;
-background:#000;
-color:#fff;
-border:1px solid #00ff66;
-border-radius:8px;
-}
-
-.auth-box button{
-width:100%;
-padding:15px;
-background:#00ff66;
-color:#000;
-border:none;
-border-radius:8px;
-font-weight:bold;
-cursor:pointer;
-}
-
-.live-section{
-padding:60px 20px;
-text-align:center;
-}
-
-.stats-grid{
-display:grid;
-grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-gap:20px;
-}
-
-.stat-box{
-background:#111;
-border:1px solid #00ff66;
-padding:25px;
-border-radius:15px;
-}
-
-.stat-box h3{
-color:#00ff66;
-}
-
-footer{
-text-align:center;
-padding:20px;
-background:#111;
-margin-top:40px;
-}
-
-</style>
+<link rel="stylesheet" href="style.css">
 
 </head>
 
-<body>
-
-<header>
+<body><header>
 
 <div class="logo">
 Rahul Social Hub
@@ -173,6 +18,8 @@ Rahul Social Hub
 <nav>
 <a href="#">Home</a>
 <a href="#register">Register</a>
+<a href="#login">Login</a>
+<a href="#dashboard">Dashboard</a>
 </nav>
 
 </header><section class="hero">
@@ -180,147 +27,99 @@ Rahul Social Hub
 <h1>Complete Tasks & Earn Rewards</h1>
 
 <p>
-Join Rahul Social Hub and start your earning journey.
+Join Rahul Social Hub and start your earning journey today.
 </p>
 
-<a class="btn" href="#register">Register</a>
+<a href="#register" class="btn">Register Now</a>
 
-<a class="btn" href="#register">Login</a>
+<a href="#login" class="btn">Login</a>
 
-</section>
+</section><section id="register" class="auth">
 
-
-<section class="cards">
-
-<div class="card">
-<h2>🎯 Daily Tasks</h2>
-<p>Complete simple tasks and earn reward points.</p>
-</div>
-
-<div class="card">
-<h2>👥 Referral</h2>
-<p>Invite friends and earn extra rewards.</p>
-</div>
-
-<div class="card">
-<h2>💰 Wallet</h2>
-<p>Track your earnings securely.</p>
-</div>
-
-<div class="card">
-<h2>💸 Withdraw</h2>
-<p>Request withdrawal when eligible.</p>
-</div>
-
-</section>
-
-
-<section id="register" class="auth">
-
-<h2>🔐 Register Account</h2>
+<h2>🔐 Create Your Account</h2>
 
 <div class="auth-box">
 
-<input id="username" type="text" placeholder="Username">
+<input
+id="username"
+type="text"
+placeholder="Username">
 
-<input id="email" type="email" placeholder="Email">
+<input
+id="email"
+type="email"
+placeholder="Email">
 
-<input id="password" type="password" placeholder="Password">
+<input
+id="password"
+type="password"
+placeholder="Password">
 
-<button onclick="registerUser()">Register</button>
+<button onclick="registerUser()">
+Register
+</button>
 
 <p id="message"></p>
 
 </div>
 
-</section><section class="live-section">
+</section><section id="login" class="auth">
 
-<h2>📊 Live Platform Stats</h2>
+<h2>🔑 Login</h2>
 
-<div class="stats-grid">
+<div class="auth-box">
 
-<div class="stat-box">
-<h3>👥 Users</h3>
-<h1>1,245</h1>
-</div>
+<input
+id="loginEmail"
+type="email"
+placeholder="Email">
 
-<div class="stat-box">
-<h3>💰 Rewards Paid</h3>
-<h1>₹52,890</h1>
-</div>
+<input
+id="loginPassword"
+type="password"
+placeholder="Password">
 
-<div class="stat-box">
-<h3>🎯 Tasks Completed</h3>
-<h1>18,420</h1>
-</div>
-
-<div class="stat-box">
-<h3>⭐ Online Users</h3>
-<h1 id="online">126</h1>
-</div>
+<button onclick="loginUser()">
+Login
+</button>
 
 </div>
 
-</section>
+</section><section id="dashboard" class="dashboard">
 
-<footer>
+<h2>👤 User Dashboard</h2>
 
-© 2026 Rahul Social Hub
+<div class="dashboard-grid">
 
-</footer><script>
+<div class="box">
+<h3>💰 Wallet</h3>
+<h1 id="walletBalance">₹0.00</h1>
+<p>Current Balance</p>
+</div>
 
-async function registerUser(){
+<div class="box">
+<h3>🎯 Daily Tasks</h3>
+<button>Start Tasks</button>
+</div>
 
-const username = document.getElementById("username").value.trim();
-const email = document.getElementById("email").value.trim();
-const password = document.getElementById("password").value;
+<div class="box">
+<h3>👥 Referral</h3>
+<h2 id="referralCode">Loading...</h2>
+<button onclick="copyReferral()">Copy Code</button>
+</div>
 
-if(username==="" || email==="" || password===""){
-document.getElementById("message").innerHTML="❌ Please fill all fields.";
-return;
-}
+<div class="box">
+<h3>💸 Withdraw</h3>
+<button>Withdraw</button>
+</div>
 
-try{
+</div>
 
-const response = await fetch("https://rahulsocialhub-db.09rcrg.workers.dev/api/register",{
+</section><footer>
+© 2026 Rahul Social Hub. All Rights Reserved.
+</footer>
 
-method:"POST",
-
-headers:{
-"Content-Type":"application/json"
-},
-
-body:JSON.stringify({
-username:username,
-email:email,
-password:password
-})
-
-});
-
-const result = await response.json();
-alert(response.status);
-alert(JSON.stringify(result));
-document.getElementById("message").innerHTML =
-result.message || "User Registered Successfully ✅";
-
-}catch(error){
-
-document.getElementById("message").innerHTML =
-"❌ Error: " + error.message;
-
-}
-
-}
-
-setInterval(()=>{
-
-document.getElementById("online").innerHTML =
-Math.floor(Math.random()*80)+100;
-
-},3000);
-
-</script>
+<script src="script.js"></script>
 
 </body>
 </html>
