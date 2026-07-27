@@ -66,7 +66,11 @@ localStorage.setItem("username", username);
   }
 
 }document.addEventListener("DOMContentLoaded", () => {
+const referral = document.getElementById("referralCode");
 
+if (referral && savedName) {
+    referral.innerText = savedName.toUpperCase() + "100";
+}
     const savedName = localStorage.getItem("username");
 
     if (savedName) {
