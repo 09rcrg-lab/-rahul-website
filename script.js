@@ -1,179 +1,185 @@
-// Rahul Social Hub - Script Part 1
-// Register System
+// Rahul Social Hub Script
 
-const API_URL = "https://rahulsocialhub-db.09rcrg.workers.dev";
+async function registerUser() {
 
+  const username = document.getElementById("username").value.trim();
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value.trim();
 
-// Register Function
-async function registerUser(){
+  if (!username || !email || !password) {
+    document.getElementById("message").innerHTML =
+      "❌ Please fill all fields.";
+    return;
+  }  try {
 
-    let username = document.getElementById("username").value.trim();
-    let email = document.getElementById("email").value.trim();
-    let password = document.getElementById("password").value.trim();
+    const response = await fetch(
+      "https://rahulsocialhub-db.09rcrg.workers.dev/api/register",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
 
-    let message = document.getElementById("message");
-
-
-    if(username === "" || email === "" || password === ""){
-        message.innerHTML = "❌ सभी जानकारी भरें";
-        return;
-    }
-
-
-    try{
-
-        let response = await fetch(API_URL + "/api/register", {
-
-            method:"POST",
-
-            headers:{
-                "Content-Type":"application/json"
-            },
-
-            body:JSON.stringify({
-                username:username,
-                email:email,
-                password:password
-            })
-
-        });
+        body: JSON.stringify({
+          username: username,
+          email: email,
+          password: password
+        })
+      }
+    );
 
 
-        let data = await response.json();
+    const data = await response.json();
 
 
-        if(data.success){
+    if (data.success) {
 
-            message.innerHTML = "✅ Registration सफल हुआ";
-
-            localStorage.setItem("user", JSON.stringify({
-                username:username,
-                email:email
-            }));
-
-            setTimeout(()=>{
-                window.location.href="dashboard.html";
-            },1000);
+      document.getElementById("message").innerHTML =
+        "✅ Registration successful!";
 
 
-        }else{
+      localStorage.setItem("user", JSON.stringify({
+        username: username,
+        email: email
+      }));
 
-            message.innerHTML = "❌ " + (data.error || "Registration failed");
 
-        }
+      setTimeout(() => {
+        window.location.href = "dashboard.html";
+      }, 1000);
 
 
-    }catch(error){
+    } else {
 
-        console.log(error);
-        message.innerHTML = "❌ Server से connection नहीं हुआ";
+      document.getElementById("message").innerHTML =
+        "❌ " + data.error;
 
     }
+
+
+  } catch (error) {
+
+    console.log(error);
+
+    document.getElementById("message").innerHTML =
+      "❌ Server connection error.";
+
+  }
 
 }// Login Function
+
 async function loginUser(){
 
-    let email = document.getElementById("loginEmail").value.trim();
-    let password = document.getElementById("loginPassword").value.trim();
-
-    let message = document.getElementById("loginMessage");
-
-
-    if(email === "" || password === ""){
-        message.innerHTML = "❌ Email और Password डालें";
-        return;
-    }
+  const email = document.getElementById("loginEmail").value.trim();
+  const password = document.getElementById("loginPassword").value.trim();
+  const message = document.getElementById("loginMessage");
 
 
-    try{
+  if(!email || !password){
 
-        let response = await fetch(API_URL + "/api/login",{
+    message.innerHTML = "❌ Please fill all fields.";
+    return;
 
-            method:"POST",
-
-            headers:{
-                "Content-Type":"application/json"
-            },
-
-            body:JSON.stringify({
-                email:email,
-                password:password
-            })
-
-        });
+  }
 
 
-        let data = await response.json();
+  try{
+
+    const response = await fetch(
+      "https://rahulsocialhub-db.09rcrg.workers.dev/api/login",
+      {
+
+        method:"POST",
+
+        headers:{
+          "Content-Type":"application/json"
+        },
+
+        body:JSON.stringify({
+          email:email,
+          password:password
+        })
+
+      }
+    );
 
 
-        if(data.success){
-
-            message.innerHTML = "✅ Login सफल हुआ";
+    const data = await response.json();
 
 
-            localStorage.setItem("user", JSON.stringify({
-
-                username:data.user.username,
-                email:data.user.email
-
-            }));
+    if(data.success){
 
 
-            setTimeout(()=>{
-
-                window.location.href="dashboard.html";
-
-            },1000);
+      localStorage.setItem("user", JSON.stringify(data.user));
 
 
-        }else{
-
-            message.innerHTML = "❌ " + (data.error || "Login failed");
-
-        }
+      message.innerHTML =
+      "✅ Login successful";
 
 
-    }catch(error){
+      setTimeout(()=>{
 
-        console.log(error);
+        window.location.href="dashboard.html";
 
-        message.innerHTML="❌ Server error";
+      },1000);
+
+
+    }else{
+
+
+      message.innerHTML =
+      "❌ " + (data.error || "Login failed");
+
 
     }
 
-}// Dashboard System
+
+  }catch(error){
+
+
+    console.log(error);
+
+    message.innerHTML =
+    "❌ Server error";
+
+
+  }
+
+
+}// Dashboard Load Function
 
 function loadDashboard(){
 
-    let user = localStorage.getItem("user");
-
-    if(!user){
-
-        window.location.href="login.html";
-        return;
-
-    }
+  const user = localStorage.getItem("user");
 
 
-    let userData = JSON.parse(user);
+  if(!user){
+
+    window.location.href = "login.html";
+    return;
+
+  }
 
 
-    let nameBox = document.getElementById("userName");
-    let emailBox = document.getElementById("userEmail");
+  const userData = JSON.parse(user);
 
 
-    if(nameBox){
-
-        nameBox.innerHTML = userData.username;
-
-    }
+  const name = document.getElementById("userName");
+  const email = document.getElementById("userEmail");
 
 
-    if(emailBox){
+  if(name){
 
-        emailBox.innerHTML = userData.email;
+    name.innerHTML = userData.username;
 
-    }
+  }
+
+
+  if(email){
+
+    email.innerHTML = userData.email;
+
+  }
 
 }
 
@@ -183,18 +189,22 @@ function loadDashboard(){
 
 function logoutUser(){
 
-    localStorage.removeItem("user");
+  localStorage.removeItem("user");
 
-    window.location.href="index.html";
+  window.location.href = "index.html";
 
 }
 
 
 
-// Page Load Check
+// Auto Run On Page Load
 
-document.addEventListener("DOMContentLoaded",()=>{
+document.addEventListener("DOMContentLoaded", function(){
+
+  if(window.location.pathname.includes("dashboard")){
 
     loadDashboard();
+
+  }
 
 });
