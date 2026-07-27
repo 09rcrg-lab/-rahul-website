@@ -408,4 +408,143 @@ button:hover{
 
 ::-webkit-scrollbar-track{
     background:#111;
+}/* Rahul SMM Panel - style.css Part 1 */
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Poppins',Arial,sans-serif;
+}
+
+body{
+    background:#050505;
+    color:#ffffff;
+}
+
+/* Loading */
+
+#loading-screen{
+    position:fixed;
+    width:100%;
+    height:100vh;
+    background:#000;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    flex-direction:column;
+    z-index:9999;
+}
+
+#loading-screen h1{
+    color:#00ff66;
+    font-size:30px;
+}
+
+#loading-screen p{
+    color:#aaa;
+    margin-top:10px;
+}
+
+
+/* Auth */
+
+#auth-page{
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    padding:20px;
+}
+
+.auth-box{
+    width:100%;
+    max-width:400px;
+    background:#111;
+    padding:30px;
+    border-radius:20px;
+    border:2px solid #00ff66;
+    box-shadow:0 0 20px #00ff6644;
+}
+
+.auth-box h1{
+    text-align:center;
+    color:#00ff66;
+    margin-bottom:25px;
+}
+
+.auth-box h2{
+    text-align:center;
+    margin-bottom:20px;
+}
+
+.auth-box input{
+    width:100%;
+    padding:14px;
+    margin-bottom:15px;
+    background:#000;
+    border:1px solid #00ff66;
+    color:white;
+    border-radius:10px;
+    outline:none;
+}
+
+
+.auth-box button{
+    width:100%;
+    padding:14px;
+    background:#00ff66;
+    color:#000;
+    border:none;
+    border-radius:10px;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+
+.auth-box p{
+    text-align:center;
+    margin-top:15px;
+    color:#aaa;
+}
+
+
+.auth-box span{
+    color:#00ff66;
+    cursor:pointer;
+}
+
+
+/* Dashboard */
+
+#dashboard{
+    min-height:100vh;
+}
+
+
+header{
+    height:70px;
+    background:#111;
+    border-bottom:2px solid #00ff66;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:0 20px;
+}
+
+
+.logo{
+    color:#00ff66;
+    font-size:22px;
+    font-weight:bold;
+}
+
+
+#logoutBtn{
+    background:red;
+    color:white;
+    border:none;
+    padding:10px 18px;
+    border-radius:8px;
+    cursor:pointer;
 }
