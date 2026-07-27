@@ -138,4 +138,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
   console.log("Rahul Social Hub Loaded ✅");
 
+});// Show Dashboard if user is registered
+document.addEventListener("DOMContentLoaded", () => {
+
+  const userEmail = localStorage.getItem("userEmail");
+
+  if (userEmail) {
+
+    document.getElementById("register").style.display = "none";
+
+    document.getElementById("dashboard").style.display = "block";
+
+  }
+
 });
