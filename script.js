@@ -65,26 +65,25 @@ localStorage.setItem("username", username);
 
   }
 
-}document.addEventListener("DOMContentLoaded", () => {
-const referral = document.getElementById("referralCode");
+document.addEventListener("DOMContentLoaded", () => {
 
-if (referral && savedName) {
-    referral.innerText = savedName.toUpperCase() + "100";
-}
     const savedName = localStorage.getItem("username");
 
     if (savedName) {
 
         const welcome = document.getElementById("welcomeUser");
-
         if (welcome) {
             welcome.innerText = savedName;
         }
 
+        const referral = document.getElementById("referralCode");
+        if (referral) {
+            referral.innerText = savedName.toUpperCase() + "100";
+        }
+
     }
 
-});function logoutUser() {
-
+});
     localStorage.removeItem("username");
     localStorage.removeItem("userEmail");
     localStorage.removeItem("user");
