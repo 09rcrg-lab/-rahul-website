@@ -28,7 +28,11 @@ async function registerUser() {
 
     localStorage.setItem("userEmail", email);
     localStorage.setItem("username", username);
+const welcome = document.getElementById("welcomeUser");
 
+if (welcome) {
+    welcome.innerText = username;
+}
     document.getElementById("message").innerHTML =
       "✅ Registration Successful... Redirecting...";
 
