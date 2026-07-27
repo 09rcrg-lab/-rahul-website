@@ -46,7 +46,8 @@ if (welcome) {
       if (welcome) {
         welcome.innerText = username;
       }
-
+localStorage.setItem("userEmail", email);
+localStorage.setItem("username", username);
     }, 1500);
 
   } else {
@@ -62,5 +63,27 @@ if (welcome) {
       "❌ Server Error";
 
   }
+
+}document.addEventListener("DOMContentLoaded", () => {
+
+    const savedName = localStorage.getItem("username");
+
+    if (savedName) {
+
+        const welcome = document.getElementById("welcomeUser");
+
+        if (welcome) {
+            welcome.innerText = savedName;
+        }
+
+    }
+
+});function logoutUser() {
+
+    localStorage.removeItem("username");
+    localStorage.removeItem("userEmail");
+    localStorage.removeItem("user");
+
+    location.reload();
 
 }
