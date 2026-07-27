@@ -30,12 +30,20 @@ async function registerUser() {
 
     document.getElementById("message").innerHTML = result.message;
 
-    if (result.success) {
-      document.getElementById("username").value = "";
-      document.getElementById("email").value = "";
-      document.getElementById("password").value = "";
-    }
+if (result.success) {
 
+  localStorage.setItem("userEmail", email);
+
+  document.getElementById("message").innerHTML =
+    "✅ Registration Successful... Redirecting...";
+
+  setTimeout(() => {
+
+    window.location.href = "#dashboard";
+
+  }, 1500);
+
+}
   } catch (err) {
 
     document.getElementById("message").innerHTML =
