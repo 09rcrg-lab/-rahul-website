@@ -34,6 +34,45 @@ export default {
         tables: result.results
       }), { headers: cors });
     }    // Register API
+// Login API
+if (url.pathname === "/api/login" && request.method === "POST") {
+
+  try {
+
+    const data = await request.json();
+
+    const user = await env.DB.prepare(
+      "SELECT * FROM users WHERE email=? AND password=?"
+    )
+    .bind(data.email, data.password)
+    .first();
+
+    if (!user) {
+      return new Response(JSON.stringify({
+        success: false,
+        message: "Invalid Email or Password"
+      }), { headers: cors });
+    }
+
+    return new Response(JSON.stringify({
+      success: true,
+      message: "Login Successful ✅",
+      user
+    }), { headers: cors });
+
+  } catch (e) {
+
+    return new Response(JSON.stringify({
+      success: false,
+      message: e.message
+    }), {
+      status: 500,
+      headers: cors
+    });
+
+  }
+
+}
     if (url.pathname === "/api/register" && request.method === "POST") {
 
       try {
