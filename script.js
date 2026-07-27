@@ -32,4 +32,37 @@ async function registerUser() {
     document.getElementById("password").value = "";
   }
 
+}// Login User
+async function loginUser() {
+
+  const email = document.getElementById("loginEmail").value.trim();
+  const password = document.getElementById("loginPassword").value.trim();
+
+  if (!email || !password) {
+    alert("❌ Please enter Email and Password");
+    return;
+  }
+
+  const response = await fetch("/api/login", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      email,
+      password
+    })
+  });
+
+  const result = await response.json();
+
+  if (result.success) {
+    alert("✅ " + result.message);
+
+    localStorage.setItem("user", JSON.stringify(result.user));
+
+  } else {
+    alert("❌ " + result.message);
+  }
+
 }
