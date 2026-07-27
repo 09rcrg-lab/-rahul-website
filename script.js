@@ -28,6 +28,7 @@ async function registerUser() {
 
     localStorage.setItem("userEmail", email);
     localStorage.setItem("username", username);
+    document.getElementById("welcomeUser").innerText = username;
 const welcome = document.getElementById("welcomeUser");
 
 if (welcome) {
