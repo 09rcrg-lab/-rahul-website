@@ -1,154 +1,200 @@
-// Rahul Social Hub Script
+// Rahul Social Hub - Script Part 1
+// Register System
 
-const API = "https://rahulsocialhub-db.09rcrg.workers.dev";// Register User
-async function registerUser() {
+const API_URL = "https://rahulsocialhub-db.09rcrg.workers.dev";
 
-  const username = document.getElementById("username").value.trim();
-  const email = document.getElementById("email").value.trim();
-  const password = document.getElementById("password").value.trim();
 
-  if (!username || !email || !password) {
-    document.getElementById("message").innerHTML = "❌ Please fill all fields.";
-    return;
-  }
+// Register Function
+async function registerUser(){
 
-  try {
+    let username = document.getElementById("username").value.trim();
+    let email = document.getElementById("email").value.trim();
+    let password = document.getElementById("password").value.trim();
 
-    const response = await fetch(API + "/api/register", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        username,
-        email,
-        password
-      })
-    });
+    let message = document.getElementById("message");
 
-    const result = await response.json();
 
-    document.getElementById("message").innerHTML = result.message;
+    if(username === "" || email === "" || password === ""){
+        message.innerHTML = "❌ सभी जानकारी भरें";
+        return;
+    }
 
-if (result.success) {
 
-  localStorage.setItem("userEmail", email);
+    try{
 
-  document.getElementById("message").innerHTML =
-    "✅ Registration Successful... Redirecting...";
+        let response = await fetch(API_URL + "/api/register", {
 
-  setTimeout(() => {
+            method:"POST",
 
-    window.location.href = "#dashboard";
+            headers:{
+                "Content-Type":"application/json"
+            },
 
-  }, 1500);
+            body:JSON.stringify({
+                username:username,
+                email:email,
+                password:password
+            })
 
-}
-  } catch (err) {
+        });
 
-    document.getElementById("message").innerHTML =
-      "❌ Connection Error";
 
-    console.error(err);
-  }
+        let data = await response.json();
 
-}// Login User
-async function loginUser() {
 
-  const email = document.getElementById("loginEmail").value.trim();
-  const password = document.getElementById("loginPassword").value.trim();
+        if(data.success){
 
-  if (!email || !password) {
-    alert("❌ Please enter Email and Password");
-    return;
-  }
+            message.innerHTML = "✅ Registration सफल हुआ";
 
-  try {
+            localStorage.setItem("user", JSON.stringify({
+                username:username,
+                email:email
+            }));
 
-    const response = await fetch(API + "/api/login", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        email,
-        password
-      })
-    });
+            setTimeout(()=>{
+                window.location.href="dashboard.html";
+            },1000);
 
-    const result = await response.json();
 
-    if (result.success) {
+        }else{
 
-      alert("✅ " + result.message);
+            message.innerHTML = "❌ " + (data.error || "Registration failed");
 
-      localStorage.setItem("user", JSON.stringify(result.user));
+        }
 
-      document.getElementById("loginEmail").value = "";
-      document.getElementById("loginPassword").value = "";
 
-    } else {
+    }catch(error){
 
-      alert("❌ " + result.message);
+        console.log(error);
+        message.innerHTML = "❌ Server से connection नहीं हुआ";
 
     }
 
-  } catch (err) {
+}// Login Function
+async function loginUser(){
 
-    alert("❌ Connection Error");
-    console.error(err);
+    let email = document.getElementById("loginEmail").value.trim();
+    let password = document.getElementById("loginPassword").value.trim();
 
-  }
+    let message = document.getElementById("loginMessage");
 
-}// Copy Referral Code
-function copyReferral() {
 
-  const code = document.getElementById("referralCode");
+    if(email === "" || password === ""){
+        message.innerHTML = "❌ Email और Password डालें";
+        return;
+    }
 
-  if (!code) {
-    alert("Referral code not found.");
-    return;
-  }
 
-  navigator.clipboard.writeText(code.innerText);
+    try{
 
-  alert("✅ Referral Code Copied!");
+        let response = await fetch(API_URL + "/api/login",{
+
+            method:"POST",
+
+            headers:{
+                "Content-Type":"application/json"
+            },
+
+            body:JSON.stringify({
+                email:email,
+                password:password
+            })
+
+        });
+
+
+        let data = await response.json();
+
+
+        if(data.success){
+
+            message.innerHTML = "✅ Login सफल हुआ";
+
+
+            localStorage.setItem("user", JSON.stringify({
+
+                username:data.user.username,
+                email:data.user.email
+
+            }));
+
+
+            setTimeout(()=>{
+
+                window.location.href="dashboard.html";
+
+            },1000);
+
+
+        }else{
+
+            message.innerHTML = "❌ " + (data.error || "Login failed");
+
+        }
+
+
+    }catch(error){
+
+        console.log(error);
+
+        message.innerHTML="❌ Server error";
+
+    }
+
+}// Dashboard System
+
+function loadDashboard(){
+
+    let user = localStorage.getItem("user");
+
+    if(!user){
+
+        window.location.href="login.html";
+        return;
+
+    }
+
+
+    let userData = JSON.parse(user);
+
+
+    let nameBox = document.getElementById("userName");
+    let emailBox = document.getElementById("userEmail");
+
+
+    if(nameBox){
+
+        nameBox.innerHTML = userData.username;
+
+    }
+
+
+    if(emailBox){
+
+        emailBox.innerHTML = userData.email;
+
+    }
 
 }
 
 
-// Daily Bonus
-function claimBonus() {
 
-  alert("🎁 Daily Bonus feature will be available soon!");
+// Logout Function
 
-}
+function logoutUser(){
 
+    localStorage.removeItem("user");
 
-// Show Notification
-function showNotification(message) {
-
-  alert(message);
+    window.location.href="index.html";
 
 }
 
 
-// Page Loaded
-document.addEventListener("DOMContentLoaded", () => {
 
-  console.log("Rahul Social Hub Loaded ✅");
+// Page Load Check
 
-});// Show Dashboard if user is registered
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded",()=>{
 
-  const userEmail = localStorage.getItem("userEmail");
-
-  if (userEmail) {
-
-    document.getElementById("register").style.display = "none";
-
-    document.getElementById("dashboard").style.display = "block";
-
-  }
+    loadDashboard();
 
 });
