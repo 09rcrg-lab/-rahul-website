@@ -156,4 +156,19 @@ async function loginUser() {
 
   }
 
+}function copyReferral() {
+
+    const referral = document.getElementById("referralCode");
+
+    if (!referral) {
+        alert("Referral Code Not Found!");
+        return;
+    }
+
+    navigator.clipboard.writeText(referral.innerText);
+
+    alert("✅ Referral Code Copied!");
+
+}function openWithdraw() {
+    alert("💸 Withdraw feature will be available soon.");
 }
