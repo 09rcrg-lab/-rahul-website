@@ -1,4 +1,6 @@
-// Register User
+// Rahul Social Hub Script
+
+const API = "https://rahulsocialhub-db.09rcrg.workers.dev";// Register User
 async function registerUser() {
 
   const username = document.getElementById("username").value.trim();
@@ -10,26 +12,36 @@ async function registerUser() {
     return;
   }
 
-  const response = await fetch("/api/register", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      username,
-      email,
-      password
-    })
-  });
+  try {
 
-  const result = await response.json();
+    const response = await fetch(API + "/api/register", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        username,
+        email,
+        password
+      })
+    });
 
-  document.getElementById("message").innerHTML = result.message;
+    const result = await response.json();
 
-  if (result.success) {
-    document.getElementById("username").value = "";
-    document.getElementById("email").value = "";
-    document.getElementById("password").value = "";
+    document.getElementById("message").innerHTML = result.message;
+
+    if (result.success) {
+      document.getElementById("username").value = "";
+      document.getElementById("email").value = "";
+      document.getElementById("password").value = "";
+    }
+
+  } catch (err) {
+
+    document.getElementById("message").innerHTML =
+      "❌ Connection Error";
+
+    console.error(err);
   }
 
 }// Login User
@@ -43,26 +55,79 @@ async function loginUser() {
     return;
   }
 
-  const response = await fetch("/api/login", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      email,
-      password
-    })
-  });
+  try {
 
-  const result = await response.json();
+    const response = await fetch(API + "/api/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        email,
+        password
+      })
+    });
 
-  if (result.success) {
-    alert("✅ " + result.message);
+    const result = await response.json();
 
-    localStorage.setItem("user", JSON.stringify(result.user));
+    if (result.success) {
 
-  } else {
-    alert("❌ " + result.message);
+      alert("✅ " + result.message);
+
+      localStorage.setItem("user", JSON.stringify(result.user));
+
+      document.getElementById("loginEmail").value = "";
+      document.getElementById("loginPassword").value = "";
+
+    } else {
+
+      alert("❌ " + result.message);
+
+    }
+
+  } catch (err) {
+
+    alert("❌ Connection Error");
+    console.error(err);
+
   }
 
+}// Copy Referral Code
+function copyReferral() {
+
+  const code = document.getElementById("referralCode");
+
+  if (!code) {
+    alert("Referral code not found.");
+    return;
+  }
+
+  navigator.clipboard.writeText(code.innerText);
+
+  alert("✅ Referral Code Copied!");
+
 }
+
+
+// Daily Bonus
+function claimBonus() {
+
+  alert("🎁 Daily Bonus feature will be available soon!");
+
+}
+
+
+// Show Notification
+function showNotification(message) {
+
+  alert(message);
+
+}
+
+
+// Page Loaded
+document.addEventListener("DOMContentLoaded", () => {
+
+  console.log("Rahul Social Hub Loaded ✅");
+
+});
