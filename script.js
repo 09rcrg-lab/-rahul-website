@@ -86,4 +86,15 @@ localStorage.setItem("username", username);
 
     location.reload();
 
+}function logoutUser() {
+
+    localStorage.removeItem("username");
+    localStorage.removeItem("userEmail");
+    localStorage.removeItem("user");
+
+    document.getElementById("dashboard").style.display = "none";
+    document.getElementById("register").style.display = "block";
+
+    location.reload();
+
 }
