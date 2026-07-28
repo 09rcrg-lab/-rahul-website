@@ -467,4 +467,49 @@ encodeURIComponent(msg),
 
 }
 
+}// Referral System
+
+let referralBox =
+document.getElementById("referralCode");
+
+
+if(referralBox){
+
+let code =
+localStorage.getItem("referralCode");
+
+
+if(!code){
+
+code =
+"RAHUL" + Math.floor(Math.random()*99999);
+
+
+localStorage.setItem(
+"referralCode",
+code
+);
+
+}
+
+
+referralBox.innerHTML = code;
+
+
+let copyBtn =
+document.getElementById("copyReferralBtn");
+
+
+if(copyBtn){
+
+copyBtn.onclick=function(){
+
+navigator.clipboard.writeText(code);
+
+alert("Referral Code Copied");
+
+};
+
+}
+
 }
