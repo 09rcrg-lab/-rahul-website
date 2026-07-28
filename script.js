@@ -530,4 +530,24 @@ width="200">
 <p>Scan करके Payment करें</p>
 `;
 
+}// Payment QR Code
+
+let paymentQr =
+document.getElementById("paymentQr");
+
+
+if(paymentQr){
+
+paymentQr.innerHTML = `
+
+<img 
+src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=9131922170@ybl&pn=Rahul%20SMM%20Panel"
+width="200">
+
+<p>
+Scan करके Payment करें
+</p>
+
+`;
+
 }
