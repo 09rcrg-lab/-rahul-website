@@ -1055,4 +1055,28 @@ document.addEventListener("DOMContentLoaded", function () {
 
     showHistory();
 
-});
+});// ================= FOLLOW & EARN =================
+
+function followTask() {
+
+    let followed = localStorage.getItem("followTaskDone");
+
+    if (followed === "yes") {
+
+        alert("✅ You already completed today's Follow Task.");
+
+        return;
+
+    }
+
+    coins += 10;
+
+    updateCoins();
+
+    localStorage.setItem("followTaskDone", "yes");
+
+    addHistory("📢 Follow Task Completed (+10 Coins)");
+
+    alert("🎉 Task Completed! +10 Coins Added.");
+
+}
