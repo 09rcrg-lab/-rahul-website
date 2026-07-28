@@ -36,7 +36,31 @@ export default {
       }
 
     }
+// Login API
+if (url.pathname === "/api/login" && request.method === "POST") {
 
+  const { email, password } = await request.json();
+
+  const user = await env.DB.prepare(
+    "SELECT * FROM users WHERE email = ? AND password = ?"
+  )
+  .bind(email, password)
+  .first();
+
+  if (!user) {
+    return Response.json({
+      success: false,
+      message: "Invalid Email or Password"
+    });
+  }
+
+  return Response.json({
+    success: true,
+    message: "Login Successful",
+    user
+  });
+
+}
     return new Response("API Not Found", {
       status: 404
     });
