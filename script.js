@@ -443,6 +443,7 @@ document.getElementById("paymentService").innerHTML=serviceName;
 document.getElementById("paymentQuantity").innerHTML=quantity;
 
 document.getElementById("paymentAmount").innerHTML=amount;let whatsappBtn =
+saveOrder(serviceName, amount);
 document.getElementById("whatsappOrderBtn");
 
 
@@ -549,5 +550,67 @@ Scan करके Payment करें
 </p>
 
 `;
+
+}// Save Order History
+
+function saveOrder(service, amount){
+
+let orders =
+JSON.parse(localStorage.getItem("orders")) || [];
+
+
+orders.push({
+
+service: service,
+amount: amount,
+date: new Date().toLocaleString()
+
+});
+
+
+localStorage.setItem(
+"orders",
+JSON.stringify(orders)
+);
+
+}// Show Order History
+
+let orderBox =
+document.getElementById("orderHistory");
+
+
+if(orderBox){
+
+let orders =
+JSON.parse(localStorage.getItem("orders")) || [];
+
+
+if(orders.length){
+
+orderBox.innerHTML="";
+
+
+orders.forEach(function(order){
+
+
+orderBox.innerHTML += `
+
+<div class="box">
+
+<h3>${order.service}</h3>
+
+<p>Amount: ₹${order.amount}</p>
+
+<p>${order.date}</p>
+
+</div>
+
+`;
+
+
+});
+
+
+}
 
 }
