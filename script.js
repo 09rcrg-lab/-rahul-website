@@ -640,28 +640,15 @@ url,
 }// Save User State
 
 document.addEventListener("DOMContentLoaded",()=>{
+let totalUsers = document.getElementById("totalUsers");
+let totalWallet = document.getElementById("totalWallet");
 
+let user = JSON.parse(localStorage.getItem("rahulUser"));
 
-let user =
-JSON.parse(localStorage.getItem("rahulUser"));
-
-
-if(user){
-
-
-let profileEmail =
-document.getElementById("profileEmail");
-
-
-if(profileEmail){
-
-profileEmail.innerHTML =
-user.email;
-
+if(totalUsers && user){
+    totalUsers.innerHTML = "1";
 }
 
-
+if(totalWallet){
+    totalWallet.innerHTML = localStorage.getItem("walletBalance") || "₹0";
 }
-
-
-});
