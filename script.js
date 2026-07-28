@@ -683,3 +683,5 @@ if(viewWithdrawBtn){
         alert("Withdraw Requests feature coming soon.");
     };
 }
+
+});
