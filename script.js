@@ -42,10 +42,6 @@ registerBox.style.display="block";
 }
 
 
-let showLogin =
-document.getElementById("showLogin");
-
-
 if(showLogin){
 
 showLogin.onclick=function(){
@@ -55,6 +51,8 @@ registerBox.style.display="none";
 loginBox.style.display="block";
 
 };
+
+}
 
 }// Register System
 
