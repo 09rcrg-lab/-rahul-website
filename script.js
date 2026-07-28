@@ -949,4 +949,34 @@ function saveInstagramUsername() {
     document.getElementById("igMessage").innerHTML =
     "✅ Username Saved Successfully";
 
+}// ================= DAILY TASK & COINS =================
+
+let coins = Number(localStorage.getItem("coins")) || 0;
+
+function updateCoins() {
+
+    const coinText = document.getElementById("coinBalance");
+
+    if (coinText) {
+        coinText.innerHTML = "🪙 Coins: " + coins;
+    }
+
+    localStorage.setItem("coins", coins);
+
 }
+
+function completeTask() {
+
+    coins += 10;
+
+    updateCoins();
+
+    alert("🎉 Congratulations! You earned 10 Coins.");
+
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    updateCoins();
+
+});
