@@ -932,4 +932,21 @@ function startFreeLikes() {
 
     alert("❤️ Free Likes system is being prepared.");
 
+}// ================= SAVE INSTAGRAM USERNAME =================
+
+function saveInstagramUsername() {
+
+    const username = document.getElementById("igUsername").value.trim();
+
+    if (username === "") {
+        document.getElementById("igMessage").innerHTML =
+        "❌ Enter Instagram Username";
+        return;
+    }
+
+    localStorage.setItem("instagramUsername", username);
+
+    document.getElementById("igMessage").innerHTML =
+    "✅ Username Saved Successfully";
+
 }
