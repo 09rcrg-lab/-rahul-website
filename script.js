@@ -997,7 +997,7 @@ function claimFollowers() {
 
     document.getElementById("claimMessage").innerHTML =
     "✅ Your Free Followers request has been submitted.";
-
+addHistory("👥 Followers Request Submitted");
 }
 
 function claimLikes() {
@@ -1016,5 +1016,43 @@ function claimLikes() {
 
     document.getElementById("claimMessage").innerHTML =
     "✅ Your Free Likes request has been submitted.";
+addHistory("❤️ Likes Request Submitted");
+}// ================= REQUEST HISTORY =================
+
+function addHistory(text) {
+
+    let history = JSON.parse(localStorage.getItem("history")) || [];
+
+    history.unshift(text);
+
+    localStorage.setItem("history", JSON.stringify(history));
+
+    showHistory();
 
 }
+
+function showHistory() {
+
+    const box = document.getElementById("historyBox");
+
+    if (!box) return;
+
+    let history = JSON.parse(localStorage.getItem("history")) || [];
+
+    if (history.length === 0) {
+
+        box.innerHTML = "No Requests Yet";
+
+        return;
+
+    }
+
+    box.innerHTML = history.join("<br><br>");
+
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    showHistory();
+
+});
