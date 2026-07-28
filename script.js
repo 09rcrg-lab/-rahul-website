@@ -52,8 +52,6 @@ loginBox.style.display="block";
 
 };
 
-}
-
 }// Register System
 
 let registerBtn =
