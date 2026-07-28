@@ -1079,4 +1079,30 @@ function followTask() {
 
     alert("🎉 Task Completed! +10 Coins Added.");
 
+}// ================= SELECT FOLLOWERS =================
+
+function claimSelectedFollowers() {
+
+    const amount = Number(document.getElementById("followersAmount").value);
+
+    const requiredCoins = amount * 10;
+
+    if (coins < requiredCoins) {
+
+        document.getElementById("followersResult").innerHTML =
+        "❌ You need " + requiredCoins + " Coins.";
+
+        return;
+
+    }
+
+    coins -= requiredCoins;
+
+    updateCoins();
+
+    addHistory("👥 " + amount + " Followers Requested");
+
+    document.getElementById("followersResult").innerHTML =
+    "✅ Request Submitted for " + amount + " Followers.";
+
 }
