@@ -920,4 +920,16 @@ document.addEventListener("DOMContentLoaded", function(){
 
     }
 
-});
+});// ================= FREE SERVICES =================
+
+function startFreeFollowers() {
+
+    alert("🎉 Free Followers system is being prepared.");
+
+}
+
+function startFreeLikes() {
+
+    alert("❤️ Free Likes system is being prepared.");
+
+}
