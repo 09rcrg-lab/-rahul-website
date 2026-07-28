@@ -979,4 +979,42 @@ document.addEventListener("DOMContentLoaded", function () {
 
     updateCoins();
 
-});
+});// ================= CLAIM REWARDS =================
+
+function claimFollowers() {
+
+    if (coins < 100) {
+
+        document.getElementById("claimMessage").innerHTML =
+        "❌ You need 100 Coins.";
+
+        return;
+    }
+
+    coins -= 100;
+
+    updateCoins();
+
+    document.getElementById("claimMessage").innerHTML =
+    "✅ Your Free Followers request has been submitted.";
+
+}
+
+function claimLikes() {
+
+    if (coins < 50) {
+
+        document.getElementById("claimMessage").innerHTML =
+        "❌ You need 50 Coins.";
+
+        return;
+    }
+
+    coins -= 50;
+
+    updateCoins();
+
+    document.getElementById("claimMessage").innerHTML =
+    "✅ Your Free Likes request has been submitted.";
+
+}
