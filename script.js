@@ -605,7 +605,8 @@ whatsappOrderBtn.onclick=function(){
 
 let service =
 document.getElementById("paymentService").innerHTML;
-
+let service =
+document.getElementById("paymentService").innerHTML;
 
 let quantity =
 document.getElementById("paymentQuantity").innerHTML;
@@ -616,9 +617,13 @@ document.getElementById("paymentAmount").innerHTML;
 
 
 
+let orderLink =
+document.getElementById("orderLink").value;
+
 let message =
 "Rahul SMM Panel Order\n\n"+
 "Service: "+service+
+"\nLink: "+orderLink+
 "\nQuantity: "+quantity+
 "\nAmount: ₹"+amount+
 "\n\nPayment Screenshot Attached";
