@@ -853,4 +853,38 @@ document.addEventListener("DOMContentLoaded",()=>{
     }
 
 
+});// Initial Page Check
+
+window.addEventListener("DOMContentLoaded",()=>{
+
+    let status = localStorage.getItem("loginStatus");
+
+    let auth = document.getElementById("auth-page");
+
+    let dashboard = document.getElementById("dashboard");
+
+
+    if(status === "true"){
+
+        let user = JSON.parse(localStorage.getItem("rahulUser"));
+
+        if(user){
+
+            auth.style.display="none";
+
+            dashboard.style.display="block";
+
+            openDashboard(user.username);
+
+        }
+
+    }
+    else{
+
+        auth.style.display="flex";
+
+        dashboard.style.display="none";
+
+    }
+
 });
