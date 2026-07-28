@@ -605,17 +605,12 @@ whatsappOrderBtn.onclick=function(){
 
 let service =
 document.getElementById("paymentService").innerHTML;
-let service =
-document.getElementById("paymentService").innerHTML;
 
 let quantity =
 document.getElementById("paymentQuantity").innerHTML;
 
-
 let amount =
 document.getElementById("paymentAmount").innerHTML;
-
-
 
 let orderLink =
 document.getElementById("orderLink").value;
@@ -628,11 +623,9 @@ let message =
 "\nAmount: ₹"+amount+
 "\n\nPayment Screenshot Attached";
 
-
 let url =
 "https://wa.me/919131922170?text="
 +encodeURIComponent(message);
-
 
 
 window.open(
