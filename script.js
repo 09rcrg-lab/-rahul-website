@@ -634,4 +634,47 @@ walletBalance.innerHTML="₹"+balance;
 
 if(walletAmount){
 walletAmount.innerHTML="₹"+balance;
+}// Add Funds
+
+let addBtn =
+document.getElementById("addFundBtn");
+
+
+if(addBtn){
+
+addBtn.onclick=function(){
+
+let amount =
+Number(document.getElementById("addAmount").value);
+
+
+if(!amount){
+
+alert("Enter Amount");
+
+return;
+
+}
+
+
+let balance =
+Number(localStorage.getItem("wallet") || 0);
+
+
+balance += amount;
+
+
+localStorage.setItem(
+"wallet",
+balance
+);
+
+
+alert("Balance Added ₹"+amount);
+
+
+location.reload();
+
+};
+
 }
