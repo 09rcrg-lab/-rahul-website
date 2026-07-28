@@ -887,4 +887,31 @@ window.addEventListener("DOMContentLoaded",()=>{
 
     }
 
+});// First Open Website
+
+document.addEventListener("DOMContentLoaded", function(){
+
+    let auth = document.getElementById("auth-page");
+    let dashboard = document.getElementById("dashboard");
+
+    let status = localStorage.getItem("loginStatus");
+    let user = JSON.parse(localStorage.getItem("rahulUser"));
+
+
+    if(status === "true" && user){
+
+        auth.style.display = "none";
+
+        dashboard.style.display = "block";
+
+        openDashboard(user.username);
+
+    }else{
+
+        auth.style.display = "flex";
+
+        dashboard.style.display = "none";
+
+    }
+
 });
