@@ -512,4 +512,22 @@ alert("Referral Code Copied");
 
 }
 
+}// Payment QR
+
+let qr =
+document.getElementById("paymentQr");
+
+
+if(qr){
+
+let upi =
+"upi://pay?pa=9131922170@ybl&pn=Rahul%20SMM%20Panel";
+
+
+qr.innerHTML = `
+<img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(upi)}"
+width="200">
+<p>Scan करके Payment करें</p>
+`;
+
 }
