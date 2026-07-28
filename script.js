@@ -651,4 +651,35 @@ if(totalUsers && user){
 
 if(totalWallet){
     totalWallet.innerHTML = localStorage.getItem("walletBalance") || "₹0";
+}let viewOrdersBtn = document.getElementById("viewOrdersBtn");
+
+if(viewOrdersBtn){
+    viewOrdersBtn.onclick = function(){
+        alert("Orders feature coming soon.");
+    };
+}
+
+let viewUsersBtn = document.getElementById("viewUsersBtn");
+
+if(viewUsersBtn){
+    viewUsersBtn.onclick = function(){
+    let user = JSON.parse(localStorage.getItem("rahulUser"));
+
+if(user){
+    alert(
+        "Username: " + user.username +
+        "\nEmail: " + user.email
+    );
+}else{
+    alert("No User Found");
+}
+    };
+}
+
+let viewWithdrawBtn = document.getElementById("viewWithdrawBtn");
+
+if(viewWithdrawBtn){
+    viewWithdrawBtn.onclick = function(){
+        alert("Withdraw Requests feature coming soon.");
+    };
 }
