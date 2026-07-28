@@ -71,10 +71,6 @@ document.getElementById("regConfirm").value;
 if(username=="" || email=="" || password==""){
 
 alert("Please fill all details");
-return;
-
-}
-
 
 if(password !== confirmPassword){
 
@@ -134,7 +130,6 @@ JSON.parse(localStorage.getItem("rahulUser"));
 if(!savedUser){
 
 alert("Please create account first");
-return;
 
 }
 
@@ -272,7 +267,6 @@ logoutBtn.onclick=function(){
 
 localStorage.removeItem("loginStatus");
 
-location.reload();
 
 };
 
@@ -615,7 +609,6 @@ orderBox.innerHTML += `
 
 }// Wallet System
 
-let balance =
 localStorage.getItem("wallet") || 0;
 
 
@@ -636,45 +629,8 @@ if(walletAmount){
 walletAmount.innerHTML="₹"+balance;
 }// Add Funds
 
-let addBtn =
-document.getElementById("addFundBtn");
-
-
-if(addBtn){
-
-addBtn.onclick=function(){
-
-let amount =
-Number(document.getElementById("addAmount").value);
-
-
-if(!amount){
-
-alert("Enter Amount");
-
-return;
-
-}
-
-
-let balance =
-Number(localStorage.getItem("wallet") || 0);
-
-
-balance += amount;
-
-
-localStorage.setItem(
-"wallet",
-balance
-);
-
-
-alert("Balance Added ₹"+amount);
-
 
 location.reload();
 
-};
 
-}
+
