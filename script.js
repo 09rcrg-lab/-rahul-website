@@ -692,15 +692,21 @@ if(whatsappOrderBtn){
         let orderLink =
         document.getElementById("orderLink").value;
 
+        let user =
+JSON.parse(localStorage.getItem("rahulUser"));
 
 
-        let message =
-        "Rahul SMM Panel Order\n\n"+
-        "Service: "+service+
-        "\nLink: "+orderLink+
-        "\nQuantity: "+quantity+
-        "\nAmount: ₹"+amount+
-        "\n\nPayment Screenshot Attached";
+let message =
+"Rahul SMM Panel Order\n\n"+
+"Name: "+user.username+
+"\nEmail: "+user.email+
+"\nService: "+service+
+"\nLink: "+orderLink+
+"\nQuantity: "+quantity+
+"\nAmount: ₹"+amount+
+"\n\nPayment Screenshot Attached";
+        
+        
 
 
 
