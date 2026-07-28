@@ -1,240 +1,295 @@
 // Loading Screen
 
-window.onload = function(){
+window.addEventListener("load", function(){
 
-setTimeout(()=>{
+    setTimeout(function(){
 
-let loading =
-document.getElementById("loading-screen");
+        let loading = document.getElementById("loading-screen");
 
-if(loading){
-loading.style.display="none";
-}
+        if(loading){
 
-},1500);
+            loading.style.display = "none";
 
-};
+        }
+
+    },1500);
+
+});
+
 
 
 // Login Register Switch
 
-let loginBox =
-document.getElementById("login-box");
+let loginBox = document.getElementById("login-box");
 
-let registerBox =
-document.getElementById("register-box");
+let registerBox = document.getElementById("register-box");
 
 
-let showRegister =
-document.getElementById("showRegister");
+let showRegister = document.getElementById("showRegister");
 
 
 if(showRegister){
 
-showRegister.onclick=function(){
+    showRegister.onclick = function(){
 
-loginBox.style.display="none";
+        loginBox.style.display = "none";
 
-registerBox.style.display="block";
+        registerBox.style.display = "block";
 
-};
+    };
 
 }
+
+
+let showLogin = document.getElementById("showLogin");
 
 
 if(showLogin){
 
-showLogin.onclick=function(){
+    showLogin.onclick = function(){
 
-registerBox.style.display="none";
+        registerBox.style.display = "none";
 
-loginBox.style.display="block";
+        loginBox.style.display = "block";
 
-};
+    };
 
 }// Register System
 
-let registerBtn =
-document.getElementById("registerBtn");
+let registerBtn = document.getElementById("registerBtn");
 
 
 if(registerBtn){
 
-registerBtn.onclick=function(){
-
-let username =
-document.getElementById("regUsername").value;
+    registerBtn.onclick = function(){
 
 
-let email =
-document.getElementById("regEmail").value;
+        let username =
+        document.getElementById("regUsername").value;
 
 
-let password =
-document.getElementById("regPassword").value;
+        let email =
+        document.getElementById("regEmail").value;
 
 
-let confirm =
-document.getElementById("regConfirm").value;
+        let password =
+        document.getElementById("regPassword").value;
 
 
-if(username=="" || email=="" || password==""){
-
-alert("Please fill all details");
-
-return;
-
-}
+        let confirm =
+        document.getElementById("regConfirm").value;
 
 
-if(password!==confirm){
 
-alert("Password not match");
+        if(username=="" || email=="" || password==""){
 
-return;
+            alert("Please fill all details");
 
-}
+            return;
 
-
-let user = {
-
-username: username,
-email: email,
-password: password
-
-};
+        }
 
 
-localStorage.setItem(
-"rahulUser",
-JSON.stringify(user)
-);
+
+        if(password !== confirm){
+
+            alert("Password not match");
+
+            return;
+
+        }
 
 
-alert("Account Created Successfully");
+
+        let user = {
+
+            username: username,
+
+            email: email,
+
+            password: password
+
+        };
 
 
-document.getElementById("register-box").style.display="none";
 
-document.getElementById("login-box").style.display="block";
+        localStorage.setItem(
+            "rahulUser",
+            JSON.stringify(user)
+        );
 
 
-};
+
+        alert("Account Created Successfully");
+
+
+
+        registerBox.style.display="none";
+
+        loginBox.style.display="block";
+
+
+    };
 
 }// Login System
 
-let loginBtn =
-document.getElementById("loginBtn");
+let loginBtn = document.getElementById("loginBtn");
 
 
 if(loginBtn){
 
-loginBtn.onclick=function(){
-
-let email =
-document.getElementById("loginEmail").value;
+    loginBtn.onclick = function(){
 
 
-let password =
-document.getElementById("loginPassword").value;
+        let email =
+        document.getElementById("loginEmail").value;
 
 
-let user =
-JSON.parse(localStorage.getItem("rahulUser"));
+        let password =
+        document.getElementById("loginPassword").value;
 
 
-if(!user){
 
-alert("Please create account first");
+        let user =
+        JSON.parse(localStorage.getItem("rahulUser"));
 
-return;
+
+
+        if(!user){
+
+            alert("Please create account first");
+
+            return;
+
+        }
+
+
+
+        if(email === user.email && password === user.password){
+
+
+            localStorage.setItem(
+                "loginStatus",
+                "true"
+            );
+
+
+            openDashboard(user.username);
+
+
+        }
+        else{
+
+            alert("Wrong Email or Password");
+
+        }
+
+
+    };
 
 }
 
 
-if(
-email===user.email &&
-password===user.password
-){
 
-localStorage.setItem(
-"loginStatus",
-"true"
-);
-
-
-openDashboard(user.username);
-
-
-}
-else{
-
-alert("Wrong Email or Password");
-
-}
-
-
-};
-
-}// Open Dashboard
+// Open Dashboard
 
 function openDashboard(name){
 
-let auth =
-document.getElementById("auth-page");
+
+    let auth =
+    document.getElementById("auth-page");
 
 
-let dashboard =
-document.getElementById("dashboard");
-
-
-if(auth){
-auth.style.display="none";
-}
-
-
-if(dashboard){
-dashboard.style.display="block";
-}
-
-
-let username =
-document.getElementById("username");
-
-
-let profileUsername =
-document.getElementById("profileUsername");
-
-
-if(username){
-username.innerHTML=name;
-}
-
-
-if(profileUsername){
-profileUsername.innerHTML=name;
-}
-
-
-let user =
-JSON.parse(localStorage.getItem("rahulUser"));
-
-
-let profileEmail =
-document.getElementById("profileEmail");
-
-
-if(profileEmail && user){
-
-profileEmail.innerHTML=user.email;
-
-}
-
-}
+    let dashboard =
+    document.getElementById("dashboard");
 
 
 
-// Logout
+    if(auth){
+
+        auth.style.display="none";
+
+    }
+
+
+
+    if(dashboard){
+
+        dashboard.style.display="block";
+
+    }
+
+
+
+    let username =
+    document.getElementById("username");
+
+
+    let profileUsername =
+    document.getElementById("profileUsername");
+
+
+
+    if(username){
+
+        username.innerHTML=name;
+
+    }
+
+
+
+    if(profileUsername){
+
+        profileUsername.innerHTML=name;
+
+    }
+
+
+
+    let user =
+    JSON.parse(localStorage.getItem("rahulUser"));
+
+
+
+    let profileEmail =
+    document.getElementById("profileEmail");
+
+
+
+    if(profileEmail && user){
+
+        profileEmail.innerHTML=user.email;
+
+    }
+
+
+}// Auto Login Check
+
+window.addEventListener("load",()=>{
+
+
+    let status =
+    localStorage.getItem("loginStatus");
+
+
+    let user =
+    JSON.parse(localStorage.getItem("rahulUser"));
+
+
+
+    if(status=="true" && user){
+
+        openDashboard(user.username);
+
+    }
+
+
+});
+
+
+
+
+// Logout System
 
 let logoutBtn =
 document.getElementById("logoutBtn");
@@ -242,35 +297,22 @@ document.getElementById("logoutBtn");
 
 if(logoutBtn){
 
-logoutBtn.onclick=function(){
-
-localStorage.removeItem("loginStatus");
-
-location.reload();
-
-};
-
-}// Auto Login Check
-
-window.addEventListener("load",()=>{
+    logoutBtn.onclick=function(){
 
 
-let status =
-localStorage.getItem("loginStatus");
+        localStorage.removeItem("loginStatus");
 
 
-let user =
-JSON.parse(localStorage.getItem("rahulUser"));
+        location.reload();
 
 
-if(status=="true" && user){
-
-openDashboard(user.username);
+    };
 
 }
 
 
-});// Sidebar Page Switching
+
+// Sidebar Page Switching
 
 let menuButtons =
 document.querySelectorAll(".menu");
@@ -280,45 +322,51 @@ let pages =
 document.querySelectorAll(".page");
 
 
+
 menuButtons.forEach(button=>{
 
 
-button.onclick=function(){
+    button.onclick=function(){
 
 
-let pageName =
-this.getAttribute("data-page");
+        let pageName =
+        this.getAttribute("data-page");
 
 
-pages.forEach(page=>{
 
-page.classList.remove("active");
+        pages.forEach(page=>{
 
-});
+            page.classList.remove("active");
 
-
-let openPage =
-document.getElementById(pageName);
+        });
 
 
-if(openPage){
 
-openPage.classList.add("active");
-
-}
+        let openPage =
+        document.getElementById(pageName);
 
 
-menuButtons.forEach(btn=>{
 
-btn.classList.remove("active");
+        if(openPage){
 
-});
+            openPage.classList.add("active");
 
-
-this.classList.add("active");
+        }
 
 
-};
+
+        menuButtons.forEach(btn=>{
+
+            btn.classList.remove("active");
+
+        });
+
+
+
+        this.classList.add("active");
+
+
+    };
 
 
 });// Referral System
@@ -329,14 +377,16 @@ localStorage.getItem("referralCode");
 
 if(!referralCode){
 
-referralCode =
-"RAHUL" + Math.floor(Math.random()*99999);
+
+    referralCode =
+    "RAHUL" + Math.floor(Math.random()*99999);
 
 
-localStorage.setItem(
-"referralCode",
-referralCode
-);
+    localStorage.setItem(
+        "referralCode",
+        referralCode
+    );
+
 
 }
 
@@ -348,10 +398,11 @@ document.getElementById("referralCode");
 
 if(referralBox){
 
-referralBox.innerHTML =
-referralCode;
+    referralBox.innerHTML =
+    referralCode;
 
 }
+
 
 
 
@@ -361,20 +412,26 @@ document.getElementById("copyReferralBtn");
 
 if(copyReferralBtn){
 
-copyReferralBtn.onclick=function(){
+
+    copyReferralBtn.onclick=function(){
 
 
-navigator.clipboard.writeText(
-referralCode
-);
+        navigator.clipboard.writeText(
+            referralCode
+        );
 
 
-alert("Referral Code Copied");
+        alert("Referral Code Copied");
 
 
-};
+    };
 
-}// Copy UPI ID
+
+}
+
+
+
+// Copy UPI ID
 
 let copyUpiBtn =
 document.getElementById("copyUpiBtn");
@@ -382,24 +439,22 @@ document.getElementById("copyUpiBtn");
 
 if(copyUpiBtn){
 
-copyUpiBtn.onclick=function(){
+
+    copyUpiBtn.onclick=function(){
 
 
-navigator.clipboard.writeText(
-"9131922170@ybl"
-);
+        navigator.clipboard.writeText(
+            "9131922170@ybl"
+        );
 
 
-alert("UPI ID Copied");
+        alert("UPI ID Copied");
 
 
-};
-
-}
+    };
 
 
-
-// QR Code
+}// QR Code System
 
 let qrCode =
 document.getElementById("qrCode");
@@ -408,27 +463,33 @@ document.getElementById("qrCode");
 if(qrCode){
 
 
-let upi =
-"upi://pay?pa=9131922170@ybl&pn=Rahul%20SMM%20Panel";
+    let upi =
+    "upi://pay?pa=9131922170@ybl&pn=Rahul%20SMM%20Panel";
 
 
-let qrImage =
-"https://api.qrserver.com/v1/create-qr-code/?size=200x200&data="
-+ encodeURIComponent(upi);
+    let qrImage =
+    "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data="
+    + encodeURIComponent(upi);
 
 
 
-qrCode.innerHTML = `
+    qrCode.innerHTML = `
 
-<img src="${qrImage}" width="200">
+    <img src="${qrImage}" width="200">
 
-<p>Scan करके Payment करें</p>
+    <p>Scan करके Payment करें</p>
 
-`;
+    `;
 
-}// Services System
+
+}
+
+
+
+// Services System
 
 let services = [
+
 
 {
 name:"Instagram Followers",
@@ -437,12 +498,14 @@ amount:50,
 quantity:"1000 Followers"
 },
 
+
 {
 name:"Instagram Likes",
 price:"₹20 / 1000 Likes",
 amount:20,
 quantity:"1000 Likes"
 },
+
 
 {
 name:"Instagram Comments",
@@ -451,12 +514,14 @@ amount:100,
 quantity:"100 Comments"
 },
 
+
 {
 name:"YouTube Subscribers",
 price:"₹200 / 1000 Subscribers",
 amount:200,
 quantity:"1000 Subscribers"
 },
+
 
 {
 name:"Instagram Views",
@@ -465,7 +530,9 @@ amount:10,
 quantity:"10000 Views"
 }
 
+
 ];
+
 
 
 let serviceList =
@@ -475,33 +542,33 @@ document.getElementById("serviceList");
 if(serviceList){
 
 
-services.forEach(service=>{
+    services.forEach(service=>{
 
 
-let div =
-document.createElement("div");
+        let div =
+        document.createElement("div");
 
 
-div.className="service-card";
+        div.className="service-card";
 
 
-div.innerHTML=`
+        div.innerHTML = `
 
-<h3>${service.name}</h3>
+        <h3>${service.name}</h3>
 
-<p>${service.price}</p>
+        <p>${service.price}</p>
 
-<button onclick="orderService('${service.name}')">
-Order Now
-</button>
+        <button onclick="orderService('${service.name}')">
+        Order Now
+        </button>
 
-`;
-
-
-serviceList.appendChild(div);
+        `;
 
 
-});
+        serviceList.appendChild(div);
+
+
+    });
 
 
 }// Order System
@@ -509,175 +576,281 @@ serviceList.appendChild(div);
 function orderService(serviceName){
 
 
-let service =
-services.find(
-item=>item.name==serviceName
-);
+    let service =
+    services.find(
+        item=>item.name==serviceName
+    );
 
 
-if(!service){
+    if(!service){
 
-return;
+        return;
+
+    }
+
+
+
+    let pages =
+    document.querySelectorAll(".page");
+
+
+
+    pages.forEach(page=>{
+
+        page.classList.remove("active");
+
+    });
+
+
+
+    let payment =
+    document.getElementById("payment");
+
+
+
+    if(payment){
+
+        payment.classList.add("active");
+
+    }
+
+
+
+    let paymentService =
+    document.getElementById("paymentService");
+
+
+    let paymentQuantity =
+    document.getElementById("paymentQuantity");
+
+
+    let paymentAmount =
+    document.getElementById("paymentAmount");
+
+
+
+    if(paymentService){
+
+        paymentService.innerHTML =
+        service.name;
+
+    }
+
+
+
+    if(paymentQuantity){
+
+        paymentQuantity.innerHTML =
+        service.quantity;
+
+    }
+
+
+
+    if(paymentAmount){
+
+        paymentAmount.innerHTML =
+        service.amount;
+
+    }
+
 
 }
 
 
-// Open Payment Page
 
-let pages =
-document.querySelectorAll(".page");
+// WhatsApp Order System
 
-
-pages.forEach(page=>{
-
-page.classList.remove("active");
-
-});
-
-
-let payment =
-document.getElementById("payment");
-
-
-if(payment){
-
-payment.classList.add("active");
-
-}
-
-
-
-// Show Order Details
-
-
-let paymentService =
-document.getElementById("paymentService");
-
-
-let paymentQuantity =
-document.getElementById("paymentQuantity");
-
-
-let paymentAmount =
-document.getElementById("paymentAmount");
-
-
-
-if(paymentService){
-
-paymentService.innerHTML =
-service.name;
-
-}
-
-
-if(paymentQuantity){
-
-paymentQuantity.innerHTML =
-service.quantity;
-
-}
-
-
-if(paymentAmount){
-
-paymentAmount.innerHTML =
-service.amount;
-
-}
-
-
-}// WhatsApp Order System
 
 let whatsappOrderBtn =
 document.getElementById("whatsappOrderBtn");
 
 
+
 if(whatsappOrderBtn){
 
 
-whatsappOrderBtn.onclick=function(){
+    whatsappOrderBtn.onclick=function(){
 
 
-let service =
-document.getElementById("paymentService").innerHTML;
 
-let quantity =
-document.getElementById("paymentQuantity").innerHTML;
-
-let amount =
-document.getElementById("paymentAmount").innerHTML;
-
-let orderLink =
-document.getElementById("orderLink").value;
-
-let message =
-"Rahul SMM Panel Order\n\n"+
-"Service: "+service+
-"\nLink: "+orderLink+
-"\nQuantity: "+quantity+
-"\nAmount: ₹"+amount+
-"\n\nPayment Screenshot Attached";
-
-let url =
-"https://wa.me/919131922170?text="
-+encodeURIComponent(message);
+        let service =
+        document.getElementById("paymentService").innerHTML;
 
 
-window.open(
-url,
-"_blank"
-);
+
+        let quantity =
+        document.getElementById("paymentQuantity").innerHTML;
 
 
-};
+
+        let amount =
+        document.getElementById("paymentAmount").innerHTML;
 
 
-}// Save User State
+
+        let orderLink =
+        document.getElementById("orderLink").value;
+
+
+
+        let message =
+        "Rahul SMM Panel Order\n\n"+
+        "Service: "+service+
+        "\nLink: "+orderLink+
+        "\nQuantity: "+quantity+
+        "\nAmount: ₹"+amount+
+        "\n\nPayment Screenshot Attached";
+
+
+
+        let url =
+        "https://wa.me/919131922170?text="
+        +encodeURIComponent(message);
+
+
+
+        window.open(
+            url,
+            "_blank"
+        );
+
+
+    };
+
+
+}// Wallet and Admin Data
+
 
 document.addEventListener("DOMContentLoaded",()=>{
-let totalUsers = document.getElementById("totalUsers");
-let totalWallet = document.getElementById("totalWallet");
 
-let user = JSON.parse(localStorage.getItem("rahulUser"));
 
-if(totalUsers && user){
-    totalUsers.innerHTML = "1";
-}
+    let walletBalance =
+    document.getElementById("walletBalance");
 
-if(totalWallet){
-    totalWallet.innerHTML = localStorage.getItem("walletBalance") || "₹0";
-}let viewOrdersBtn = document.getElementById("viewOrdersBtn");
 
-if(viewOrdersBtn){
-    viewOrdersBtn.onclick = function(){
-        alert("Orders feature coming soon.");
-    };
-}
+    let walletAmount =
+    document.getElementById("walletAmount");
 
-let viewUsersBtn = document.getElementById("viewUsersBtn");
 
-if(viewUsersBtn){
-    viewUsersBtn.onclick = function(){
-    let user = JSON.parse(localStorage.getItem("rahulUser"));
 
-if(user){
-    alert(
-        "Username: " + user.username +
-        "\nEmail: " + user.email
-    );
-}else{
-    alert("No User Found");
-}
-    };
-}
+    let balance =
+    localStorage.getItem("walletBalance") || "0";
 
-let viewWithdrawBtn = document.getElementById("viewWithdrawBtn");
 
-if(viewWithdrawBtn){
-    viewWithdrawBtn.onclick = function(){
-        alert("Withdraw Requests feature coming soon.");
-    };
-}
+
+    if(walletBalance){
+
+        walletBalance.innerHTML =
+        "₹" + balance;
+
+    }
+
+
+
+    if(walletAmount){
+
+        walletAmount.innerHTML =
+        "₹" + balance;
+
+    }
+
+
+
+
+    // Admin Total Users
+
+
+    let totalUsers =
+    document.getElementById("totalUsers");
+
+
+    let user =
+    JSON.parse(localStorage.getItem("rahulUser"));
+
+
+
+    if(totalUsers && user){
+
+        totalUsers.innerHTML="1";
+
+    }
+
+
+
+
+    // Admin Buttons
+
+
+    let viewOrdersBtn =
+    document.getElementById("viewOrdersBtn");
+
+
+
+    if(viewOrdersBtn){
+
+        viewOrdersBtn.onclick=function(){
+
+            alert("Orders feature coming soon.");
+
+        };
+
+    }
+
+
+
+
+    let viewUsersBtn =
+    document.getElementById("viewUsersBtn");
+
+
+
+    if(viewUsersBtn){
+
+        viewUsersBtn.onclick=function(){
+
+
+            let user =
+            JSON.parse(localStorage.getItem("rahulUser"));
+
+
+
+            if(user){
+
+                alert(
+                    "Username: "+user.username+
+                    "\nEmail: "+user.email
+                );
+
+            }
+            else{
+
+                alert("No User Found");
+
+            }
+
+
+        };
+
+    }
+
+
+
+
+    let viewWithdrawBtn =
+    document.getElementById("viewWithdrawBtn");
+
+
+
+    if(viewWithdrawBtn){
+
+        viewWithdrawBtn.onclick=function(){
+
+            alert("Withdraw Requests feature coming soon.");
+
+        };
+
+    }
+
 
 });
