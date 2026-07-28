@@ -1,102 +1,128 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Rahul SMM Panel</title>
 
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
 
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Rahul SMM Panel</title>
+
+<link rel="stylesheet" href="style.css">
+
 </head>
+
 
 <body>
 
-<!-- Loading Screen -->
-<div id="loading-screen">
-    <h1>Rahul SMM Panel</h1>
-    <p>Loading...</p>
-</div>
 
-<!-- Login / Register -->
+<!-- Loading Screen -->
+
+<div id="loading-screen">
+
+<h1>Rahul SMM Panel</h1>
+
+<p>Loading...</p>
+
+</div><!-- Login Register Page -->
+
 <div id="auth-page">
 
-    <div class="auth-box">
+<div class="auth-box">
 
-        <h1>Rahul SMM Panel</h1>
 
-        <!-- Login -->
-        <div id="login-box">
+<h1>Rahul SMM Panel</h1>
 
-            <h2>Login</h2>
 
-            <input
-                type="email"
-                id="loginEmail"
-                placeholder="Enter Gmail">
+<!-- Login Box -->
 
-            <input
-                type="password"
-                id="loginPassword"
-                placeholder="Password">
+<div id="login-box">
 
-            <button id="loginBtn">
-                Login
-            </button>
+<h2>Login</h2>
 
-            <p>
-                Don't have an account?
-                <span id="showRegister">
-                    Register
-                </span>
-            </p>
 
-        </div>
+<input 
+type="email"
+id="loginEmail"
+placeholder="Enter Gmail">
 
-        <!-- Register -->
-        <div id="register-box">
 
-            <h2>Create Account</h2>
+<input
+type="password"
+id="loginPassword"
+placeholder="Password">
 
-            <input
-                type="text"
-                id="regUsername"
-                placeholder="Username">
 
-            <input
-                type="email"
-                id="regEmail"
-                placeholder="Gmail">
+<button id="loginBtn">
+Login
+</button>
 
-            <input
-                type="password"
-                id="regPassword"
-                placeholder="Password">
 
-            <input
-                type="password"
-                id="regConfirm"
-                placeholder="Confirm Password">
+<p>
+Don't have an account?
+<span id="showRegister">
+Register
+</span>
+</p>
 
-            <button id="registerBtn">
-                Create Account
-            </button>
-
-            <p>
-                Already have account?
-                <span id="showLogin">
-                    Login
-                </span>
-            </p>
-
-        </div>
-
-    </div>
 
 </div>
 
-<!-- Dashboard -->
+
+<!-- Register Box -->
+
+<div id="register-box">
+
+<h2>Create Account</h2>
+
+
+<input
+type="text"
+id="regUsername"
+placeholder="Username">
+
+
+<input
+type="email"
+id="regEmail"
+placeholder="Gmail">
+
+
+<input
+type="password"
+id="regPassword"
+placeholder="Password">
+
+
+<input
+type="password"
+id="regConfirm"
+placeholder="Confirm Password">
+
+
+<button id="registerBtn">
+Create Account
+</button>
+
+
+<p>
+Already have account?
+<span id="showLogin">
+Login
+</span>
+</p>
+
+
+</div>
+
+
+</div>
+
+</div><!-- Dashboard -->
+
 <div id="dashboard">
+
 
 <header>
 
@@ -104,11 +130,13 @@
 Rahul SMM Panel
 </div>
 
+
 <div class="user-area">
 
 <span id="username">
 User
 </span>
+
 
 <button id="logoutBtn">
 Logout
@@ -116,85 +144,124 @@ Logout
 
 </div>
 
-</header><!-- Sidebar -->
+</header>
+
+
+
+<!-- Sidebar -->
 
 <div class="sidebar">
+
 
 <button class="menu active" data-page="home">
 🏠 Dashboard
 </button>
 
+
 <button class="menu" data-page="services">
 🛒 Services
 </button>
 
+
 <button class="menu" data-page="orders">
-📦 Order History
+📦 Orders
 </button>
+
 
 <button class="menu" data-page="wallet">
 💰 Wallet
 </button>
 
+
 <button class="menu" data-page="addfund">
 💳 Add Funds
 </button>
+
 
 <button class="menu" data-page="withdraw">
 💸 Withdraw
 </button>
 
+
 <button class="menu" data-page="referral">
 👥 Referral
 </button>
 
+
 <button class="menu" data-page="support">
 🎫 Support
 </button>
-<button class="menu" data-page="admin">
-👑 Admin
-</button>
+
+
 <button class="menu" data-page="profile">
 👤 Profile
 </button>
 
-</div>
 
-<!-- Main Content -->
+</div><!-- Main Content -->
 
 <div class="main-content">
 
-<!-- Dashboard -->
+
+<!-- Home Dashboard -->
 
 <section id="home" class="page active">
 
 <h2>Dashboard</h2>
 
+
 <div class="card-grid">
 
+
 <div class="card">
+
 <h3>Wallet Balance</h3>
-<h1 id="walletBalance">₹0</h1>
+
+<h1 id="walletBalance">
+₹0
+</h1>
+
 </div>
 
+
 <div class="card">
+
 <h3>Total Orders</h3>
-<h1 id="totalOrders">0</h1>
+
+<h1 id="totalOrders">
+0
+</h1>
+
 </div>
 
+
 <div class="card">
+
 <h3>Completed</h3>
-<h1 id="completedOrders">0</h1>
+
+<h1 id="completedOrders">
+0
+</h1>
+
 </div>
 
+
 <div class="card">
+
 <h3>Pending</h3>
-<h1 id="pendingOrders">0</h1>
+
+<h1 id="pendingOrders">
+0
+</h1>
+
 </div>
+
 
 </div>
 
 </section>
+
+
 
 <!-- Services -->
 
@@ -202,35 +269,40 @@ Logout
 
 <h2>Services</h2>
 
-<div id="serviceList">
 
-<!-- Services script.js se load hongi -->
+<div id="serviceList">
 
 </div>
 
+
 </section>
 
-<!-- Order History -->
+
+
+<!-- Orders -->
 
 <section id="orders" class="page">
 
 <h2>Order History</h2>
 
+
 <div id="orderHistory">
 
-<p>No Orders Found.</p>
+<p>
+No Orders Found
+</p>
 
 </div>
 
-</section>
 
-<!-- Wallet -->
+</section><!-- Wallet -->
 
 <section id="wallet" class="page">
 
 <h2>Wallet</h2>
 
-<div class="wallet-box">
+
+<div class="box">
 
 <h3>Current Balance</h3>
 
@@ -238,42 +310,63 @@ Logout
 ₹0
 </h1>
 
+
 </div>
 
-</section><!-- Add Funds -->
+</section>
+
+
+
+<!-- Add Funds -->
 
 <section id="addfund" class="page">
 
 <h2>Add Funds</h2>
 
+
 <div class="box">
+
 
 <p>UPI ID</p>
 
-<h3>9131922170@ybl</h3>
+
+<h3>
+9131922170@ybl
+</h3>
+
 
 <button id="copyUpiBtn">
 Copy UPI ID
 </button>
 
+
 <br><br>
+
 
 <div id="qrCode">
-<!-- QR Code yahan script.js se show hoga -->
+
 </div>
-<input 
-type="number" 
-id="addAmount" 
+
+
+<input
+type="number"
+id="addAmount"
 placeholder="Enter Amount">
 
+
 <br><br>
+
 
 <button id="addFundBtn">
 Add Balance
 </button>
+
+
 </div>
 
 </section>
+
+
 
 <!-- Withdraw -->
 
@@ -281,58 +374,72 @@ Add Balance
 
 <h2>Withdraw</h2>
 
+
 <div class="box">
+
 
 <input
 type="number"
 id="withdrawAmount"
 placeholder="Enter Amount">
 
+
 <button id="withdrawBtn">
 Request Withdraw
 </button>
 
+
 </div>
 
-</section>
-
-<!-- Referral -->
+</section><!-- Referral -->
 
 <section id="referral" class="page">
 
 <h2>Referral</h2>
 
+
 <div class="box">
 
-<h3>Your Referral Code</h3>
+
+<h3>
+Your Referral Code
+</h3>
+
 
 <h1 id="referralCode">
 Loading...
 </h1>
 
+
 <button id="copyReferralBtn">
 Copy Code
 </button>
+
 
 </div>
 
 </section>
 
+
+
 <!-- Support -->
 
 <section id="support" class="page">
 
-<h2>Support</h2>
+<h2>
+Support
+</h2>
+
 
 <div class="box">
 
+
 <p>
-Need help?
+Need Help?
 </p>
 
-<a
-href="https://wa.me/919131922170"
-target="_blank">
+
+<a href="https://wa.me/919131922170" target="_blank">
 
 <button>
 Chat on WhatsApp
@@ -340,58 +447,20 @@ Chat on WhatsApp
 
 </a>
 
+
 </div>
 
-</section>
-<section id="admin" class="page">
-
-<h2>Admin Panel</h2>
-
-<div class="box">
-
-<h3>Welcome Admin</h3>
-
-<p>Orders, Users, Wallet aur Withdraw yahin manage honge.</p>
-<hr>
-
-<h3>📦 Total Orders</h3>
-<p id="totalOrders">0</p>
-
-<h3>👥 Total Users</h3>
-<p id="totalUsers">0</p>
-
-<h3>💰 Total Wallet</h3>
-<p id="totalWallet">₹0</p>
-
-<h3>🏦 Withdraw Requests</h3>
-<p id="totalWithdraw">0</p>
-<hr>
-
-<button id="viewOrdersBtn">
-📦 View Orders
-</button>
-
-<br><br>
-
-<button id="viewUsersBtn">
-👥 View Users
-</button>
-
-<br><br>
-
-<button id="viewWithdrawBtn">
-🏦 View Withdraw Requests
-</button>
-</div>
-
-</section>
-<!-- Profile -->
+</section><!-- Profile -->
 
 <section id="profile" class="page">
 
-<h2>Profile</h2>
+<h2>
+Profile
+</h2>
+
 
 <div class="box">
+
 
 <p>
 Username :
@@ -400,6 +469,7 @@ Username :
 </span>
 </p>
 
+
 <p>
 Email :
 <span id="profileEmail">
@@ -407,32 +477,42 @@ Email :
 </span>
 </p>
 
+
 </div>
 
 </section>
 
-</div>
 
-</div>
+
 <!-- Payment Page -->
 
 <section id="payment" class="page">
 
-<h2>Payment</h2>
+<h2>
+Payment
+</h2>
+
 
 <div class="box">
+
 
 <h3 id="paymentService">
 Service Name
 </h3>
+
+
 <br>
+
 
 <input
 type="text"
 id="orderLink"
 placeholder="Instagram / YouTube Link">
 
+
 <br><br>
+
+
 <p>
 Quantity:
 <span id="paymentQuantity">
@@ -440,9 +520,10 @@ Quantity:
 </span>
 </p>
 
+
 <h2>
-Amount:
-₹<span id="paymentAmount">
+Amount: ₹
+<span id="paymentAmount">
 0
 </span>
 </h2>
@@ -452,16 +533,19 @@ Amount:
 Pay Using UPI
 </p>
 
+
 <h3>
 9131922170@ybl
 </h3>
 
 
 <div id="paymentQr">
+
 </div>
 
 
 <br>
+
 
 <button id="whatsappOrderBtn">
 Send Payment Screenshot on WhatsApp
@@ -470,8 +554,16 @@ Send Payment Screenshot on WhatsApp
 
 </div>
 
-</section>
+</section></div>
+
+</div>
+
+
+<!-- Script -->
+
 <script src="script.js"></script>
 
+
 </body>
+
 </html>
