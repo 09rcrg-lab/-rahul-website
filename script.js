@@ -613,4 +613,25 @@ orderBox.innerHTML += `
 
 }
 
+}// Wallet System
+
+let balance =
+localStorage.getItem("wallet") || 0;
+
+
+let walletBalance =
+document.getElementById("walletBalance");
+
+
+let walletAmount =
+document.getElementById("walletAmount");
+
+
+if(walletBalance){
+walletBalance.innerHTML="₹"+balance;
+}
+
+
+if(walletAmount){
+walletAmount.innerHTML="₹"+balance;
 }
