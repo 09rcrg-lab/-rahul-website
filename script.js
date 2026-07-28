@@ -400,4 +400,71 @@ serviceList.appendChild(div);
 });
 
 
+}// Order Payment
+
+function orderService(serviceName){
+
+let amount=0;
+let quantity="";
+
+if(serviceName=="Instagram Followers"){
+amount=50;
+quantity="1000 Followers";
+}
+
+else if(serviceName=="Instagram Likes"){
+amount=20;
+quantity="1000 Likes";
+}
+
+else if(serviceName=="Instagram Comments"){
+amount=100;
+quantity="100 Comments";
+}
+
+else if(serviceName=="YouTube Subscribers"){
+amount=200;
+quantity="1000 Subscribers";
+}
+
+else if(serviceName=="Instagram Views"){
+amount=10;
+quantity="10000 Views";
+}document.querySelectorAll(".page").forEach(function(page){
+page.classList.remove("active");
+});
+
+
+document.getElementById("payment").classList.add("active");
+
+
+document.getElementById("paymentService").innerHTML=serviceName;
+
+document.getElementById("paymentQuantity").innerHTML=quantity;
+
+document.getElementById("paymentAmount").innerHTML=amount;let whatsappBtn =
+document.getElementById("whatsappOrderBtn");
+
+
+if(whatsappBtn){
+
+whatsappBtn.onclick=function(){
+
+let msg =
+"Rahul SMM Panel Order\n"+
+"Service: "+serviceName+
+"\nQuantity: "+quantity+
+"\nAmount: ₹"+amount;
+
+
+window.open(
+"https://wa.me/919131922170?text="+
+encodeURIComponent(msg),
+"_blank"
+);
+
+};
+
+}
+
 }
