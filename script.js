@@ -1105,4 +1105,16 @@ function claimSelectedFollowers() {
     document.getElementById("followersResult").innerHTML =
     "✅ Request Submitted for " + amount + " Followers.";
 
+}function searchUser() {
+
+    let user = document.getElementById("searchUser").value;
+
+    if(user.trim() === ""){
+        document.getElementById("searchResult").innerHTML =
+        "❌ Enter Username";
+        return;
+    }
+
+    document.getElementById("searchResult").innerHTML =
+    "🔍 Searching: @" + user;
 }
