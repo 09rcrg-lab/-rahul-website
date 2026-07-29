@@ -33,4 +33,12 @@ ALTER TABLE users
 ADD COLUMN followers_completed INTEGER DEFAULT 0;
 
 ALTER TABLE users
-ADD COLUMN request_status TEXT DEFAULT 'none';
+ADD COLUMN request_status TEXT DEFAULT 'none';CREATE TABLE follow_requests (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    email TEXT NOT NULL,
+    instagram_username TEXT NOT NULL,
+    followers INTEGER NOT NULL,
+    completed INTEGER DEFAULT 0,
+    status TEXT DEFAULT 'pending',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
