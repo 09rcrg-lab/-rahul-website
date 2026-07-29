@@ -1160,4 +1160,33 @@ async function searchUser() {
 
     document.getElementById("searchResult").innerHTML =
     "✅ User Found: @" + username;
+}async function saveInstagram() {
+
+    let instagram = document.getElementById("instagramUsername").value.trim();
+
+    let email = localStorage.getItem("email");
+
+    if (!instagram) {
+        alert("Enter Instagram Username");
+        return;
+    }
+
+    const response = await fetch(
+        "https://rahulsocialhub-db.09rcrg.workers.dev/api/save-instagram",
+        {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                email,
+                instagram
+            })
+        }
+    );
+
+    const result = await response.json();
+
+    alert(result.message);
+
 }
