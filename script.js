@@ -1139,7 +1139,7 @@ async function searchUser() {
 }
 
     
-}async function saveInstagram() {
+async function saveInstagram() {
 
     let instagram = document.getElementById("instagramUsername").value.trim();
 
