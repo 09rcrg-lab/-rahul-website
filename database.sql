@@ -23,4 +23,14 @@ CREATE TABLE requests (
     amount INTEGER NOT NULL,
     status TEXT DEFAULT 'Pending',
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-);
+);ALTER TABLE users
+ADD COLUMN instagram_username TEXT;
+
+ALTER TABLE users
+ADD COLUMN followers_requested INTEGER DEFAULT 0;
+
+ALTER TABLE users
+ADD COLUMN followers_completed INTEGER DEFAULT 0;
+
+ALTER TABLE users
+ADD COLUMN request_status TEXT DEFAULT 'none';
