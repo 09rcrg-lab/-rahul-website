@@ -111,6 +111,46 @@ if (url.pathname === "/api/search-user" && request.method === "POST") {
     user
   });
 
+}// Followers Request API
+if (url.pathname === "/api/request-followers" && request.method === "POST") {
+
+  const { email, followers } = await request.json();
+
+  const user = await env.DB.prepare(
+    "SELECT coins FROM users WHERE email = ?"
+  )
+  .bind(email)
+  .first();
+
+  if (!user) {
+    return Response.json({
+      success: false,
+      message: "User not found"
+    });
+  }
+
+  if (user.coins < followers) {
+    return Response.json({
+      success: false,
+      message: "Not enough coins"
+    });
+  }
+
+  await env.DB.prepare(
+    `UPDATE users
+     SET coins = coins - ?,
+         followers_requested = ?,
+         request_status = 'pending'
+     WHERE email = ?`
+  )
+  .bind(followers, followers, email)
+  .run();
+
+  return Response.json({
+    success: true,
+    message: "Followers request submitted"
+  });
+
 }
     return new Response("API Not Found", {
       status: 404
