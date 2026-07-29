@@ -60,6 +60,29 @@ if (url.pathname === "/api/login" && request.method === "POST") {
     user
   });
 
+}// Search User API
+if (url.pathname === "/api/search-user" && request.method === "POST") {
+
+  const { username } = await request.json();
+
+  const user = await env.DB.prepare(
+    "SELECT username FROM users WHERE username = ?"
+  )
+  .bind(username)
+  .first();
+
+  if (!user) {
+    return Response.json({
+      success: false,
+      message: "User not found"
+    });
+  }
+
+  return Response.json({
+    success: true,
+    user
+  });
+
 }
     return new Response("API Not Found", {
       status: 404
