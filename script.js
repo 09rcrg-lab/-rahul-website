@@ -1138,28 +1138,7 @@ async function searchUser() {
 
 }
 
-    let user = document.getElementById("searchUser").value;
-
-    if(user.trim() === ""){
-        document.getElementById("searchResult").innerHTML =
-        "❌ Enter Username";
-        return;
-    }
-
-    document.getElementById("searchResult").innerHTML =
-    "🔍 Searching: @" + user;
-}function searchUser() {
-
-    let username = document.getElementById("searchUser").value.trim();
-
-    if (username === "") {
-        document.getElementById("searchResult").innerHTML =
-        "❌ Please enter a username";
-        return;
-    }
-
-    document.getElementById("searchResult").innerHTML =
-    "✅ User Found: @" + username;
+    
 }async function saveInstagram() {
 
     let instagram = document.getElementById("instagramUsername").value.trim();
