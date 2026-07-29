@@ -72,6 +72,23 @@ if (url.pathname === "/api/login" && request.method === "POST") {
   });
 
 }// Search User API
+// Save Instagram Username
+if (url.pathname === "/api/save-instagram" && request.method === "POST") {
+
+  const { email, instagram } = await request.json();
+
+  await env.DB.prepare(
+    "UPDATE users SET instagram_username = ? WHERE email = ?"
+  )
+  .bind(instagram, email)
+  .run();
+
+  return Response.json({
+    success: true,
+    message: "Instagram Username Saved"
+  });
+
+}
 if (url.pathname === "/api/search-user" && request.method === "POST") {
 
   const { username } = await request.json();
