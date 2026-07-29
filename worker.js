@@ -16,9 +16,20 @@ export default {
       try {
 
         await env.DB.prepare(
-          "INSERT INTO users (username,email,password,coins) VALUES (?,?,?,?)"
+INSERT INTO users
+(username,email,password,coins,instagram_username,followers_requested,followers_completed,request_status)
+VALUES (?,?,?,?,?,?,?,?)
         )
-        .bind(username, email, password, 0)
+.bind(
+  username,
+  email,
+  password,
+  0,
+  "",
+  0,
+  0,
+  "none"
+)
         .run();
 
         return Response.json({
