@@ -1117,4 +1117,16 @@ function claimSelectedFollowers() {
 
     document.getElementById("searchResult").innerHTML =
     "🔍 Searching: @" + user;
+}function searchUser() {
+
+    let username = document.getElementById("searchUser").value.trim();
+
+    if (username === "") {
+        document.getElementById("searchResult").innerHTML =
+        "❌ Please enter a username";
+        return;
+    }
+
+    document.getElementById("searchResult").innerHTML =
+    "✅ User Found: @" + username;
 }
