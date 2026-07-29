@@ -1,4 +1,16 @@
-// ================= REGISTER =================
+// Loading Screen Remove
+
+window.addEventListener("load", function(){
+
+    let loading = document.getElementById("loading-screen");
+
+    if(loading){
+
+        loading.style.display = "none";
+
+    }
+
+});// ================= REGISTER =================
 
 let registerBtn = document.getElementById("registerBtn");
 
