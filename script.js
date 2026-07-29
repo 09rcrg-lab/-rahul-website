@@ -1105,7 +1105,38 @@ function claimSelectedFollowers() {
     document.getElementById("followersResult").innerHTML =
     "✅ Request Submitted for " + amount + " Followers.";
 
-}function searchUser() {
+async function searchUser() {
+
+    let username = document.getElementById("searchUser").value.trim();
+
+    if (!username) {
+        document.getElementById("searchResult").innerHTML =
+        "❌ Enter Username";
+        return;
+    }
+
+    const response = await fetch(
+        "https://rahulsocialhub-db.09rcrg.workers.dev/api/search-user",
+        {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ username })
+        }
+    );
+
+    const result = await response.json();
+
+    if (result.success) {
+        document.getElementById("searchResult").innerHTML =
+        "✅ User Found: @" + result.user.username;
+    } else {
+        document.getElementById("searchResult").innerHTML =
+        "❌ User Not Found";
+    }
+
+}
 
     let user = document.getElementById("searchUser").value;
 
