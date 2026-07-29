@@ -1104,7 +1104,7 @@ function claimSelectedFollowers() {
 
     document.getElementById("followersResult").innerHTML =
     "✅ Request Submitted for " + amount + " Followers.";
-
+}
 async function searchUser() {
 
     let username = document.getElementById("searchUser").value.trim();
