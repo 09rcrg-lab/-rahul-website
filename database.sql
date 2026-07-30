@@ -1,44 +1,90 @@
-CREATE TABLE users (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    username TEXT NOT NULL,
-    email TEXT UNIQUE NOT NULL,
-    password TEXT NOT NULL,
-    coins INTEGER DEFAULT 0,
-    referral_code TEXT,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+-- Users Table
+CREATE TABLE IF NOT EXISTS users (
+
+id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+username TEXT NOT NULL,
+
+email TEXT UNIQUE NOT NULL,
+
+password TEXT NOT NULL,
+
+referral_code TEXT,
+
+created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+
 );
 
-CREATE TABLE tasks (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    task_type TEXT NOT NULL,
-    task_value TEXT NOT NULL,
-    reward INTEGER DEFAULT 10,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+
+-- Wallet Table
+CREATE TABLE IF NOT EXISTS wallet (
+
+id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+user_id INTEGER,
+
+balance INTEGER DEFAULT 0,
+
+coins INTEGER DEFAULT 0,
+
+FOREIGN KEY(user_id) REFERENCES users(id)
+
 );
 
-CREATE TABLE requests (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    username TEXT NOT NULL,
-    service TEXT NOT NULL,
-    amount INTEGER NOT NULL,
-    status TEXT DEFAULT 'Pending',
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-);ALTER TABLE users
-ADD COLUMN instagram_username TEXT;
 
-ALTER TABLE users
-ADD COLUMN followers_requested INTEGER DEFAULT 0;
+-- Orders Table
+CREATE TABLE IF NOT EXISTS orders (
 
-ALTER TABLE users
-ADD COLUMN followers_completed INTEGER DEFAULT 0;
+id INTEGER PRIMARY KEY AUTOINCREMENT,
 
-ALTER TABLE users
-ADD COLUMN request_status TEXT DEFAULT 'none';CREATE TABLE follow_requests (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    email TEXT NOT NULL,
-    instagram_username TEXT NOT NULL,
-    followers INTEGER NOT NULL,
-    completed INTEGER DEFAULT 0,
-    status TEXT DEFAULT 'pending',
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+user_id INTEGER,
+
+service TEXT,
+
+quantity INTEGER,
+
+amount INTEGER,
+
+status TEXT DEFAULT 'Pending',
+
+created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+
+FOREIGN KEY(user_id) REFERENCES users(id)
+
+);
+
+
+-- Referral Table
+CREATE TABLE IF NOT EXISTS referrals (
+
+id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+user_id INTEGER,
+
+referral_user TEXT,
+
+created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+
+FOREIGN KEY(user_id) REFERENCES users(id)
+
+);
+
+
+-- Tasks Table
+CREATE TABLE IF NOT EXISTS tasks (
+
+id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+user_id INTEGER,
+
+task_name TEXT,
+
+reward INTEGER DEFAULT 0,
+
+status TEXT DEFAULT 'Pending',
+
+created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+
+FOREIGN KEY(user_id) REFERENCES users(id)
+
 );
