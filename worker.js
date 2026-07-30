@@ -1,863 +1,261 @@
 export default {
+  async fetch(request, env) {
 
-async fetch(request, env) {
+    const url = new URL(request.url);
 
+    // ================= HOME API =================
 
-const url = new URL(request.url);
+    if (url.pathname === "/") {
+      return Response.json({
+        success: true,
+        message: "Rahul SMM Panel API Running 🚀"
+      });
+    }
 
+    // ================= REGISTER API =================
 
-// ================= HOME API =================
+    if (url.pathname === "/api/register" && request.method === "POST") {
 
+      try {
 
-if(url.pathname === "/"){
+        const {
+          username,
+          email,
+          password
+        } = await request.json();
 
+        if (!username || !email || !password) {
+          return Response.json({
+            success: false,
+            message: "All fields are required"
+          });
+        }
 
-return Response.json({
+        const checkUser = await env.DB.prepare(
+          "SELECT id FROM users WHERE email = ?"
+        )
+        .bind(email)
+        .first();
 
-success:true,
+        if (checkUser) {
+          return Response.json({
+            success: false,
+            message: "Email already registered"
+          });
+        }
 
-message:"Rahul Social Hub API Running 🚀"
+        await env.DB.prepare(
+          `INSERT INTO users
+          (username,email,password,coins)
+          VALUES (?,?,?,100)`
+        )
+        .bind(username,email,password)
+        .run();        return Response.json({
+          success: true,
+          message: "Registration Successful"
+        });
 
-});
+      } catch (err) {
 
+        return Response.json({
+          success: false,
+          message: err.message
+        });
 
-}
+      }
 
+    }
 
-// ================= REGISTER API =================
+    // ================= LOGIN API =================
 
+    if (url.pathname === "/api/login" && request.method === "POST") {
 
-if(url.pathname === "/api/register" && request.method === "POST"){
+      try {
 
+        const { email, password } = await request.json();
 
-try{
+        const user = await env.DB.prepare(
+          `SELECT id,username,email,coins
+           FROM users
+           WHERE email = ? AND password = ?`
+        )
+        .bind(email, password)
+        .first();
 
+        if (!user) {
 
-const {
+          return Response.json({
+            success: false,
+            message: "Invalid Email or Password"
+          });
 
-username,
+        }
 
-email,
+        return Response.json({
+          success: true,
+          message: "Login Successful",
+          user
+        });
 
-password
+      } catch (err) {
 
-} = await request.json();
+        return Response.json({
+          success: false,
+          message: err.message
+        });
 
+      }
 
+    }    // ================= SAVE INSTAGRAM =================
 
-await env.DB.prepare(
+    if (url.pathname === "/api/save-instagram" && request.method === "POST") {
 
-`INSERT INTO users
-(username,email,password,coins,instagram_username,followers_requested,followers_completed,request_status)
-VALUES (?,?,?,?,?,?,?,?)`
+      try {
 
-)
+        const { email, instagram } = await request.json();
 
-.bind(
+        await env.DB.prepare(
+          `UPDATE users
+           SET instagram_username = ?
+           WHERE email = ?`
+        )
+        .bind(instagram, email)
+        .run();
 
-username,
+        return Response.json({
+          success: true,
+          message: "Instagram Username Saved"
+        });
 
-email,
+      } catch (err) {
 
-password,
+        return Response.json({
+          success: false,
+          message: err.message
+        });
 
-0,
+      }
 
-"",
+    }
 
-0,
+    // ================= SEARCH USER =================
 
-0,
+    if (url.pathname === "/api/search-user" && request.method === "POST") {
 
-"none"
+      try {
 
-)
+        const { username } = await request.json();
 
-.run();
+        const user = await env.DB.prepare(
+          `SELECT username
+           FROM users
+           WHERE username = ?`
+        )
+        .bind(username)
+        .first();
 
+        if (!user) {
 
+          return Response.json({
+            success: false,
+            message: "User Not Found"
+          });
 
-return Response.json({
+        }
 
-success:true,
+        return Response.json({
+          success: true,
+          user
+        });
 
-message:"User Registered Successfully"
+      } catch (err) {
 
-});
+        return Response.json({
+          success: false,
+          message: err.message
+        });
 
+      }
 
+    }    // ================= FOLLOWERS REQUEST =================
 
-}
+    if (url.pathname === "/api/request-followers" && request.method === "POST") {
 
-catch(error){
+      try {
 
+        const { email, followers } = await request.json();
 
-return Response.json({
+        const user = await env.DB.prepare(
+          `SELECT coins
+           FROM users
+           WHERE email = ?`
+        )
+        .bind(email)
+        .first();
 
-success:false,
+        if (!user) {
 
-message:"Email already registered"
+          return Response.json({
+            success: false,
+            message: "User not found"
+          });
 
-});
+        }
 
+        const requiredCoins = followers * 10;
 
-}
+        if (user.coins < requiredCoins) {
 
+          return Response.json({
+            success: false,
+            message: "Not enough coins"
+          });
 
+        }
 
-}// ================= LOGIN API =================
+        await env.DB.prepare(
+          `UPDATE users
+           SET coins = coins - ?,
+               followers_requested = followers_requested + ?,
+               request_status = 'pending'
+           WHERE email = ?`
+        )
+        .bind(requiredCoins, followers, email)
+        .run();
 
+        await env.DB.prepare(
+          `INSERT INTO requests
+          (username,service,amount,status)
+          VALUES(?,?,?,'Pending')`
+        )
+        .bind(email, "Instagram Followers", followers)
+        .run();
 
-if(url.pathname === "/api/login" && request.method === "POST"){
+        return Response.json({
+          success: true,
+          message: "Followers Request Submitted"
+        });
 
+      } catch (err) {
 
-try{
+        return Response.json({
+          success: false,
+          message: err.message
+        });
 
+      }
 
-const {
+    }    // ================= API NOT FOUND =================
 
-email,
+    return Response.json(
+      {
+        success: false,
+        message: "API Not Found"
+      },
+      {
+        status: 404
+      }
+    );
 
-password
-
-} = await request.json();
-
-
-
-const user = await env.DB.prepare(
-
-"SELECT * FROM users WHERE email = ? AND password = ?"
-
-)
-
-.bind(
-
-email,
-
-password
-
-)
-
-.first();
-
-
-
-if(!user){
-
-
-return Response.json({
-
-success:false,
-
-message:"Invalid Email or Password"
-
-});
-
-
-}
-
-
-
-return Response.json({
-
-success:true,
-
-message:"Login Successful",
-
-user:user
-
-});
-
-
-
-}
-
-catch(error){
-
-
-return Response.json({
-
-success:false,
-
-message:"Login Error"
-
-});
-
-
-}
-
-
-
-}// ================= SAVE INSTAGRAM API =================
-
-
-if(url.pathname === "/api/save-instagram" && request.method === "POST"){
-
-
-try{
-
-
-const {
-
-email,
-
-instagram
-
-} = await request.json();
-
-
-
-await env.DB.prepare(
-
-"UPDATE users SET instagram_username = ? WHERE email = ?"
-
-)
-
-.bind(
-
-instagram,
-
-email
-
-)
-
-.run();
-
-
-
-return Response.json({
-
-success:true,
-
-message:"Instagram Username Saved"
-
-});
-
-
-
-}
-
-catch(error){
-
-
-return Response.json({
-
-success:false,
-
-message:"Save Error"
-
-});
-
-
-}
-
-
-
-}// ================= SEARCH USER API =================
-
-
-if(url.pathname === "/api/search-user" && request.method === "POST"){
-
-
-try{
-
-
-const {
-
-username
-
-} = await request.json();
-
-
-
-const user = await env.DB.prepare(
-
-"SELECT username FROM users WHERE username = ?"
-
-)
-
-.bind(
-
-username
-
-)
-
-.first();
-
-
-
-if(!user){
-
-
-return Response.json({
-
-success:false,
-
-message:"User Not Found"
-
-});
-
-
-}
-
-
-
-return Response.json({
-
-success:true,
-
-user:user
-
-});
-
-
-
-}
-
-catch(error){
-
-
-return Response.json({
-
-success:false,
-
-message:"Search Error"
-
-});
-
-
-}
-
-
-
-}// ================= FOLLOWERS REQUEST API =================
-
-
-if(url.pathname === "/api/request-followers" && request.method === "POST"){
-
-
-try{
-
-
-const {
-
-email,
-
-followers
-
-} = await request.json();
-
-
-
-const user = await env.DB.prepare(
-
-"SELECT coins FROM users WHERE email = ?"
-
-)
-
-.bind(
-
-email
-
-)
-
-.first();
-
-
-
-if(!user){
-
-
-return Response.json({
-
-success:false,
-
-message:"User Not Found"
-
-});
-
-
-}
-
-
-
-if(user.coins < followers){
-
-
-return Response.json({
-
-success:false,
-
-message:"Not Enough Coins"
-
-});
-
-
-}
-
-
-
-await env.DB.prepare(
-
-`UPDATE users
-SET coins = coins - ?,
-followers_requested = ?,
-request_status = 'pending'
-WHERE email = ?`
-
-)
-
-.bind(
-
-followers,
-
-followers,
-
-email
-
-)
-
-.run();
-
-
-
-return Response.json({
-
-success:true,
-
-message:"Followers Request Submitted"
-
-});
-
-
-
-}
-
-catch(error){
-
-
-return Response.json({
-
-success:false,
-
-message:"Request Error"
-
-});
-
-
-}
-
-
-
-}// ================= USER PROFILE API =================
-
-
-if(url.pathname === "/api/profile" && request.method === "POST"){
-
-
-try{
-
-
-const {
-
-email
-
-} = await request.json();
-
-
-
-const user = await env.DB.prepare(
-
-"SELECT username,email,coins,instagram_username,followers_requested,followers_completed,request_status FROM users WHERE email = ?"
-
-)
-
-.bind(
-
-email
-
-)
-
-.first();
-
-
-
-if(!user){
-
-
-return Response.json({
-
-success:false,
-
-message:"User Not Found"
-
-});
-
-
-}
-
-
-
-return Response.json({
-
-success:true,
-
-user:user
-
-});
-
-
-
-}
-
-catch(error){
-
-
-return Response.json({
-
-success:false,
-
-message:"Profile Error"
-
-});
-
-
-}
-
-
-
-}// ================= ADD COINS API =================
-
-
-if(url.pathname === "/api/add-coins" && request.method === "POST"){
-
-
-try{
-
-
-const {
-
-email,
-
-coins
-
-} = await request.json();
-
-
-
-await env.DB.prepare(
-
-"UPDATE users SET coins = coins + ? WHERE email = ?"
-
-)
-
-.bind(
-
-coins,
-
-email
-
-)
-
-.run();
-
-
-
-return Response.json({
-
-success:true,
-
-message:"Coins Added Successfully"
-
-});
-
-
-
-}
-
-catch(error){
-
-
-return Response.json({
-
-success:false,
-
-message:"Coins Add Error"
-
-});
-
-
-}
-
-
-
-}// ================= CHECK USER API =================
-
-
-if(url.pathname === "/api/check-user" && request.method === "POST"){
-
-
-try{
-
-
-const {
-
-email
-
-} = await request.json();
-
-
-
-const user = await env.DB.prepare(
-
-"SELECT username,email FROM users WHERE email = ?"
-
-)
-
-.bind(
-
-email
-
-)
-
-.first();
-
-
-
-if(!user){
-
-
-return Response.json({
-
-success:false,
-
-message:"User Not Found"
-
-});
-
-
-}
-
-
-
-return Response.json({
-
-success:true,
-
-user:user
-
-});
-
-
-
-}
-
-catch(error){
-
-
-return Response.json({
-
-success:false,
-
-message:"Check User Error"
-
-});
-
-
-}
-
-
-
-}// ================= WALLET BALANCE API =================
-
-
-if(url.pathname === "/api/wallet" && request.method === "POST"){
-
-
-try{
-
-
-const {
-
-email
-
-} = await request.json();
-
-
-
-const user = await env.DB.prepare(
-
-"SELECT coins FROM users WHERE email = ?"
-
-)
-
-.bind(
-
-email
-
-)
-
-.first();
-
-
-
-if(!user){
-
-
-return Response.json({
-
-success:false,
-
-message:"User Not Found"
-
-});
-
-
-}
-
-
-
-return Response.json({
-
-success:true,
-
-coins:user.coins
-
-});
-
-
-
-}
-
-catch(error){
-
-
-return Response.json({
-
-success:false,
-
-message:"Wallet Error"
-
-});
-
-
-}
-
-
-
-}// ================= WITHDRAW REQUEST API =================
-
-
-if(url.pathname === "/api/withdraw" && request.method === "POST"){
-
-
-try{
-
-
-const {
-
-email,
-
-amount
-
-} = await request.json();
-
-
-
-const user = await env.DB.prepare(
-
-"SELECT coins FROM users WHERE email = ?"
-
-)
-
-.bind(
-
-email
-
-)
-
-.first();
-
-
-
-if(!user){
-
-
-return Response.json({
-
-success:false,
-
-message:"User Not Found"
-
-});
-
-
-}
-
-
-
-if(user.coins < amount){
-
-
-return Response.json({
-
-success:false,
-
-message:"Insufficient Balance"
-
-});
-
-
-}
-
-
-
-await env.DB.prepare(
-
-`UPDATE users
-SET coins = coins - ?
-WHERE email = ?`
-
-)
-
-.bind(
-
-amount,
-
-email
-
-)
-
-.run();
-
-
-
-return Response.json({
-
-success:true,
-
-message:"Withdraw Request Submitted"
-
-});
-
-
-
-}
-
-catch(error){
-
-
-return Response.json({
-
-success:false,
-
-message:"Withdraw Error"
-
-});
-
-
-}
-
-
-
+  }
 }
