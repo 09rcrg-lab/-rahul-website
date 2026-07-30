@@ -2,11 +2,14 @@ export default {
 
 async fetch(request, env) {
 
+
 const url = new URL(request.url);
 
 
-// Home API
+// HOME API
+
 if(url.pathname === "/"){
+
 
 return Response.json({
 
@@ -16,10 +19,9 @@ message:"Rahul SMM Panel API Running 🚀"
 
 });
 
-}
 
+}// REGISTER API
 
-// Register API
 
 if(url.pathname === "/api/register" && request.method === "POST"){
 
@@ -35,46 +37,23 @@ email,
 
 password
 
+
 } = await request.json();
-
-
-
-const check = await env.DB.prepare(
-
-"SELECT * FROM users WHERE email=?"
-
-)
-
-.bind(email)
-
-.all();
-
-
-
-if(check.results.length > 0){
-
-return Response.json({
-
-success:false,
-
-message:"Email already registered"
-
-});
-
-}
-
-
-
-const referral = 
-"RAHUL" + Math.floor(Math.random()*99999);
 
 
 
 await env.DB.prepare(
 
-`INSERT INTO users 
-(username,email,password,referral_code)
-VALUES (?,?,?,?)`
+`
+INSERT INTO users
+
+(username,email,password)
+
+VALUES
+
+(?,?,?)
+
+`
 
 )
 
@@ -84,9 +63,7 @@ username,
 
 email,
 
-password,
-
-referral
+password
 
 )
 
@@ -98,31 +75,30 @@ return Response.json({
 
 success:true,
 
-message:"Registration Successful"
+message:"Register Successful"
 
 });
 
 
 }
 
-catch(e){
+catch(error){
+
 
 return Response.json({
 
 success:false,
 
-error:e.message
+message:error.message
 
 });
 
-}
-
 
 }
 
 
+}// LOGIN API
 
-// Login API
 
 if(url.pathname === "/api/login" && request.method === "POST"){
 
@@ -136,13 +112,22 @@ email,
 
 password
 
-}= await request.json();
+
+} = await request.json();
 
 
 
 const user = await env.DB.prepare(
 
-"SELECT * FROM users WHERE email=? AND password=?"
+`
+
+SELECT * FROM users
+
+WHERE email = ?
+
+AND password = ?
+
+`
 
 )
 
@@ -154,18 +139,18 @@ password
 
 )
 
-.all();
+.first();
 
 
 
-if(user.results.length === 0){
+if(!user){
 
 
 return Response.json({
 
 success:false,
 
-message:"Wrong Email or Password"
+message:"Invalid Email or Password"
 
 });
 
@@ -178,37 +163,94 @@ return Response.json({
 
 success:true,
 
-user:user.results[0]
+user:user
 
 });
 
 
 }
 
-catch(e){
 
-return Response.json({
-
-success:false,
-
-error:e.message
-
-});
-
-}
-
-
-}
-
+catch(error){
 
 
 return Response.json({
 
 success:false,
 
-message:"API Not Found"
+message:error.message
 
 });
+
+
+}
+
+
+}// TEST DATABASE CONNECTION
+
+
+if(url.pathname === "/api/test"){
+
+
+try{
+
+
+const result = await env.DB.prepare(
+
+"SELECT name FROM sqlite_master WHERE type='table'"
+
+)
+
+.all();
+
+
+
+return Response.json({
+
+success:true,
+
+tables:result.results
+
+});
+
+
+}
+
+catch(error){
+
+
+return Response.json({
+
+success:false,
+
+error:error.message
+
+});
+
+
+}
+
+
+}// CORS SETTINGS
+
+
+return new Response(
+
+"Not Found",
+
+{
+
+status:404,
+
+headers:{
+
+"Access-Control-Allow-Origin":"*"
+
+}
+
+}
+
+);
 
 
 }
