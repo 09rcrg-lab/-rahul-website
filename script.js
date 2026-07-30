@@ -1,20 +1,13 @@
-window.addEventListener("load", function(){
-
-    document.getElementById("loading-screen").style.display="none";
-
-});window.onload = function(){window.addEventListener("load", function(){
-
-    document.getElementById("loading-screen").style.display = "none";
-
-});
-
-document.getElementById("loading-screen").style.display="none";
-
-};
 const API = "YOUR_WORKER_URL";
 
 
-// Page Load
+// Loading Remove
+
+window.addEventListener("load",()=>{
+
+document.getElementById("loading-screen").style.display="none";
+
+});// Page Load
 
 document.addEventListener("DOMContentLoaded",()=>{
 
@@ -22,7 +15,6 @@ document.addEventListener("DOMContentLoaded",()=>{
 document.getElementById("dashboard").style.display="none";
 
 document.getElementById("register-box").style.display="none";
-
 
 
 // Show Register
@@ -47,30 +39,31 @@ document.getElementById("login-box").style.display="block";
 };
 
 
-
-});
-
-
-
-
-// Register
+});// Register API
 
 document.getElementById("registerBtn").onclick=async()=>{
 
 
-let username=document.getElementById("regUsername").value;
-
-let email=document.getElementById("regEmail").value;
-
-let password=document.getElementById("regPassword").value;
-
-let confirm=document.getElementById("regConfirm").value;
+let username =
+document.getElementById("regUsername").value;
 
 
+let email =
+document.getElementById("regEmail").value;
 
-if(password!==confirm){
 
-alert("Password not match");
+let password =
+document.getElementById("regPassword").value;
+
+
+let confirm =
+document.getElementById("regConfirm").value;
+
+
+
+if(password !== confirm){
+
+alert("Password match nahi hai");
 
 return;
 
@@ -78,7 +71,7 @@ return;
 
 
 
-let res=await fetch(API+"/api/register",{
+let response = await fetch(API+"/api/register",{
 
 method:"POST",
 
@@ -98,36 +91,30 @@ password
 
 })
 
-
 });
 
 
-let data=await res.json();
-
+let data = await response.json();
 
 
 alert(data.message);
 
 
-
-};
-
-
-
-
-// Login
-
+};// Login API
 
 document.getElementById("loginBtn").onclick=async()=>{
 
 
-let email=document.getElementById("loginEmail").value;
-
-let password=document.getElementById("loginPassword").value;
-
+let email =
+document.getElementById("loginEmail").value;
 
 
-let res=await fetch(API+"/api/login",{
+let password =
+document.getElementById("loginPassword").value;
+
+
+
+let response = await fetch(API+"/api/login",{
 
 method:"POST",
 
@@ -145,12 +132,10 @@ password
 
 })
 
-
 });
 
 
-
-let data=await res.json();
+let data = await response.json();
 
 
 
@@ -166,18 +151,22 @@ JSON.stringify(data.user)
 
 document.getElementById("auth-page").style.display="none";
 
+
 document.getElementById("dashboard").style.display="block";
 
 
-document.getElementById("username").innerText=
+
+document.getElementById("username").innerText =
 data.user.username;
 
 
-document.getElementById("profileUsername").innerText=
+
+document.getElementById("profileUsername").innerText =
 data.user.username;
 
 
-document.getElementById("profileEmail").innerText=
+
+document.getElementById("profileEmail").innerText =
 data.user.email;
 
 
@@ -186,27 +175,17 @@ data.user.email;
 
 else{
 
-
 alert(data.message);
-
 
 }
 
 
-};
-
-
-
-
-// Logout
-
+};// Logout
 
 document.getElementById("logoutBtn").onclick=()=>{
-
 
 localStorage.removeItem("user");
 
 location.reload();
-
 
 };
