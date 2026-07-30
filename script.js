@@ -1,4 +1,8 @@
-window.onload = function(){
+window.onload = function(){window.addEventListener("load", function(){
+
+    document.getElementById("loading-screen").style.display = "none";
+
+});
 
 document.getElementById("loading-screen").style.display="none";
 
