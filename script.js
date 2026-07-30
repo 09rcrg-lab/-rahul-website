@@ -1,4 +1,4 @@
-const API = "YOUR_WORKER_URL";
+const API = "https://rahulsocialhub-db.09rcrg.workers.dev";
 
 
 // Loading Screen Remove
