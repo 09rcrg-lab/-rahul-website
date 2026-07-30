@@ -1,566 +1,311 @@
 *{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Arial,sans-serif;
 }
 
 
 body{
 
-    font-family:Arial, sans-serif;
+background:#050505;
 
-    background:#050505;
+color:#00ff66;
 
-    color:#00ff66;
-
-    min-height:100vh;
+min-height:100vh;
 
 }
 
 
-/* Loading Screen */
 
 #loading-screen{
 
-    position:fixed;
+position:fixed;
 
-    top:0;
+width:100%;
 
-    left:0;
+height:100vh;
 
-    width:100%;
+background:#000;
 
-    height:100vh;
+display:flex;
 
-    background:#000;
+flex-direction:column;
 
-    display:flex;
+justify-content:center;
 
-    flex-direction:column;
+align-items:center;
 
-    justify-content:center;
-
-    align-items:center;
-
-    z-index:9999;
+z-index:999;
 
 }
 
 
-#loading-screen h1{
-
-    font-size:32px;
-
-}
-
-
-#loading-screen p{
-
-    margin-top:10px;
-
-    font-size:18px;
-
-}/* Auth Page */
 
 #auth-page{
 
-    min-height:100vh;
+display:flex;
 
-    display:flex;
+justify-content:center;
 
-    justify-content:center;
+align-items:center;
 
-    align-items:center;
+min-height:100vh;
 
 }
+
 
 
 .auth-box{
 
-    width:90%;
+width:90%;
 
-    max-width:400px;
+max-width:400px;
 
-    background:#111;
+background:#111;
 
-    padding:25px;
+padding:30px;
 
-    border-radius:15px;
+border-radius:15px;
 
-    box-shadow:0 0 20px #00ff66;
+box-shadow:0 0 20px #00ff66;
 
-    text-align:center;
+text-align:center;
 
 }
+
 
 
 .auth-box h1{
 
-    margin-bottom:20px;
+margin-bottom:20px;
 
 }
 
-
-.auth-box h2{
-
-    margin-bottom:15px;
-
-}
 
 
 input{
 
-    width:100%;
+width:100%;
 
-    padding:12px;
+padding:12px;
 
-    margin:8px 0;
+margin:10px 0;
 
-    background:#000;
+background:#000;
 
-    color:#00ff66;
+border:1px solid #00ff66;
 
-    border:1px solid #00ff66;
+color:white;
 
-    border-radius:8px;
+border-radius:8px;
 
 }
+
 
 
 button{
 
-    width:100%;
+padding:12px 20px;
 
-    padding:12px;
+background:#00ff66;
 
-    margin-top:10px;
+color:#000;
 
-    background:#00ff66;
+border:none;
 
-    color:#000;
+border-radius:8px;
 
-    border:none;
+cursor:pointer;
 
-    border-radius:8px;
+font-weight:bold;
 
-    font-weight:bold;
-
-    cursor:pointer;
+margin:8px;
 
 }
+
 
 
 button:hover{
 
-    opacity:0.8;
+box-shadow:0 0 15px #00ff66;
 
 }
 
 
-#register-box{
 
-    display:none;
+span{
+
+cursor:pointer;
+
+color:#00ffff;
 
 }
 
 
-.auth-box span{
-
-    cursor:pointer;
-
-    text-decoration:underline;
-
-}/* Dashboard Layout */
 
 #dashboard{
 
-    display:none;
-
-    min-height:100vh;
+display:none;
 
 }
+
 
 
 header{
 
-    display:flex;
+display:flex;
 
-    justify-content:space-between;
+justify-content:space-between;
 
-    align-items:center;
+align-items:center;
 
-    padding:15px 20px;
+padding:15px;
 
-    background:#111;
+background:#111;
 
-    border-bottom:1px solid #00ff66;
+box-shadow:0 0 10px #00ff66;
 
 }
+
 
 
 .logo{
 
-    font-size:22px;
+font-size:22px;
 
-    font-weight:bold;
-
-}
-
-
-.user-area{
-
-    display:flex;
-
-    align-items:center;
-
-    gap:10px;
+font-weight:bold;
 
 }
 
 
-.user-area button{
-
-    width:auto;
-
-    padding:8px 15px;
-
-}
-
-
-/* Sidebar */
 
 .sidebar{
 
-    position:fixed;
+width:220px;
 
-    left:0;
+position:fixed;
 
-    top:70px;
+top:70px;
 
-    width:220px;
+bottom:0;
 
-    height:calc(100vh - 70px);
+background:#080808;
 
-    background:#0b0b0b;
-
-    padding:15px;
-
-    overflow-y:auto;
+padding:15px;
 
 }
 
 
-.sidebar button{
 
-    text-align:left;
+.menu{
 
-    background:#111;
+width:100%;
 
-    color:#00ff66;
+display:block;
 
-    border:1px solid #00ff66;
+background:#111;
 
-}
+color:#00ff66;
 
-
-.sidebar button.active{
-
-    background:#00ff66;
-
-    color:#000;
+border:1px solid #00ff66;
 
 }
 
 
-/* Main Content */
 
 .main-content{
 
-    margin-left:240px;
+margin-left:240px;
 
-    padding:20px;
+padding:20px;
 
-}/* Pages */
+}
+
+
 
 .page{
 
-    display:none;
+display:none;
 
 }
+
 
 
 .page.active{
 
-    display:block;
+display:block;
 
 }
 
 
-/* Cards */
 
 .card-grid{
 
-    display:grid;
+display:grid;
 
-    grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
 
-    gap:15px;
-
-}
-
-
-.card{
-
-    background:#111;
-
-    padding:20px;
-
-    border-radius:12px;
-
-    border:1px solid #00ff66;
-
-    text-align:center;
+gap:20px;
 
 }
 
 
-.card h3{
 
-    margin-bottom:10px;
+.card,.box{
 
-}
+background:#111;
 
+padding:20px;
 
-/* Box Design */
+border-radius:15px;
 
-.box{
+margin:15px 0;
 
-    background:#111;
-
-    padding:20px;
-
-    border-radius:12px;
-
-    border:1px solid #00ff66;
-
-    margin-top:15px;
+box-shadow:0 0 10px #00ff66;
 
 }
 
 
-/* Services */
 
-#serviceList{
+#qrCode,#paymentQr{
 
-    display:grid;
-
-    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-
-    gap:15px;
+margin:20px auto;
 
 }
 
 
-.service-card{
 
-    background:#111;
-
-    padding:20px;
-
-    border-radius:12px;
-
-    border:1px solid #00ff66;
-
-}
-
-
-.service-card h3{
-
-    margin-bottom:10px;
-
-}/* Payment Page */
-
-#payment{
-
-    padding:20px;
-
-}
-
-
-#paymentQr img{
-
-    margin-top:15px;
-
-    border-radius:10px;
-
-}
-
-
-/* Mobile Responsive */
-
-@media(max-width:768px){
-
-
-header{
-
-    padding:12px;
-
-}
+@media(max-width:700px){
 
 
 .sidebar{
 
-    position:relative;
+position:relative;
 
-    top:0;
+width:100%;
 
-    width:100%;
-
-    height:auto;
-
-    display:flex;
-
-    flex-wrap:wrap;
+top:0;
 
 }
 
-
-.sidebar button{
-
-    width:48%;
-
-    margin:1%;
-
-}
 
 
 .main-content{
 
-    margin-left:0;
-
-    padding:15px;
+margin-left:0;
 
 }
 
-
-.card-grid{
-
-    grid-template-columns:1fr;
-
-}
-
-
-.logo{
-
-    font-size:18px;
-
-}
-
-
-.user-area span{
-
-    display:none;
-
-}
-
-
-}
-
-
-hr{
-
-    border:1px solid #00ff66;
-
-    margin:15px 0;
-
-}
-
-
-a{
-
-    color:#00ff66;
-
-    text-decoration:none;
-
-}/* Extra Mobile Fix */
-
-@media(max-width:480px){
-
-.auth-box{
-
-    width:95%;
-
-    padding:20px;
-
-}
-
-
-.auth-box h1{
-
-    font-size:24px;
-
-}
 
 
 header{
 
-    flex-direction:column;
+flex-direction:column;
 
-    gap:10px;
-
-}
-
-
-.sidebar button{
-
-    width:100%;
+gap:10px;
 
 }
 
-
-.main-content{
-
-    padding:10px;
-
-}
-
-
-.card{
-
-    padding:15px;
-
-}
-
-
-.service-card{
-
-    padding:15px;
-
-}
-
-
-button{
-
-    font-size:14px;
-
-}
-
-}
-
-
-/* Scrollbar */
-
-::-webkit-scrollbar{
-
-    width:6px;
-
-}
-
-
-::-webkit-scrollbar-thumb{
-
-    background:#00ff66;
-
-    border-radius:10px;
 
 }
