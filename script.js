@@ -1,3 +1,8 @@
+window.onload = function(){
+
+document.getElementById("loading-screen").style.display="none";
+
+};
 const API = "YOUR_WORKER_URL";
 
 
