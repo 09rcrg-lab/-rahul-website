@@ -45,7 +45,7 @@ z-index:999;
 #auth-page{
 
 display:flex;
-}
+
 justify-content:center;
 
 align-items:center;
@@ -308,4 +308,10 @@ gap:10px;
 }
 
 
+}#dashboard{
+    display:none;
+}
+
+#auth-page{
+    display:flex;
 }
