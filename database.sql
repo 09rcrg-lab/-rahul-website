@@ -1,4 +1,5 @@
 -- Users Table
+
 CREATE TABLE IF NOT EXISTS users (
 
 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -9,30 +10,12 @@ email TEXT UNIQUE NOT NULL,
 
 password TEXT NOT NULL,
 
-referral_code TEXT,
+wallet INTEGER DEFAULT 0,
 
 created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 
-);
+);-- Orders Table
 
-
--- Wallet Table
-CREATE TABLE IF NOT EXISTS wallet (
-
-id INTEGER PRIMARY KEY AUTOINCREMENT,
-
-user_id INTEGER,
-
-balance INTEGER DEFAULT 0,
-
-coins INTEGER DEFAULT 0,
-
-FOREIGN KEY(user_id) REFERENCES users(id)
-
-);
-
-
--- Orders Table
 CREATE TABLE IF NOT EXISTS orders (
 
 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -51,40 +34,70 @@ created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 
 FOREIGN KEY(user_id) REFERENCES users(id)
 
-);
+);-- Referral Table
 
-
--- Referral Table
 CREATE TABLE IF NOT EXISTS referrals (
 
 id INTEGER PRIMARY KEY AUTOINCREMENT,
 
 user_id INTEGER,
 
-referral_user TEXT,
+referral_code TEXT UNIQUE,
+
+referred_by TEXT,
 
 created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 
 FOREIGN KEY(user_id) REFERENCES users(id)
 
-);
+);-- Withdrawals Table
 
-
--- Tasks Table
-CREATE TABLE IF NOT EXISTS tasks (
+CREATE TABLE IF NOT EXISTS withdrawals (
 
 id INTEGER PRIMARY KEY AUTOINCREMENT,
 
 user_id INTEGER,
 
-task_name TEXT,
-
-reward INTEGER DEFAULT 0,
+amount INTEGER,
 
 status TEXT DEFAULT 'Pending',
 
 created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 
 FOREIGN KEY(user_id) REFERENCES users(id)
+
+);-- Daily Tasks Table
+
+CREATE TABLE IF NOT EXISTS tasks (
+
+id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+title TEXT NOT NULL,
+
+reward INTEGER DEFAULT 0,
+
+created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+
+);
+
+
+
+-- User Tasks Table
+
+CREATE TABLE IF NOT EXISTS user_tasks (
+
+id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+user_id INTEGER,
+
+task_id INTEGER,
+
+completed INTEGER DEFAULT 0,
+
+created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+
+FOREIGN KEY(user_id) REFERENCES users(id),
+
+FOREIGN KEY(task_id) REFERENCES tasks(id)
 
 );
