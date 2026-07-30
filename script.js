@@ -107,7 +107,7 @@ return;
 }
 
 
-
+alert(API);
 let response = await fetch(API+"/api/register",{
 
 method:"POST",
