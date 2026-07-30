@@ -14,13 +14,13 @@ color:#00ff66;
 
 min-height:100vh;
 
-}
-
-
-
-#loading-screen{
+}#loading-screen{
 
 position:fixed;
+
+top:0;
+
+left:0;
 
 width:100%;
 
@@ -36,7 +36,7 @@ justify-content:center;
 
 align-items:center;
 
-z-index:999;
+z-index:9999;
 
 }
 
@@ -44,13 +44,13 @@ z-index:999;
 
 #auth-page{
 
+min-height:100vh;
+
 display:flex;
 
 justify-content:center;
 
 align-items:center;
-
-min-height:100vh;
 
 }
 
@@ -72,13 +72,16 @@ box-shadow:0 0 20px #00ff66;
 
 text-align:center;
 
+}.auth-box h1{
+
+margin-bottom:20px;
+
 }
 
 
+.auth-box h2{
 
-.auth-box h1{
-
-margin-bottom:20px;
+margin-bottom:15px;
 
 }
 
@@ -90,7 +93,7 @@ width:100%;
 
 padding:12px;
 
-margin:10px 0;
+margin:8px 0;
 
 background:#000;
 
@@ -108,19 +111,19 @@ button{
 
 padding:12px 20px;
 
-background:#00ff66;
-
-color:#000;
+margin:8px;
 
 border:none;
 
 border-radius:8px;
 
-cursor:pointer;
+background:#00ff66;
+
+color:#000;
 
 font-weight:bold;
 
-margin:8px;
+cursor:pointer;
 
 }
 
@@ -136,15 +139,11 @@ box-shadow:0 0 15px #00ff66;
 
 span{
 
-cursor:pointer;
-
 color:#00ffff;
 
-}
+cursor:pointer;
 
-
-
-#dashboard{
+}#dashboard{
 
 display:none;
 
@@ -180,25 +179,35 @@ font-weight:bold;
 
 
 
-.sidebar{
+.user-area{
 
-width:220px;
+display:flex;
 
-position:fixed;
+align-items:center;
 
-top:70px;
-
-bottom:0;
-
-background:#080808;
-
-padding:15px;
+gap:10px;
 
 }
 
 
 
-.menu{
+.sidebar{
+
+position:fixed;
+
+top:70px;
+
+left:0;
+
+width:220px;
+
+height:calc(100vh - 70px);
+
+background:#080808;
+
+padding:15px;
+
+}.menu{
 
 width:100%;
 
@@ -209,6 +218,8 @@ background:#111;
 color:#00ff66;
 
 border:1px solid #00ff66;
+
+margin-bottom:10px;
 
 }
 
@@ -264,13 +275,40 @@ margin:15px 0;
 
 box-shadow:0 0 10px #00ff66;
 
+}select{
+
+width:100%;
+
+padding:12px;
+
+background:#000;
+
+color:#00ff66;
+
+border:1px solid #00ff66;
+
+border-radius:8px;
+
 }
 
 
 
-#qrCode,#paymentQr{
+label{
+
+display:block;
+
+margin-top:10px;
+
+}
+
+
+
+#qrCode,
+#paymentQr{
 
 margin:20px auto;
+
+text-align:center;
 
 }
 
@@ -283,12 +321,13 @@ margin:20px auto;
 
 position:relative;
 
-width:100%;
-
 top:0;
 
-}
+width:100%;
 
+height:auto;
+
+}
 
 
 .main-content{
@@ -296,7 +335,6 @@ top:0;
 margin-left:0;
 
 }
-
 
 
 header{
@@ -308,10 +346,56 @@ gap:10px;
 }
 
 
-}#dashboard{
-    display:none;
+}h1,h2,h3{
+
+text-shadow:0 0 8px #00ff66;
+
 }
 
-#auth-page{
-    display:flex;
+
+p{
+
+line-height:1.5;
+
+}
+
+
+a{
+
+text-decoration:none;
+
+color:#00ffff;
+
+}
+
+
+#serviceList,
+#orderHistory,
+#historyBox{
+
+min-height:50px;
+
+}
+
+
+::-webkit-scrollbar{
+
+width:8px;
+
+}
+
+
+::-webkit-scrollbar-track{
+
+background:#000;
+
+}
+
+
+::-webkit-scrollbar-thumb{
+
+background:#00ff66;
+
+border-radius:10px;
+
 }
