@@ -346,4 +346,546 @@ Email :
 
 </body>
 
+</html><!-- Add Funds -->
+
+<section id="addfund" class="page">
+
+<h2>
+Add Funds
+</h2>
+
+
+<div class="box">
+
+<p>
+UPI ID
+</p>
+
+
+<h3>
+9131922170@ybl
+</h3>
+
+
+<button id="copyUpiBtn">
+Copy UPI ID
+</button>
+
+
+<br><br>
+
+
+<div id="qrCode">
+
+</div>
+
+
+<input
+type="number"
+id="addAmount"
+placeholder="Enter Amount">
+
+
+<br><br>
+
+
+<button id="addFundBtn">
+Add Balance
+</button>
+
+
+</div>
+
+</section><!-- Withdraw -->
+
+<section id="withdraw" class="page">
+
+<h2>
+Withdraw
+</h2>
+
+
+<div class="box">
+
+
+<input
+type="number"
+id="withdrawAmount"
+placeholder="Enter Amount">
+
+
+<br><br>
+
+
+<button id="withdrawBtn">
+Request Withdraw
+</button>
+
+
+</div>
+
+</section>
+
+
+
+<!-- Referral -->
+
+<section id="referral" class="page">
+
+<h2>
+Referral
+</h2>
+
+
+<div class="box">
+
+
+<h3>
+Your Referral Code
+</h3>
+
+
+<h1 id="referralCode">
+Loading...
+</h1>
+
+
+<button id="copyReferralBtn">
+Copy Code
+</button>
+
+
+</div>
+
+
+</section><!-- Support -->
+
+<section id="support" class="page">
+
+
+<h2>
+Support
+</h2>
+
+
+
+<div class="box">
+
+
+<p>
+Need Help?
+</p>
+
+
+<a href="https://wa.me/919131922170" target="_blank">
+
+<button>
+Chat on WhatsApp
+</button>
+
+</a>
+
+
+
+</div>
+
+
+</section>
+
+
+
+<!-- Payment -->
+
+<section id="payment" class="page">
+
+
+<h2>
+Payment
+</h2>
+
+
+<div class="box">
+
+
+<h3 id="paymentService">
+Service Name
+</h3>
+
+
+<br>
+
+
+<input
+type="text"
+id="orderLink"
+placeholder="Instagram / YouTube Link">
+
+
+<br><br>
+
+
+<p>
+Quantity:
+<span id="paymentQuantity">
+-
+</span>
+</p>
+
+
+<h2>
+Amount: ₹
+<span id="paymentAmount">
+0
+</span>
+</h2><p>
+Pay Using UPI
+</p>
+
+
+<h3>
+9131922170@ybl
+</h3>
+
+
+<div id="paymentQr">
+
+</div>
+
+
+<br>
+
+
+<button id="whatsappOrderBtn">
+Send Payment Screenshot on WhatsApp
+</button>
+
+
+</div>
+
+
+</section>
+
+
+
+<!-- Free Services -->
+
+<section id="freeServices" class="page">
+
+
+<h2>
+🎁 Free Instagram Services
+</h2>
+
+
+<div class="box">
+
+
+<h3>
+👥 Free Followers
+</h3>
+
+
+<p>
+Complete simple tasks and earn free followers.
+</p>
+
+
+<button>
+Get Free Followers
+</button>
+
+
+</div>
+
+
+<div class="box">
+
+
+<h3>
+❤️ Free Likes
+</h3>
+
+
+<p>
+Complete simple tasks and earn free likes.
+</p>
+
+
+<button>
+Get Free Likes
+</button>
+
+
+</div>
+
+
+</section><!-- Daily Tasks -->
+
+<section id="tasks" class="page">
+
+
+<div class="box">
+
+
+<h3>
+📋 Daily Tasks
+</h3>
+
+
+<p>
+Complete Tasks & Earn Coins
+</p>
+
+
+<button id="completeTaskBtn">
+✅ Complete Daily Task
+</button>
+
+
+<h2 id="coinBalance">
+🪙 Coins: 0
+</h2>
+
+
+</div>
+
+
+
+<div class="box">
+
+
+<h3>
+🎁 Claim Free Rewards
+</h3>
+
+
+<p>
+Use your Coins to claim rewards.
+</p>
+
+
+<button id="claimFollowersBtn">
+👥 Claim Followers
+</button>
+
+
+<br><br>
+
+
+<button id="claimLikesBtn">
+❤️ Claim Likes
+</button>
+
+
+<p id="claimMessage"></p>
+
+
+</div>
+
+
+</section><!-- Instagram Username -->
+
+<section id="instagram" class="page">
+
+
+<div class="box">
+
+
+<h3>
+📱 Enter Instagram Username
+</h3>
+
+
+<input
+type="text"
+id="igUsername"
+placeholder="Enter Instagram Username">
+
+
+<br><br>
+
+
+<button id="saveInstagramBtn">
+✅ Save Username
+</button>
+
+
+<p id="igMessage"></p>
+
+
+</div>
+
+
+
+<div class="box">
+
+
+<h3>
+🔍 Search User
+</h3>
+
+
+<input
+type="text"
+id="searchUser"
+placeholder="Search Username">
+
+
+<br><br>
+
+
+<button id="searchUserBtn">
+Search
+</button>
+
+
+<p id="searchResult"></p>
+
+
+</div>
+
+
+</section><!-- Followers Selection -->
+
+<section id="followers" class="page">
+
+
+<div class="box">
+
+
+<h3>
+🎯 Choose Followers
+</h3>
+
+
+<label>
+📸 Instagram Username
+</label>
+
+
+<input
+type="text"
+id="instagramUsername"
+placeholder="Enter Instagram Username">
+
+
+<br><br>
+
+
+<button id="saveInstagram">
+💾 Save Instagram Username
+</button>
+
+
+
+<br><br>
+
+
+<label>
+Followers Required
+</label>
+
+
+<select id="followersAmount">
+
+
+<option value="10">
+10 Followers - 100 Coins
+</option>
+
+
+<option value="20">
+20 Followers - 200 Coins
+</option>
+
+
+<option value="50">
+50 Followers - 500 Coins
+</option>
+
+
+<option value="100">
+100 Followers - 1000 Coins
+</option>
+
+
+</select>
+
+
+<br><br>
+
+
+<button id="claimFollowersBtn2">
+🚀 Claim Now
+</button>
+
+
+<p id="followersResult"></p>
+
+
+</div>
+
+
+</section><!-- Request History -->
+
+<section id="history" class="page">
+
+
+<div class="box">
+
+
+<h3>
+📜 Request History
+</h3>
+
+
+<div id="historyBox">
+
+No Requests Yet
+
+</div>
+
+
+</div>
+
+
+
+<div class="box">
+
+
+<h3>
+📢 Follow & Earn
+</h3>
+
+
+<p>
+Follow one user and earn 10 Coins.
+</p>
+
+
+<p id="taskUser">
+@rahulsocialhub
+</p>
+
+
+<button id="followTaskBtn">
+✅ I Followed
+</button>
+
+
+</div>
+
+
+</section></div>
+
+</div>
+
+
+<!-- Script -->
+
+<script src="script.js"></script>
+
+
+</body>
+
 </html>
