@@ -25,9 +25,13 @@
 
 <p>Loading...</p>
 
-</div><!-- Login Register Page -->
+</div>
+
+
+<!-- Authentication Page -->
 
 <div id="auth-page">
+
 
 <div class="auth-box">
 
@@ -35,7 +39,7 @@
 <h1>Rahul SMM Panel</h1>
 
 
-<!-- Login Box -->
+<!-- Login -->
 
 <div id="login-box">
 
@@ -67,10 +71,7 @@ Register
 </p>
 
 
-</div>
-
-
-<!-- Register Box -->
+</div><!-- Register -->
 
 <div id="register-box">
 
@@ -119,12 +120,12 @@ Login
 
 </div>
 
-<!-- Dashboard -->
-
-<div id="dashboard" style="display:none;">
+</div>
 
 
-<header>
+<!-- Dashboard (After Login Only) -->
+
+<div id="dashboard" style="display:none;"><header>
 
 <div class="logo">
 Rahul SMM Panel
@@ -141,6 +142,7 @@ User
 <button id="logoutBtn">
 Logout
 </button>
+
 
 </div>
 
@@ -173,41 +175,26 @@ Logout
 </button>
 
 
-<button class="menu" data-page="addfund">
-💳 Add Funds
-</button>
-
-
-<button class="menu" data-page="withdraw">
-💸 Withdraw
-</button>
-
-
-<button class="menu" data-page="referral">
-👥 Referral
-</button>
-
-
-<button class="menu" data-page="support">
-🎫 Support
-</button>
-
-
 <button class="menu" data-page="profile">
 👤 Profile
 </button>
 
 
-</div><!-- Main Content -->
+</div>
+
+
+
+<!-- Main Content -->
 
 <div class="main-content">
 
 
-<!-- Home Dashboard -->
-
 <section id="home" class="page active">
 
-<h2>Dashboard</h2>
+
+<h2>
+Dashboard
+</h2>
 
 
 <div class="card-grid">
@@ -215,7 +202,9 @@ Logout
 
 <div class="card">
 
-<h3>Wallet Balance</h3>
+<h3>
+Wallet Balance
+</h3>
 
 <h1 id="walletBalance">
 ₹0
@@ -226,7 +215,9 @@ Logout
 
 <div class="card">
 
-<h3>Total Orders</h3>
+<h3>
+Total Orders
+</h3>
 
 <h1 id="totalOrders">
 0
@@ -235,39 +226,16 @@ Logout
 </div>
 
 
-<div class="card">
-
-<h3>Completed</h3>
-
-<h1 id="completedOrders">
-0
-</h1>
-
 </div>
 
 
-<div class="card">
-
-<h3>Pending</h3>
-
-<h1 id="pendingOrders">
-0
-</h1>
-
-</div>
-
-
-</div>
-
-</section>
-
-
-
-<!-- Services -->
+</section><!-- Services -->
 
 <section id="services" class="page">
 
-<h2>Services</h2>
+<h2>
+Services
+</h2>
 
 
 <div id="serviceList">
@@ -283,7 +251,9 @@ Logout
 
 <section id="orders" class="page">
 
-<h2>Order History</h2>
+<h2>
+Order History
+</h2>
 
 
 <div id="orderHistory">
@@ -292,19 +262,31 @@ Logout
 No Orders Found
 </p>
 
+
 </div>
 
 
-</section><!-- Wallet -->
+</section>
+
+
+
+<!-- Wallet -->
 
 <section id="wallet" class="page">
 
-<h2>Wallet</h2>
+
+<h2>
+Wallet
+</h2>
 
 
 <div class="box">
 
-<h3>Current Balance</h3>
+
+<h3>
+Current Balance
+</h3>
+
 
 <h1 id="walletAmount">
 ₹0
@@ -313,146 +295,11 @@ No Orders Found
 
 </div>
 
-</section>
-
-
-
-<!-- Add Funds -->
-
-<section id="addfund" class="page">
-
-<h2>Add Funds</h2>
-
-
-<div class="box">
-
-
-<p>UPI ID</p>
-
-
-<h3>
-9131922170@ybl
-</h3>
-
-
-<button id="copyUpiBtn">
-Copy UPI ID
-</button>
-
-
-<br><br>
-
-
-<div id="qrCode">
-
-</div>
-
-
-<input
-type="number"
-id="addAmount"
-placeholder="Enter Amount">
-
-
-<br><br>
-
-
-<button id="addFundBtn">
-Add Balance
-</button>
-
-
-</div>
-
-</section>
-
-
-
-<!-- Withdraw -->
-
-<section id="withdraw" class="page">
-
-<h2>Withdraw</h2>
-
-
-<div class="box">
-
-
-<input
-type="number"
-id="withdrawAmount"
-placeholder="Enter Amount">
-
-
-<button id="withdrawBtn">
-Request Withdraw
-</button>
-
-
-</div>
-
-</section><!-- Referral -->
-
-<section id="referral" class="page">
-
-<h2>Referral</h2>
-
-
-<div class="box">
-
-
-<h3>
-Your Referral Code
-</h3>
-
-
-<h1 id="referralCode">
-Loading...
-</h1>
-
-
-<button id="copyReferralBtn">
-Copy Code
-</button>
-
-
-</div>
-
-</section>
-
-
-
-<!-- Support -->
-
-<section id="support" class="page">
-
-<h2>
-Support
-</h2>
-
-
-<div class="box">
-
-
-<p>
-Need Help?
-</p>
-
-
-<a href="https://wa.me/919131922170" target="_blank">
-
-<button>
-Chat on WhatsApp
-</button>
-
-</a>
-
-
-</div>
 
 </section><!-- Profile -->
 
 <section id="profile" class="page">
+
 
 <h2>
 Profile
@@ -470,6 +317,7 @@ Username :
 </p>
 
 
+
 <p>
 Email :
 <span id="profileEmail">
@@ -478,83 +326,15 @@ Email :
 </p>
 
 
+
 </div>
+
 
 </section>
 
 
-
-<!-- Payment Page -->
-
-<section id="payment" class="page">
-
-<h2>
-Payment
-</h2>
-
-
-<div class="box">
-
-
-<h3 id="paymentService">
-Service Name
-</h3>
-
-
-<br>
-
-
-<input
-type="text"
-id="orderLink"
-placeholder="Instagram / YouTube Link">
-
-
-<br><br>
-
-
-<p>
-Quantity:
-<span id="paymentQuantity">
--
-</span>
-</p>
-
-
-<h2>
-Amount: ₹
-<span id="paymentAmount">
-0
-</span>
-</h2>
-
-
-<p>
-Pay Using UPI
-</p>
-
-
-<h3>
-9131922170@ybl
-</h3>
-
-
-<div id="paymentQr">
-
 </div>
 
-
-<br>
-
-
-<button id="whatsappOrderBtn">
-Send Payment Screenshot on WhatsApp
-</button>
-
-
-</div>
-
-</section></div>
 
 </div>
 
@@ -566,146 +346,4 @@ Send Payment Screenshot on WhatsApp
 
 </body>
 
-</html><!-- ================= FREE SERVICES ================= -->
-
-<section id="freeServices">
-
-<h2>🎁 Free Instagram Services</h2>
-
-<div class="box">
-
-<h3>👥 Free Followers</h3>
-
-<p>Complete simple tasks and earn free followers.</p>
-
-<button onclick="startFreeFollowers()">
-Get Free Followers
-</button>
-
-</div>
-
-<div class="box">
-
-<h3>❤️ Free Likes</h3>
-
-<p>Complete simple tasks and earn free likes.</p>
-
-<button onclick="startFreeLikes()">
-Get Free Likes
-</button>
-
-</div>
-
-</section><div class="box">
-
-<h3>📱 Enter Instagram Username</h3>
-
-<input
-type="text"
-id="igUsername"
-placeholder="Enter Instagram Username">
-
-<br><br>
-
-<button onclick="saveInstagramUsername()">
-✅ Save Username
-</button>
-
-<p id="igMessage"></p>
-
-</div><div class="box">
-
-<h3>📋 Daily Tasks</h3>
-
-<p>Complete Tasks & Earn Coins</p>
-
-<button onclick="completeTask()">
-✅ Complete Daily Task
-</button>
-
-<h2 id="coinBalance">🪙 Coins: 0</h2>
-
-</div><div class="box">
-
-<h3>🎁 Claim Free Rewards</h3>
-
-<p>Use your Coins to claim rewards.</p>
-
-<button onclick="claimFollowers()">
-👥 Claim 50 Followers (100 Coins)
-</button>
-
-<br><br>
-
-<button onclick="claimLikes()">
-❤️ Claim 100 Likes (50 Coins)
-</button>
-
-<p id="claimMessage"></p>
-
-</div><div class="box">
-
-<h3>📜 Request History</h3>
-
-<div id="historyBox">
-
-No Requests Yet
-
-</div>
-
-</div><div class="box">
-
-<h3>📢 Follow & Earn</h3>
-
-<p>Follow one user and earn 10 Coins.</p>
-
-<p id="taskUser">@rahulsocialhub</p>
-
-<button onclick="followTask()">
-✅ I Followed
-</button>
-
-</div><div class="box">
-
-<h3>🔍 Search User</h3>
-
-<input type="text" id="searchUser" placeholder="Search Username">
-
-<button onclick="searchUser()">
-Search
-</button>
-
-<p id="searchResult"></p>
-
-</div>
-<h3>🎯 Choose Followers</h3>
-<label>📸 Instagram Username</label>
-
-<input
-type="text"
-id="instagramUsername"
-placeholder="Enter Instagram Username">
-
-<button onclick="saveInstagram()">
-💾 Save Instagram Username
-</button>
-<label>Followers Required</label>
-
-<select id="followersAmount">
-
-<option value="10">10 Followers - 100 Coins</option>
-<option value="20">20 Followers - 200 Coins</option>
-<option value="50">50 Followers - 500 Coins</option>
-<option value="100">100 Followers - 1000 Coins</option>
-
-</select>
-
-<br><br>
-
-<button onclick="claimSelectedFollowers()">
-🚀 Claim Now
-</button>
-
-<p id="followersResult"></p>
-
-</div>
+</html>
