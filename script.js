@@ -107,7 +107,7 @@ return;
 }
 
 
-alert(API);
+alert("Register button dab gaya");
 let response = await fetch(API+"/api/register",{
 
 method:"POST",
