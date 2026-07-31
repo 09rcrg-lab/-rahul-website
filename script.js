@@ -3,1141 +3,232 @@
 // Main JavaScript
 // ===================================
 
-
 // Cloudflare Worker API URL
-
 const API_URL = "https://rahulsocialhub-db.09rcrg.workers.dev";
 
-
 // Current User
-
 let currentUser = JSON.parse(
-    localStorage.getItem("user")
+  localStorage.getItem("user")
 ) || null;
-
-
 
 // ===================================
 // Loading Screen
 // ===================================
-
 window.addEventListener("load", () => {
+  const loader = document.getElementById("loadingScreen");
 
-    const loader = document.getElementById("loadingScreen");
-
-    if(loader){
-
-        setTimeout(() => {
-
-            loader.style.display = "none";
-
-        },1000);
-
-    }
-
+  if (loader) {
+    setTimeout(() => {
+      loader.style.display = "none";
+    }, 1000);
+  }
 });
-
-
 
 // ===================================
 // Notification
 // ===================================
+function showNotification(message) {
 
-function showNotification(message){
+  const box = document.getElementById("notificationBox");
 
-    const box = document.getElementById(
-        "notificationBox"
-    );
+  if (!box) return;
 
-    if(!box) return;
+  box.innerHTML = message;
 
+  setTimeout(() => {
+    box.innerHTML = "";
+  }, 3000);
 
-    box.innerHTML = message;
-
-
-    setTimeout(()=>{
-
-        box.innerHTML = "";
-
-    },3000);
-
-}
-
-
-
-// ===================================
-// Register
+}// ===================================
+// Register System
 // ===================================
 
-const registerButton =
-document.getElementById("registerSubmit");
+const registerButton = document.getElementById("registerSubmit");
 
+if (registerButton) {
 
-if(registerButton){
+  registerButton.onclick = async () => {
 
+    const username = document.getElementById("registerUsername").value.trim();
+    const email = document.getElementById("registerEmail").value.trim();
+    const password = document.getElementById("registerPassword").value;
 
-registerButton.onclick = async ()=>{
+    if (!username || !email || !password) {
+      showNotification("Please fill all details");
+      return;
+    }
 
+    try {
 
-const username =
-document.getElementById("registerUsername").value;
+      const response = await fetch(API_URL + "/api/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          username,
+          email,
+          password
+        })
+      });
 
+      const data = await response.json();
 
-const email =
-document.getElementById("registerEmail").value;
+      if (data.success) {
 
+        showNotification("Registration Successful");
 
-const password =
-document.getElementById("registerPassword").value;
+        document.getElementById("registerUsername").value = "";
+        document.getElementById("registerEmail").value = "";
+        document.getElementById("registerPassword").value = "";
 
+      } else {
 
+        showNotification(data.message);
 
-if(!username || !email || !password){
+      }
 
-showNotification(
-"Please fill all details"
-);
+    } catch (error) {
 
-return;
+      showNotification("Server Error");
 
-}
+    }
 
-
-
-try{
-
-
-const response = await fetch(
-API_URL + "/api/register",
-{
-
-method:"POST",
-
-headers:{
-"Content-Type":"application/json"
-},
-
-body:JSON.stringify({
-
-username,
-email,
-password
-
-})
-
-});
-
-
-const data =
-await response.json();
-
-
-
-if(data.success){
-
-showNotification(
-"Registration Successful"
-);
-
-
-}else{
-
-
-showNotification(
-data.message
-);
-
-
-}
-
-
-
-}catch(error){
-
-
-showNotification(
-"Server Error"
-);
-
-
-}
-
-
-
-};
-
+  };
 
 }// ===================================
 // Login System
 // ===================================
 
+const loginButton = document.getElementById("loginSubmit");
 
-const loginButton =
-document.getElementById("loginSubmit");
+if (loginButton) {
 
+  loginButton.onclick = async () => {
 
-if(loginButton){
+    const email = document.getElementById("loginEmail").value.trim();
+    const password = document.getElementById("loginPassword").value;
 
+    if (!email || !password) {
+      showNotification("Enter Email and Password");
+      return;
+    }
 
-loginButton.onclick = async ()=>{
+    try {
 
+      const response = await fetch(API_URL + "/api/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          email,
+          password
+        })
+      });
 
-const email =
-document.getElementById("loginEmail").value;
+      const data = await response.json();
 
+      if (data.success) {
 
-const password =
-document.getElementById("loginPassword").value;
+        localStorage.setItem(
+          "user",
+          JSON.stringify(data.user)
+        );
 
+        currentUser = data.user;
 
+        showNotification("Login Successful");
 
-if(!email || !password){
+        loadUserProfile();
 
-showNotification(
-"Enter Email and Password"
-);
+      } else {
 
-return;
+        showNotification(data.message);
 
-}
+      }
 
+    } catch (error) {
 
+      showNotification("Login Server Error");
 
-try{
+    }
 
+  };
 
-const response = await fetch(
-
-API_URL + "/api/login",
-
-{
-
-method:"POST",
-
-headers:{
-
-"Content-Type":"application/json"
-
-},
-
-body:JSON.stringify({
-
-email,
-password
-
-})
-
-}
-
-);
-
-
-
-const data =
-await response.json();
-
-
-
-if(data.success){
-
-
-localStorage.setItem(
-
-"user",
-
-JSON.stringify(data.user)
-
-);
-
-
-
-currentUser = data.user;
-
-
-
-showNotification(
-"Login Successful"
-);
-
-
-
-loadUserProfile();
-
-
-
-}else{
-
-
-showNotification(
-data.message
-);
-
-
-}
-
-
-
-}catch(error){
-
-
-showNotification(
-"Login Server Error"
-);
-
-
-}
-
-
-
-};
-
-
-}
-
-
-
-
-// ===================================
+}// ===================================
 // Load User Profile
 // ===================================
 
+function loadUserProfile() {
 
-function loadUserProfile(){
+  if (!currentUser) return;
 
+  const username = document.getElementById("profileUsername");
+  const email = document.getElementById("profileEmail");
+  const wallet = document.getElementById("profileWallet");
+  const coins = document.getElementById("profileCoins");
 
-if(!currentUser)
-return;
+  if (username) {
+    username.innerHTML = "Username: " + currentUser.username;
+  }
 
+  if (email) {
+    email.innerHTML = "Email: " + currentUser.email;
+  }
 
+  if (wallet) {
+    wallet.innerHTML = "Wallet: ₹" + (currentUser.wallet || 0);
+  }
 
-const username =
-document.getElementById(
-"profileUsername"
-);
-
-
-const email =
-document.getElementById(
-"profileEmail"
-);
-
-
-
-const wallet =
-document.getElementById(
-"profileWallet"
-);
-
-
-
-const coins =
-document.getElementById(
-"profileCoins"
-);
-
-
-
-if(username)
-username.innerHTML =
-"Username: " + currentUser.username;
-
-
-
-if(email)
-email.innerHTML =
-"Email: " + currentUser.email;
-
-
-
-if(wallet)
-wallet.innerHTML =
-"Wallet: ₹" + (currentUser.wallet || 0);
-
-
-
-if(coins)
-coins.innerHTML =
-"Coins: " + (currentUser.coins || 0);
-
-
+  if (coins) {
+    coins.innerHTML = "Coins: " + (currentUser.coins || 0);
+  }
 
 }
 
+// ===================================
+// Auto Load Profile
+// ===================================
 
-
-window.addEventListener(
-"DOMContentLoaded",
-()=>{
-
-loadUserProfile();
-
+window.addEventListener("DOMContentLoaded", () => {
+  loadUserProfile();
 });// ===================================
-// Login System
+// Logout System
 // ===================================
 
+const logoutButton = document.getElementById("logoutBtn");
 
-const loginButton =
-document.getElementById("loginSubmit");
+if (logoutButton) {
 
-
-if(loginButton){
-
-
-loginButton.onclick = async ()=>{
-
-
-const email =
-document.getElementById("loginEmail").value;
-
-
-const password =
-document.getElementById("loginPassword").value;
-
-
-
-if(!email || !password){
-
-showNotification(
-"Enter Email and Password"
-);
-
-return;
-
-}
-
-
-
-try{
-
-
-const response = await fetch(
-
-API_URL + "/api/login",
-
-{
-
-method:"POST",
-
-headers:{
-
-"Content-Type":"application/json"
-
-},
-
-body:JSON.stringify({
-
-email,
-password
-
-})
-
-}
-
-);
-
-
-
-const data =
-await response.json();
-
-
-
-if(data.success){
-
-
-localStorage.setItem(
-
-"user",
-
-JSON.stringify(data.user)
-
-);
-
-
-
-currentUser = data.user;
-
-
-
-showNotification(
-"Login Successful"
-);
-
-
-
-loadUserProfile();
-
-
-
-}else{
-
-
-showNotification(
-data.message
-);
-
-
-}
-
-
-
-}catch(error){
-
-
-showNotification(
-"Login Server Error"
-);
-
-
-}
-
-
-
-};
-
-
-}
-
-
-
-
-// ===================================
-// Load User Profile
-// ===================================
-
-
-function loadUserProfile(){
-
-
-if(!currentUser)
-return;
-
-
-
-const username =
-document.getElementById(
-"profileUsername"
-);
-
-
-const email =
-document.getElementById(
-"profileEmail"
-);
-
-
-
-const wallet =
-document.getElementById(
-"profileWallet"
-);
-
-
-
-const coins =
-document.getElementById(
-"profileCoins"
-);
-
-
-
-if(username)
-username.innerHTML =
-"Username: " + currentUser.username;
-
-
-
-if(email)
-email.innerHTML =
-"Email: " + currentUser.email;
-
-
-
-if(wallet)
-wallet.innerHTML =
-"Wallet: ₹" + (currentUser.wallet || 0);
-
-
-
-if(coins)
-coins.innerHTML =
-"Coins: " + (currentUser.coins || 0);
-
-
-
-}
-
-
-
-window.addEventListener(
-"DOMContentLoaded",
-()=>{
-
-loadUserProfile();
-
-});// ===================================
-// Confirm Order
-// ===================================
-
-
-const orderButton =
-document.getElementById(
-"confirmOrder"
-);
-
-
-
-if(orderButton){
-
-
-orderButton.onclick = async ()=>{
-
-
-if(!currentUser){
-
-showNotification(
-"Please Login First"
-);
-
-return;
-
-}
-
-
-
-const instagramUsername =
-document.getElementById(
-"instagramUsername"
-).value;
-
-
-
-const quantity =
-document.getElementById(
-"serviceQuantity"
-).value;
-
-
-
-if(!instagramUsername || !quantity){
-
-showNotification(
-"Fill Order Details"
-);
-
-return;
-
-}
-
-
-
-try{
-
-
-const response =
-await fetch(
-
-API_URL + "/api/order",
-
-{
-
-method:"POST",
-
-headers:{
-
-"Content-Type":"application/json"
-
-},
-
-body:JSON.stringify({
-
-user_id: currentUser.id,
-
-instagram_username:
-instagramUsername,
-
-service_id:
-selectedService,
-
-quantity:
-quantity,
-
-amount:
-0
-
-})
-
-}
-
-);
-
-
-
-const data =
-await response.json();
-
-
-
-if(data.success){
-
-
-showNotification(
-"Order Created Successfully"
-);
-
-
-
-document.getElementById(
-"orderPopup"
-).style.display="none";
-
-
-
-}else{
-
-
-showNotification(
-data.message
-);
-
-
-}
-
-
-
-}catch(error){
-
-
-showNotification(
-"Order Error"
-);
-
-
-}
-
-
-
-};
-
-
-}
-
-
-
-
-
-// ===================================
-// Wallet Load
-// ===================================
-
-
-async function loadWallet(){
-
-
-if(!currentUser)
-return;
-
-
-
-try{
-
-
-const response =
-await fetch(
-
-API_URL +
-"/api/wallet?user_id=" +
-currentUser.id
-
-);
-
-
-
-const data =
-await response.json();
-
-
-
-if(data.success){
-
-
-const wallet =
-document.getElementById(
-"walletBalance"
-);
-
-
-
-const coins =
-document.getElementById(
-"coinBalance"
-);
-
-
-
-if(wallet)
-wallet.innerHTML =
-"₹"+data.wallet;
-
-
-
-if(coins)
-coins.innerHTML =
-data.coins;
-
-
-
-}
-
-
-
-}catch(error){
-
-
-console.log(error);
-
-
-}
-
-
-}
-
-
-
-window.addEventListener(
-"DOMContentLoaded",
-()=>{
-
-loadWallet();
-
-});// ===================================
-// WhatsApp Payment Button
-// ===================================
-
-
-const whatsappBtn =
-document.getElementById(
-"whatsappOrderBtn"
-);
-
-
-
-if(whatsappBtn){
-
-
-whatsappBtn.onclick = ()=>{
-
-
-const message =
-encodeURIComponent(
-"Hello InstaBoost Hub, I have completed payment. Here is my screenshot."
-);
-
-
-
-window.open(
-
-"https://wa.me/?text=" + message,
-
-"_blank"
-
-);
-
-
-};
-
-
-}
-
-
-
-
-
-// ===================================
-// Referral Code
-// ===================================
-
-
-function generateReferral(){
-
-
-if(!currentUser)
-return;
-
-
-
-const box =
-document.getElementById(
-"referralCode"
-);
-
-
-
-if(box){
-
-
-box.value =
-"REF" + currentUser.id + "HUB";
-
-
-}
-
-
-}
-
-
-
-const copyReferral =
-document.getElementById(
-"copyReferral"
-);
-
-
-
-if(copyReferral){
-
-
-copyReferral.onclick = ()=>{
-
-
-const code =
-document.getElementById(
-"referralCode"
-);
-
-
-
-if(code){
-
-
-navigator.clipboard.writeText(
-code.value
-);
-
-
-showNotification(
-"Referral Code Copied"
-);
-
-
-}
-
-
-};
-
-
-}
-
-
-
-
-
-// ===================================
-// Daily Reward
-// ===================================
-
-
-const dailyBtn =
-document.getElementById(
-"claimDaily"
-);
-
-
-
-if(dailyBtn){
-
-
-dailyBtn.onclick = async ()=>{
-
-
-if(!currentUser){
-
-showNotification(
-"Login Required"
-);
-
-return;
-
-}
-
-
-
-try{
-
-
-const response =
-await fetch(
-
-API_URL +
-"/api/daily-reward",
-
-{
-
-method:"POST",
-
-headers:{
-
-"Content-Type":"application/json"
-
-},
-
-body:JSON.stringify({
-
-user_id:
-currentUser.id
-
-})
-
-}
-
-);
-
-
-
-const data =
-await response.json();
-
-
-
-showNotification(
-data.message
-);
-
-
-
-}catch(error){
-
-
-showNotification(
-"Reward Error"
-);
-
-
-}
-
-
-
-};
-
-
-}
-
-
-
-window.addEventListener(
-"DOMContentLoaded",
-()=>{
-
-generateReferral();
-
-});// ===================================
-// Start Button Scroll
-// ===================================
-
-const startBtn =
-document.getElementById("startBtn");
-
-
-if(startBtn){
-
-    startBtn.onclick = ()=>{
-
-        document.getElementById(
-            "services"
-        ).scrollIntoView({
-            behavior:"smooth"
-        });
-
-    };
-
-}
-
-
-
-// ===================================
-// Add Funds Button
-// ===================================
-
-const addFundsBtn =
-document.getElementById("addFundsBtn");
-
-
-if(addFundsBtn){
-
-    addFundsBtn.onclick = ()=>{
-
-        const payment =
-        document.getElementById(
-            "paymentSection"
-        );
-
-        if(payment){
-
-            payment.scrollIntoView({
-                behavior:"smooth"
-            });
-
-        }
-
-    };
-
-}
-
-
-
-// ===================================
-// WhatsApp Support
-// ===================================
-
-const supportBtn =
-document.getElementById(
-"contactWhatsapp"
-);
-
-
-if(supportBtn){
-
-    supportBtn.onclick = ()=>{
-
-        window.open(
-        "https://wa.me/?text=Hello InstaBoost Hub Support",
-        "_blank"
-        );
-
-    };
-
-}
-
-
-
-// ===================================
-// Logout
-// ===================================
-
-function logout(){
+  logoutButton.onclick = () => {
 
     localStorage.removeItem("user");
 
     currentUser = null;
 
-    showNotification(
-        "Logged Out"
-    );
+    showNotification("Logged Out Successfully");
+
+    setTimeout(() => {
+
+      location.reload();
+
+    }, 1000);
+
+  };
 
 }
 
-
-
 // ===================================
-// Auto Refresh User
+// App Start
 // ===================================
 
-setInterval(()=>{
+window.addEventListener("load", () => {
 
-    if(currentUser){
+  if (currentUser) {
 
-        loadWallet();
+    loadUserProfile();
 
-    }
+  }
 
-},30000);
+});
