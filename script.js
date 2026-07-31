@@ -1,129 +1,126 @@
-const API = "https://rahulsocialhub-db.09rcrg.workers.dev";
+// ===================================
+// InstaBoost Hub
+// Main JavaScript
+// ===================================
 
 
-// Loading Screen Remove
+// Cloudflare Worker API URL
 
-window.addEventListener("load",()=>{
+const API_URL = "https://rahulsocialhub-db.09rcrg.workers.dev";
 
-let loading = document.getElementById("loading-screen");
 
-if(loading){
+// Current User
 
-loading.style.display="none";
+let currentUser = JSON.parse(
+    localStorage.getItem("user")
+) || null;
+
+
+
+// ===================================
+// Loading Screen
+// ===================================
+
+window.addEventListener("load", () => {
+
+    const loader = document.getElementById("loadingScreen");
+
+    if(loader){
+
+        setTimeout(() => {
+
+            loader.style.display = "none";
+
+        },1000);
+
+    }
+
+});
+
+
+
+// ===================================
+// Notification
+// ===================================
+
+function showNotification(message){
+
+    const box = document.getElementById(
+        "notificationBox"
+    );
+
+    if(!box) return;
+
+
+    box.innerHTML = message;
+
+
+    setTimeout(()=>{
+
+        box.innerHTML = "";
+
+    },3000);
 
 }
 
-});// Page Load
-
-document.addEventListener("DOMContentLoaded",()=>{
 
 
-let dashboard = document.getElementById("dashboard");
+// ===================================
+// Register
+// ===================================
 
-let auth = document.getElementById("auth-page");
-
-
-
-if(dashboard){
-
-dashboard.style.display="none";
-
-}
+const registerButton =
+document.getElementById("registerSubmit");
 
 
-
-if(auth){
-
-auth.style.display="flex";
-
-}
+if(registerButton){
 
 
+registerButton.onclick = async ()=>{
 
-let registerBox = document.getElementById("register-box");
 
-if(registerBox){
+const username =
+document.getElementById("registerUsername").value;
 
-registerBox.style.display="none";
 
-}
+const email =
+document.getElementById("registerEmail").value;
+
+
+const password =
+document.getElementById("registerPassword").value;
 
 
 
-});// Show Register
+if(!username || !email || !password){
 
-document.getElementById("showRegister").onclick=()=>{
-
-
-document.getElementById("login-box").style.display="none";
-
-
-document.getElementById("register-box").style.display="block";
-
-
-};
-
-
-
-// Show Login
-
-document.getElementById("showLogin").onclick=()=>{
-
-
-document.getElementById("register-box").style.display="none";
-
-
-document.getElementById("login-box").style.display="block";
-
-
-};// Register Button
-
-document.getElementById("registerBtn").onclick = async()=>{
-
-
-let username =
-document.getElementById("regUsername").value;
-
-
-let email =
-document.getElementById("regEmail").value;
-
-
-let password =
-document.getElementById("regPassword").value;
-
-
-let confirm =
-document.getElementById("regConfirm").value;
-
-
-
-if(password !== confirm){
-
-alert("Password match nahi hai");
+showNotification(
+"Please fill all details"
+);
 
 return;
 
 }
 
 
-alert("Register button dab gaya");
-let response = await fetch(API+"/api/register",{
+
+try{
+
+
+const response = await fetch(
+API_URL + "/api/register",
+{
 
 method:"POST",
 
 headers:{
-
 "Content-Type":"application/json"
-
 },
 
 body:JSON.stringify({
 
 username,
-
 email,
-
 password
 
 })
@@ -131,28 +128,89 @@ password
 });
 
 
-
-let data = await response.json();
-
-
-alert(data.message);
+const data =
+await response.json();
 
 
-};// Login Button
 
-document.getElementById("loginBtn").onclick = async()=>{
+if(data.success){
+
+showNotification(
+"Registration Successful"
+);
 
 
-let email =
+}else{
+
+
+showNotification(
+data.message
+);
+
+
+}
+
+
+
+}catch(error){
+
+
+showNotification(
+"Server Error"
+);
+
+
+}
+
+
+
+};
+
+
+}// ===================================
+// Login System
+// ===================================
+
+
+const loginButton =
+document.getElementById("loginSubmit");
+
+
+if(loginButton){
+
+
+loginButton.onclick = async ()=>{
+
+
+const email =
 document.getElementById("loginEmail").value;
 
 
-let password =
+const password =
 document.getElementById("loginPassword").value;
 
 
 
-let response = await fetch(API+"/api/login",{
+if(!email || !password){
+
+showNotification(
+"Enter Email and Password"
+);
+
+return;
+
+}
+
+
+
+try{
+
+
+const response = await fetch(
+
+API_URL + "/api/login",
+
+{
 
 method:"POST",
 
@@ -165,16 +223,18 @@ headers:{
 body:JSON.stringify({
 
 email,
-
 password
 
 })
 
-});
+}
+
+);
 
 
 
-let data = await response.json();
+const data =
+await response.json();
 
 
 
@@ -191,184 +251,42 @@ JSON.stringify(data.user)
 
 
 
-document.getElementById("auth-page").style.display="none";
-
-
-document.getElementById("dashboard").style.display="block";
+currentUser = data.user;
 
 
 
-document.getElementById("username").innerText =
-
-data.user.username;
-
-
-document.getElementById("profileUsername").innerText =
-
-data.user.username;
-
-
-document.getElementById("profileEmail").innerText =
-
-data.user.email;
+showNotification(
+"Login Successful"
+);
 
 
 
-}
-
-else{
+loadUserProfile();
 
 
-alert(data.message);
+
+}else{
+
+
+showNotification(
+data.message
+);
 
 
 }
 
 
-};// Logout Button
 
-document.getElementById("logoutBtn").onclick=()=>{
-
-
-localStorage.removeItem("user");
+}catch(error){
 
 
-location.reload();
+showNotification(
+"Login Server Error"
+);
 
-
-};// Sidebar Menu Change
-
-let menus = document.querySelectorAll(".menu");
-
-
-menus.forEach(menu=>{
-
-
-menu.onclick=()=>{
-
-
-let pages = document.querySelectorAll(".page");
-
-
-pages.forEach(page=>{
-
-page.classList.remove("active");
-
-});
-
-
-
-let target = menu.getAttribute("data-page");
-
-let section = document.getElementById(target);
-
-
-if(section){
-
-section.classList.add("active");
 
 }
 
-
-};
-
-
-});// Copy UPI
-
-let copyBtn = document.getElementById("copyUpiBtn");
-
-
-if(copyBtn){
-
-
-copyBtn.onclick=()=>{
-
-
-navigator.clipboard.writeText("9131922170@ybl");
-
-
-alert("UPI ID Copied");
-
-
-};
-
-
-}// Save Instagram Username
-
-let saveIgBtn = document.getElementById("saveInstagramBtn");
-
-
-if(saveIgBtn){
-
-
-saveIgBtn.onclick=()=>{
-
-
-let username = 
-document.getElementById("igUsername").value;
-
-
-document.getElementById("igMessage").innerText =
-"Instagram Username Saved: " + username;
-
-
-};
-
-
-}// Daily Task Coins
-
-let coins = 0;
-
-
-let taskBtn = document.getElementById("completeTaskBtn");
-
-
-if(taskBtn){
-
-
-taskBtn.onclick=()=>{
-
-
-coins += 10;
-
-
-document.getElementById("coinBalance").innerText =
-"🪙 Coins: " + coins;
-
-
-};
-
-
-}// Claim Rewards
-
-let claimFollowersBtn = document.getElementById("claimFollowersBtn");
-
-
-if(claimFollowersBtn){
-
-
-claimFollowersBtn.onclick=()=>{
-
-
-if(coins >= 100){
-
-
-coins -= 100;
-
-
-document.getElementById("claimMessage").innerText =
-"Followers Request Submitted";
-
-
-}
-else{
-
-
-document.getElementById("claimMessage").innerText =
-"Not Enough Coins";
-
-
-}
 
 
 };
@@ -378,139 +296,628 @@ document.getElementById("claimMessage").innerText =
 
 
 
-let claimLikesBtn = document.getElementById("claimLikesBtn");
+
+// ===================================
+// Load User Profile
+// ===================================
 
 
-if(claimLikesBtn){
+function loadUserProfile(){
 
 
-claimLikesBtn.onclick=()=>{
+if(!currentUser)
+return;
 
 
-if(coins >= 50){
+
+const username =
+document.getElementById(
+"profileUsername"
+);
 
 
-coins -= 50;
+const email =
+document.getElementById(
+"profileEmail"
+);
 
 
-document.getElementById("claimMessage").innerText =
-"Likes Request Submitted";
+
+const wallet =
+document.getElementById(
+"profileWallet"
+);
+
+
+
+const coins =
+document.getElementById(
+"profileCoins"
+);
+
+
+
+if(username)
+username.innerHTML =
+"Username: " + currentUser.username;
+
+
+
+if(email)
+email.innerHTML =
+"Email: " + currentUser.email;
+
+
+
+if(wallet)
+wallet.innerHTML =
+"Wallet: ₹" + (currentUser.wallet || 0);
+
+
+
+if(coins)
+coins.innerHTML =
+"Coins: " + (currentUser.coins || 0);
+
 
 
 }
-else{
 
 
-document.getElementById("claimMessage").innerText =
-"Not Enough Coins";
+
+window.addEventListener(
+"DOMContentLoaded",
+()=>{
+
+loadUserProfile();
+
+});// ===================================
+// Login System
+// ===================================
+
+
+const loginButton =
+document.getElementById("loginSubmit");
+
+
+if(loginButton){
+
+
+loginButton.onclick = async ()=>{
+
+
+const email =
+document.getElementById("loginEmail").value;
+
+
+const password =
+document.getElementById("loginPassword").value;
+
+
+
+if(!email || !password){
+
+showNotification(
+"Enter Email and Password"
+);
+
+return;
+
+}
+
+
+
+try{
+
+
+const response = await fetch(
+
+API_URL + "/api/login",
+
+{
+
+method:"POST",
+
+headers:{
+
+"Content-Type":"application/json"
+
+},
+
+body:JSON.stringify({
+
+email,
+password
+
+})
+
+}
+
+);
+
+
+
+const data =
+await response.json();
+
+
+
+if(data.success){
+
+
+localStorage.setItem(
+
+"user",
+
+JSON.stringify(data.user)
+
+);
+
+
+
+currentUser = data.user;
+
+
+
+showNotification(
+"Login Successful"
+);
+
+
+
+loadUserProfile();
+
+
+
+}else{
+
+
+showNotification(
+data.message
+);
 
 
 }
+
+
+
+}catch(error){
+
+
+showNotification(
+"Login Server Error"
+);
+
+
+}
+
 
 
 };
 
 
-}// Referral Code Generate
+}
 
 
-let referralBox = document.getElementById("referralCode");
 
 
-if(referralBox){
+// ===================================
+// Load User Profile
+// ===================================
 
 
-let code = "RAHUL" + Math.floor(Math.random()*99999);
+function loadUserProfile(){
 
 
-referralBox.innerText = code;
+if(!currentUser)
+return;
+
+
+
+const username =
+document.getElementById(
+"profileUsername"
+);
+
+
+const email =
+document.getElementById(
+"profileEmail"
+);
+
+
+
+const wallet =
+document.getElementById(
+"profileWallet"
+);
+
+
+
+const coins =
+document.getElementById(
+"profileCoins"
+);
+
+
+
+if(username)
+username.innerHTML =
+"Username: " + currentUser.username;
+
+
+
+if(email)
+email.innerHTML =
+"Email: " + currentUser.email;
+
+
+
+if(wallet)
+wallet.innerHTML =
+"Wallet: ₹" + (currentUser.wallet || 0);
+
+
+
+if(coins)
+coins.innerHTML =
+"Coins: " + (currentUser.coins || 0);
+
 
 
 }
 
 
-// Copy Referral Code
+
+window.addEventListener(
+"DOMContentLoaded",
+()=>{
+
+loadUserProfile();
+
+});// ===================================
+// Confirm Order
+// ===================================
 
 
-let copyReferral = document.getElementById("copyReferralBtn");
+const orderButton =
+document.getElementById(
+"confirmOrder"
+);
+
+
+
+if(orderButton){
+
+
+orderButton.onclick = async ()=>{
+
+
+if(!currentUser){
+
+showNotification(
+"Please Login First"
+);
+
+return;
+
+}
+
+
+
+const instagramUsername =
+document.getElementById(
+"instagramUsername"
+).value;
+
+
+
+const quantity =
+document.getElementById(
+"serviceQuantity"
+).value;
+
+
+
+if(!instagramUsername || !quantity){
+
+showNotification(
+"Fill Order Details"
+);
+
+return;
+
+}
+
+
+
+try{
+
+
+const response =
+await fetch(
+
+API_URL + "/api/order",
+
+{
+
+method:"POST",
+
+headers:{
+
+"Content-Type":"application/json"
+
+},
+
+body:JSON.stringify({
+
+user_id: currentUser.id,
+
+instagram_username:
+instagramUsername,
+
+service_id:
+selectedService,
+
+quantity:
+quantity,
+
+amount:
+0
+
+})
+
+}
+
+);
+
+
+
+const data =
+await response.json();
+
+
+
+if(data.success){
+
+
+showNotification(
+"Order Created Successfully"
+);
+
+
+
+document.getElementById(
+"orderPopup"
+).style.display="none";
+
+
+
+}else{
+
+
+showNotification(
+data.message
+);
+
+
+}
+
+
+
+}catch(error){
+
+
+showNotification(
+"Order Error"
+);
+
+
+}
+
+
+
+};
+
+
+}
+
+
+
+
+
+// ===================================
+// Wallet Load
+// ===================================
+
+
+async function loadWallet(){
+
+
+if(!currentUser)
+return;
+
+
+
+try{
+
+
+const response =
+await fetch(
+
+API_URL +
+"/api/wallet?user_id=" +
+currentUser.id
+
+);
+
+
+
+const data =
+await response.json();
+
+
+
+if(data.success){
+
+
+const wallet =
+document.getElementById(
+"walletBalance"
+);
+
+
+
+const coins =
+document.getElementById(
+"coinBalance"
+);
+
+
+
+if(wallet)
+wallet.innerHTML =
+"₹"+data.wallet;
+
+
+
+if(coins)
+coins.innerHTML =
+data.coins;
+
+
+
+}
+
+
+
+}catch(error){
+
+
+console.log(error);
+
+
+}
+
+
+}
+
+
+
+window.addEventListener(
+"DOMContentLoaded",
+()=>{
+
+loadWallet();
+
+});// ===================================
+// WhatsApp Payment Button
+// ===================================
+
+
+const whatsappBtn =
+document.getElementById(
+"whatsappOrderBtn"
+);
+
+
+
+if(whatsappBtn){
+
+
+whatsappBtn.onclick = ()=>{
+
+
+const message =
+encodeURIComponent(
+"Hello InstaBoost Hub, I have completed payment. Here is my screenshot."
+);
+
+
+
+window.open(
+
+"https://wa.me/?text=" + message,
+
+"_blank"
+
+);
+
+
+};
+
+
+}
+
+
+
+
+
+// ===================================
+// Referral Code
+// ===================================
+
+
+function generateReferral(){
+
+
+if(!currentUser)
+return;
+
+
+
+const box =
+document.getElementById(
+"referralCode"
+);
+
+
+
+if(box){
+
+
+box.value =
+"REF" + currentUser.id + "HUB";
+
+
+}
+
+
+}
+
+
+
+const copyReferral =
+document.getElementById(
+"copyReferral"
+);
+
 
 
 if(copyReferral){
 
 
-copyReferral.onclick=()=>{
+copyReferral.onclick = ()=>{
 
 
-let code =
-document.getElementById("referralCode").innerText;
-
-
-navigator.clipboard.writeText(code);
-
-
-alert("Referral Code Copied");
-
-
-};
-
-
-}// Save Selected Instagram Username
-
-
-let saveInstagram = document.getElementById("saveInstagram");
-
-
-if(saveInstagram){
-
-
-saveInstagram.onclick=()=>{
-
-
-let username = 
-document.getElementById("instagramUsername").value;
-
-
-localStorage.setItem(
-"instagramUsername",
-username
+const code =
+document.getElementById(
+"referralCode"
 );
 
 
-document.getElementById("followersResult").innerText =
-"Username Saved: " + username;
+
+if(code){
 
 
-};
+navigator.clipboard.writeText(
+code.value
+);
 
 
-}// Search User
-
-
-let searchBtn = document.getElementById("searchUserBtn");
-
-
-if(searchBtn){
-
-
-searchBtn.onclick=()=>{
-
-
-let user = document.getElementById("searchUser").value;
-
-
-if(user){
-
-
-document.getElementById("searchResult").innerText =
-"User Found: @" + user;
-
-
-}
-else{
-
-
-document.getElementById("searchResult").innerText =
-"Enter Username";
+showNotification(
+"Referral Code Copied"
+);
 
 
 }
@@ -519,73 +926,218 @@ document.getElementById("searchResult").innerText =
 };
 
 
-}// Followers Claim
-
-
-let claimBtn = document.getElementById("claimFollowersBtn2");
-
-
-if(claimBtn){
-
-
-claimBtn.onclick=()=>{
-
-
-let amount = 
-document.getElementById("followersAmount").value;
+}
 
 
 
-document.getElementById("followersResult").innerText =
 
-"Request Submitted for " + amount + " Followers";
+
+// ===================================
+// Daily Reward
+// ===================================
+
+
+const dailyBtn =
+document.getElementById(
+"claimDaily"
+);
+
+
+
+if(dailyBtn){
+
+
+dailyBtn.onclick = async ()=>{
+
+
+if(!currentUser){
+
+showNotification(
+"Login Required"
+);
+
+return;
+
+}
+
+
+
+try{
+
+
+const response =
+await fetch(
+
+API_URL +
+"/api/daily-reward",
+
+{
+
+method:"POST",
+
+headers:{
+
+"Content-Type":"application/json"
+
+},
+
+body:JSON.stringify({
+
+user_id:
+currentUser.id
+
+})
+
+}
+
+);
+
+
+
+const data =
+await response.json();
+
+
+
+showNotification(
+data.message
+);
+
+
+
+}catch(error){
+
+
+showNotification(
+"Reward Error"
+);
+
+
+}
+
 
 
 };
 
 
-}// Auto Login Check
+}
 
 
-window.addEventListener("load",()=>{
+
+window.addEventListener(
+"DOMContentLoaded",
+()=>{
+
+generateReferral();
+
+});// ===================================
+// Start Button Scroll
+// ===================================
+
+const startBtn =
+document.getElementById("startBtn");
 
 
-let user = localStorage.getItem("user");
+if(startBtn){
 
+    startBtn.onclick = ()=>{
 
-if(user){
+        document.getElementById(
+            "services"
+        ).scrollIntoView({
+            behavior:"smooth"
+        });
 
-
-let data = JSON.parse(user);
-
-
-let auth = document.getElementById("auth-page");
-
-let dashboard = document.getElementById("dashboard");
-
-
-if(auth){
-
-auth.style.display="none";
+    };
 
 }
 
 
-if(dashboard){
 
-dashboard.style.display="block";
+// ===================================
+// Add Funds Button
+// ===================================
+
+const addFundsBtn =
+document.getElementById("addFundsBtn");
+
+
+if(addFundsBtn){
+
+    addFundsBtn.onclick = ()=>{
+
+        const payment =
+        document.getElementById(
+            "paymentSection"
+        );
+
+        if(payment){
+
+            payment.scrollIntoView({
+                behavior:"smooth"
+            });
+
+        }
+
+    };
 
 }
 
 
-if(document.getElementById("username")){
 
-document.getElementById("username").innerText=data.username;
+// ===================================
+// WhatsApp Support
+// ===================================
+
+const supportBtn =
+document.getElementById(
+"contactWhatsapp"
+);
+
+
+if(supportBtn){
+
+    supportBtn.onclick = ()=>{
+
+        window.open(
+        "https://wa.me/?text=Hello InstaBoost Hub Support",
+        "_blank"
+        );
+
+    };
 
 }
 
 
+
+// ===================================
+// Logout
+// ===================================
+
+function logout(){
+
+    localStorage.removeItem("user");
+
+    currentUser = null;
+
+    showNotification(
+        "Logged Out"
+    );
+
 }
 
 
-});
+
+// ===================================
+// Auto Refresh User
+// ===================================
+
+setInterval(()=>{
+
+    if(currentUser){
+
+        loadWallet();
+
+    }
+
+},30000);
