@@ -1,31 +1,244 @@
-<!-- ========================= -->
-<!-- Payment Section -->
-<!-- ========================= -->
+<!DOCTYPE html>
+<html lang="en">
 
-<section id="paymentSection" class="card">
+<head>
 
-<h2>💳 Payment</h2>
+<meta charset="UTF-8">
+
+<meta name="viewport"
+content="width=device-width, initial-scale=1.0">
+
+<title>InstaBoost Hub</title>
+
+<link rel="stylesheet"
+href="style.css">
+
+</head>
+
+<body>
+
+<!-- Loading Screen -->
+
+<div id="loadingScreen">
+
+<div class="loader"></div>
+
+<h2>InstaBoost Hub</h2>
+
+<p>Loading...</p>
+
+</div>
+
+
+
+<!-- Notification -->
+
+<div id="notificationBox"></div>
+
+
+
+<!-- Main Website -->
+
+<div id="app">
+
+<!-- Hero -->
+
+<section class="hero">
+
+<h1>🚀 InstaBoost Hub</h1>
 
 <p>
-Scan the QR Code and complete your payment.
+
+Boost your Instagram with Premium Services.
+
 </p>
 
-<div class="payment-box">
+</section><!-- ========================= -->
+<!-- Register Section -->
+<!-- ========================= -->
+
+<section id="registerSection" class="card">
+
+<h2>Create Account</h2>
+
+<input
+type="text"
+id="registerUsername"
+placeholder="Username">
+
+<input
+type="email"
+id="registerEmail"
+placeholder="Email">
+
+<input
+type="password"
+id="registerPassword"
+placeholder="Password">
+
+<button id="registerSubmit">
+Register
+</button>
+
+<p>
+
+Already have an account?
+
+<a href="#loginSection">
+Login
+</a>
+
+</p>
+
+</section>
+
+
+
+<!-- ========================= -->
+<!-- Login Section -->
+<!-- ========================= -->
+
+<section id="loginSection" class="card">
+
+<h2>Login</h2>
+
+<input
+type="email"
+id="loginEmail"
+placeholder="Email">
+
+<input
+type="password"
+id="loginPassword"
+placeholder="Password">
+
+<button id="loginSubmit">
+Login
+</button>
+
+</section><!-- ========================= -->
+<!-- Dashboard -->
+<!-- ========================= -->
+
+<section id="dashboardSection" class="card" style="display:none;">
+
+<h2>Dashboard</h2>
+
+<p id="profileUsername">
+Username:
+</p>
+
+<p id="profileEmail">
+Email:
+</p>
+
+<p id="profileWallet">
+Wallet: ₹0
+</p>
+
+<p id="profileCoins">
+Coins: 0
+</p>
+
+<button id="logoutBtn">
+Logout
+</button>
+
+</section>
+
+
+
+<!-- ========================= -->
+<!-- Instagram Services -->
+<!-- ========================= -->
+
+<section id="servicesSection" class="card" style="display:none;">
+
+<h2>Instagram Services</h2>
+
+<div id="servicesContainer">
+
+</div>
+
+</section>
+
+
+
+<!-- ========================= -->
+<!-- Payment -->
+<!-- ========================= -->
+
+<section id="paymentSection" class="card" style="display:none;">
+
+<h2>Payment</h2>
 
 <img
 id="paymentQr"
 src="UPI_QR_9131922170_ybl.png"
-alt="UPI Payment QR"
-/>
+alt="Payment QR">
 
-</div>
-
-<p>
-After payment click the button below.
-</p>
+<br><br>
 
 <button id="paymentDoneBtn">
-✅ Payment Completed
+Payment Completed
+</button>
+
+</section><!-- ========================= -->
+<!-- Wallet Section -->
+<!-- ========================= -->
+
+<section id="walletSection" class="card" style="display:none;">
+
+<h2>Wallet</h2>
+
+<p id="walletBalance">
+Balance: ₹0
+</p>
+
+<button id="addFundsBtn">
+Add Funds
+</button>
+
+<button id="withdrawBtn">
+Withdraw
 </button>
 
 </section>
+
+
+<!-- ========================= -->
+<!-- Order History -->
+<!-- ========================= -->
+
+<section id="ordersSection" class="card" style="display:none;">
+
+<h2>Order History</h2>
+
+<div id="ordersContainer">
+
+No Orders Found
+
+</div>
+
+</section>
+
+
+<!-- ========================= -->
+<!-- Footer -->
+<!-- ========================= -->
+
+<footer>
+
+<p>
+© 2026 InstaBoost Hub. All Rights Reserved.
+</p>
+
+</footer>
+
+</div>
+
+<script src="script.js"></script>
+
+</body>
+
+</html>
