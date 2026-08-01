@@ -21,24 +21,17 @@
 
     <title>Rahul Live</title>
 
-    <link
-        rel="manifest"
-        href="manifest.json"
-    >
+    <link rel="manifest" href="manifest.json">
 
-    <link
-        rel="stylesheet"
-        href="style.css"
-    >
+    <link rel="stylesheet" href="style.css">
 
 </head>
-
 
 <body>
 
 
 <!-- =====================================================
-     LOGIN / REGISTER
+     AUTH SCREEN
 ===================================================== -->
 
 <section id="authScreen">
@@ -188,9 +181,7 @@
 <section id="appScreen">
 
 
-    <!-- =================================================
-         TOP BAR
-    ================================================= -->
+    <!-- TOP BAR -->
 
     <header class="topBar">
 
@@ -211,16 +202,14 @@
 
 
 
-    <!-- =================================================
-         CONTENT
-    ================================================= -->
+    <!-- MAIN CONTENT -->
 
     <main class="content">
 
 
-        <!-- =============================================
-             HOME / SHORT VIDEOS
-        ============================================== -->
+        <!-- =================================================
+             HOME
+        ================================================= -->
 
         <section
             id="homePage"
@@ -232,15 +221,7 @@
                 class="videoFeed"
             >
 
-                <div
-                    style="
-                        height:100%;
-                        display:flex;
-                        align-items:center;
-                        justify-content:center;
-                        color:#777;
-                    "
-                >
+                <div class="loadingBox">
                     Videos loading...
                 </div>
 
@@ -250,21 +231,29 @@
 
 
 
-        <!-- =============================================
-             LIVE PAGE
-        ============================================== -->
+        <!-- =================================================
+             LIVE
+        ================================================= -->
 
         <section
             id="livePage"
             class="page"
         >
 
-            <h2 class="sectionTitle">
-                🔴 LIVE
-            </h2>
+            <div class="pageHeader">
+
+                <h2>
+                    🔴 LIVE
+                </h2>
+
+            </div>
 
 
             <div class="startLiveBox">
+
+                <div class="liveIcon">
+                    🔴
+                </div>
 
                 <h3>
                     Go LIVE
@@ -280,7 +269,7 @@
                     class="startLiveBtn"
                     type="button"
                 >
-                    🔴 Start LIVE
+                    Start LIVE
                 </button>
 
             </div>
@@ -295,9 +284,9 @@
 
 
 
-        <!-- =============================================
-             UPLOAD PAGE
-        ============================================== -->
+        <!-- =================================================
+             UPLOAD
+        ================================================= -->
 
         <section
             id="uploadPage"
@@ -306,11 +295,16 @@
 
             <div class="uploadBox">
 
-                <h3>
-                    🎬 Upload Short Video
-                </h3>
+                <div class="pageHeader">
 
-                <p>
+                    <h2>
+                        🎬 Upload Short
+                    </h2>
+
+                </div>
+
+
+                <p class="uploadText">
                     अपना Short Video select करें।
                 </p>
 
@@ -327,11 +321,13 @@
                     id="videoFile"
                     type="file"
                     accept="video/*"
+                    hidden
                 >
 
 
                 <div
                     id="selectedVideo"
+                    class="selectedVideo"
                 >
                     No video selected
                 </div>
@@ -341,13 +337,7 @@
                     id="uploadPreview"
                     controls
                     playsinline
-                    style="
-                        display:none;
-                        width:100%;
-                        max-height:450px;
-                        margin-top:15px;
-                        border-radius:12px;
-                    "
+                    style="display:none;"
                 ></video>
 
 
@@ -371,9 +361,9 @@
 
 
 
-        <!-- =============================================
-             PROFILE PAGE
-        ============================================== -->
+        <!-- =================================================
+             PROFILE
+        ================================================= -->
 
         <section
             id="profilePage"
@@ -401,11 +391,7 @@
 
                 <div
                     id="profileUsername"
-                    style="
-                        margin-top:5px;
-                        color:#777;
-                        font-size:13px;
-                    "
+                    class="profileUsername"
                 >
                     @user
                 </div>
@@ -413,11 +399,7 @@
 
                 <div
                     id="profileBio"
-                    style="
-                        margin-top:12px;
-                        color:#aaa;
-                        font-size:13px;
-                    "
+                    class="profileBio"
                 ></div>
 
 
@@ -462,7 +444,6 @@
 
                     </div>
 
-
                 </div>
 
 
@@ -484,7 +465,7 @@
 
 
     <!-- =================================================
-         BOTTOM NAVIGATION
+         BOTTOM NAV
     ================================================= -->
 
     <nav class="bottomNav">
@@ -496,9 +477,7 @@
             type="button"
         >
 
-            <span>
-                🏠
-            </span>
+            <span>🏠</span>
 
             Home
 
@@ -511,9 +490,7 @@
             type="button"
         >
 
-            <span>
-                🔴
-            </span>
+            <span>🔴</span>
 
             LIVE
 
@@ -526,9 +503,7 @@
             type="button"
         >
 
-            <span>
-                ➕
-            </span>
+            <span>➕</span>
 
             Upload
 
@@ -541,9 +516,7 @@
             type="button"
         >
 
-            <span>
-                👤
-            </span>
+            <span>👤</span>
 
             Profile
 
@@ -563,12 +536,7 @@
 
 <section
     id="liveStudio"
-    style="
-        position:fixed;
-        inset:0;
-        z-index:4000;
-        background:#000;
-    "
+    style="display:none;"
 >
 
 
@@ -580,66 +548,26 @@
     ></video>
 
 
-    <!-- LIVE TITLE -->
-
-    <div
-        style="
-            position:absolute;
-            top:20px;
-            left:15px;
-            right:15px;
-            z-index:5;
-        "
-    >
+    <div class="liveStudioTop">
 
         <input
             id="liveTitle"
             type="text"
             placeholder="LIVE title"
             value="Rahul Live"
-            style="
-                width:100%;
-                min-height:45px;
-                padding:0 13px;
-                border:1px solid #333;
-                border-radius:10px;
-                outline:none;
-                background:rgba(0,0,0,.65);
-                color:#fff;
-                font-size:14px;
-            "
+            maxlength="150"
         >
 
     </div>
 
 
-    <!-- LIVE CONTROLS -->
+    <div class="liveStudioControls">
 
-    <div
-        style="
-            position:absolute;
-            left:15px;
-            right:15px;
-            bottom:25px;
-            z-index:5;
-            display:flex;
-            gap:10px;
-        "
-    >
 
         <button
             id="goLiveConfirmBtn"
             type="button"
-            style="
-                flex:1;
-                min-height:50px;
-                border:0;
-                border-radius:12px;
-                background:#ff1744;
-                color:#fff;
-                font-weight:900;
-                font-size:15px;
-            "
+            class="goLiveBtn"
         >
             🔴 Go LIVE
         </button>
@@ -648,17 +576,8 @@
         <button
             id="endLiveBtn"
             type="button"
-            style="
-                display:none;
-                flex:1;
-                min-height:50px;
-                border:0;
-                border-radius:12px;
-                background:#20ff68;
-                color:#000;
-                font-weight:900;
-                font-size:15px;
-            "
+            class="endLiveBtn"
+            style="display:none;"
         >
             End LIVE
         </button>
@@ -667,15 +586,7 @@
         <button
             id="closeLiveStudio"
             type="button"
-            style="
-                width:55px;
-                min-height:50px;
-                border:1px solid #444;
-                border-radius:12px;
-                background:rgba(0,0,0,.7);
-                color:#fff;
-                font-size:20px;
-            "
+            class="closeLiveBtn"
         >
             ✕
         </button>
@@ -687,9 +598,7 @@
 
 
 
-<!-- =====================================================
-     JAVASCRIPT
-===================================================== -->
+<!-- JAVASCRIPT -->
 
 <script src="script.js"></script>
 
