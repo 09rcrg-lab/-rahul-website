@@ -1,218 +1,463 @@
 export default {
-  async fetch(request, env) {
 
-    const url = new URL(request.url);
+    async fetch(request, env) {
 
-    const corsHeaders = {
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type"
-    };
+        const url = new URL(request.url);
 
-    if (request.method === "OPTIONS") {
-      return new Response(null, { headers: corsHeaders });
+        /* =====================================================
+           CORS
+        ===================================================== */
+
+        const corsHeaders = {
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+            "Access-Control-Allow-Headers": "Content-Type, Authorization"
+        };
+
+
+        if (request.method === "OPTIONS") {
+
+            return new Response(null, {
+                status: 204,
+                headers: corsHeaders
+            });
+
+        }
+
+
+        /* =====================================================
+           RESPONSE HELPER
+        ===================================================== */
+
+        function json(data, status = 200) {
+
+            return new Response(
+                JSON.stringify(data),
+                {
+                    status: status,
+                    headers: {
+                        "Content-Type": "application/json",
+                        ...corsHeaders
+                    }
+                }
+            );
+
+        }
+
+
+        /* =====================================================
+           HOME
+        ===================================================== */
+
+        if (
+            url.pathname === "/" &&
+            request.method === "GET"
+        ) {
+
+            return json({
+                success: true,
+                message: "Rahul Live API Running 🚀",
+                app: "Rahul Live",
+                features: [
+                    "Short Videos",
+                    "LIVE Streaming",
+                    "Login",
+                    "Register",
+                    "Comments",
+                    "Likes",
+                    "Follow"
+                ]
+            });
+
+        }
+
+
+        /* =====================================================
+           API TEST
+        ===================================================== */
+
+        if (
+            url.pathname === "/api/test" &&
+            request.method === "GET"
+        ) {
+
+            try {
+
+                const result =
+                    await env.DB
+                        .prepare(
+                            "SELECT name FROM sqlite_master WHERE type='table' ORDER BY name"
+                        )
+                        .all();
+
+
+                return json({
+                    success: true,
+                    database: "connected",
+                    tables: result.results || []
+                });
+
+            } catch (error) {
+
+                return json({
+                    success: false,
+                    error: error.message
+                }, 500);
+
+            }
+
+        }
+
+
+        /* =====================================================
+           REGISTER
+        ===================================================== */
+
+        if (
+            url.pathname === "/api/register" &&
+            request.method === "POST"
+        ) {
+
+            try {
+
+                const body =
+                    await request.json();
+
+
+                const username =
+                    String(body.username || "").trim();
+
+                const email =
+                    String(body.email || "").trim().toLowerCase();
+
+                const password =
+                    String(body.password || "");
+
+
+                if (
+                    !username ||
+                    !email ||
+                    !password
+                ) {
+
+                    return json({
+                        success: false,
+                        error: "All fields are required."
+                    }, 400);
+
+                }
+
+
+                if (username.length < 3) {
+
+                    return json({
+                        success: false,
+                        error: "Username must contain at least 3 characters."
+                    }, 400);
+
+                }
+
+
+                if (password.length < 6) {
+
+                    return json({
+                        success: false,
+                        error: "Password must contain at least 6 characters."
+                    }, 400);
+
+                }
+
+
+                /* Check existing username */
+
+                const existingUsername =
+                    await env.DB
+                        .prepare(
+                            "SELECT id FROM users WHERE username = ? LIMIT 1"
+                        )
+                        .bind(username)
+                        .first();
+
+
+                if (existingUsername) {
+
+                    return json({
+                        success: false,
+                        error: "Username already exists."
+                    }, 409);
+
+                }
+
+
+                /* Check existing email */
+
+                const existingEmail =
+                    await env.DB
+                        .prepare(
+                            "SELECT id FROM users WHERE email = ? LIMIT 1"
+                        )
+                        .bind(email)
+                        .first();
+
+
+                if (existingEmail) {
+
+                    return json({
+                        success: false,
+                        error: "Email already exists."
+                    }, 409);
+
+                }
+
+
+                /*
+                   Current database structure is kept compatible
+                   with the existing Rahul Social Hub users table.
+                */
+
+                const result =
+                    await env.DB
+                        .prepare(
+                            `
+                            INSERT INTO users
+                            (username, email, password)
+                            VALUES (?, ?, ?)
+                            `
+                        )
+                        .bind(
+                            username,
+                            email,
+                            password
+                        )
+                        .run();
+
+
+                return json({
+                    success: true,
+                    message: "Account created successfully.",
+                    user: {
+                        id: result.meta?.last_row_id || null,
+                        username: username,
+                        email: email
+                    }
+                }, 201);
+
+
+            } catch (error) {
+
+                return json({
+                    success: false,
+                    error: error.message
+                }, 500);
+
+            }
+
+        }
+
+
+        /* =====================================================
+           LOGIN
+        ===================================================== */
+
+        if (
+            url.pathname === "/api/login" &&
+            request.method === "POST"
+        ) {
+
+            try {
+
+                const body =
+                    await request.json();
+
+
+                const username =
+                    String(body.username || "").trim();
+
+                const email =
+                    String(body.email || "").trim().toLowerCase();
+
+                const password =
+                    String(body.password || "");
+
+
+                const loginValue =
+                    username || email;
+
+
+                if (
+                    !loginValue ||
+                    !password
+                ) {
+
+                    return json({
+                        success: false,
+                        error: "Username/email and password are required."
+                    }, 400);
+
+                }
+
+
+                const user =
+                    await env.DB
+                        .prepare(
+                            `
+                            SELECT
+                                id,
+                                username,
+                                email,
+                                password
+                            FROM users
+                            WHERE username = ?
+                               OR email = ?
+                            LIMIT 1
+                            `
+                        )
+                        .bind(
+                            loginValue,
+                            loginValue.toLowerCase()
+                        )
+                        .first();
+
+
+                if (!user) {
+
+                    return json({
+                        success: false,
+                        error: "Account not found."
+                    }, 401);
+
+                }
+
+
+                if (user.password !== password) {
+
+                    return json({
+                        success: false,
+                        error: "Invalid password."
+                    }, 401);
+
+                }
+
+
+                return json({
+                    success: true,
+                    message: "Login successful.",
+                    user: {
+                        id: user.id,
+                        username: user.username,
+                        email: user.email
+                    }
+                });
+
+            } catch (error) {
+
+                return json({
+                    success: false,
+                    error: error.message
+                }, 500);
+
+            }
+
+        }
+
+
+        /* =====================================================
+           GET USER PROFILE
+        ===================================================== */
+
+        if (
+            url.pathname === "/api/profile" &&
+            request.method === "GET"
+        ) {
+
+            try {
+
+                const username =
+                    url.searchParams.get("username");
+
+
+                if (!username) {
+
+                    return json({
+                        success: false,
+                        error: "Username is required."
+                    }, 400);
+
+                }
+
+
+                const user =
+                    await env.DB
+                        .prepare(
+                            `
+                            SELECT
+                                id,
+                                username,
+                                email
+                            FROM users
+                            WHERE username = ?
+                            LIMIT 1
+                            `
+                        )
+                        .bind(username)
+                        .first();
+
+
+                if (!user) {
+
+                    return json({
+                        success: false,
+                        error: "User not found."
+                    }, 404);
+
+                }
+
+
+                return json({
+                    success: true,
+                    user: user
+                });
+
+            } catch (error) {
+
+                return json({
+                    success: false,
+                    error: error.message
+                }, 500);
+
+            }
+
+        }
+
+
+        /* =====================================================
+           HEALTH CHECK
+        ===================================================== */
+
+        if (
+            url.pathname === "/api/health" &&
+            request.method === "GET"
+        ) {
+
+            return json({
+                success: true,
+                status: "online",
+                service: "Rahul Live API",
+                timestamp: new Date().toISOString()
+            });
+
+        }
+
+
+        /* =====================================================
+           404
+        ===================================================== */
+
+        return json({
+            success: false,
+            error: "API endpoint not found."
+        }, 404);
+
     }
 
-    try {
-
-      // =========================
-      // HOME API
-      // =========================
-      if (url.pathname === "/") {
-        return Response.json(
-          {
-            success: true,
-            app: "Rahul Social Hub",
-            version: "1.0.0",
-            message: "API Running 🚀"
-          },
-          { headers: corsHeaders }
-        );
-      }
-
-      // ===== NEXT PART BELOW =====
-// =========================
-// REGISTER API
-// =========================
-if (url.pathname === "/api/register" && request.method === "POST") {
-
-  const body = await request.json();
-  const { username, email, password } = body;
-
-  if (!username || !email || !password) {
-    return Response.json(
-      {
-        success: false,
-        message: "All fields are required"
-      },
-      { headers: corsHeaders }
-    );
-  }
-
-  const existing = await env.DB.prepare(
-    "SELECT id FROM users WHERE email = ? OR username = ?"
-  )
-  .bind(email, username)
-  .first();
-
-  if (existing) {
-    return Response.json(
-      {
-        success: false,
-        message: "Username or Email already exists"
-      },
-      { headers: corsHeaders }
-    );
-  }
-
-  await env.DB.prepare(
-    "INSERT INTO users (username, email, password) VALUES (?, ?, ?)"
-  )
-  .bind(username, email, password)
-  .run();
-
-  return Response.json(
-    {
-      success: true,
-      message: "Registration Successful"
-    },
-    { headers: corsHeaders }
-  );
-}
-// =========================
-// LOGIN API
-// =========================
-if (url.pathname === "/api/login" && request.method === "POST") {
-
-  const body = await request.json();
-  const { email, password } = body;
-
-  if (!email || !password) {
-    return Response.json(
-      {
-        success: false,
-        message: "Email and Password are required"
-      },
-      { headers: corsHeaders }
-    );
-  }
-
-  const user = await env.DB.prepare(
-    `SELECT id, username, email
-     FROM users
-     WHERE email = ? AND password = ?`
-  )
-  .bind(email, password)
-  .first();
-
-  if (!user) {
-    return Response.json(
-      {
-        success: false,
-        message: "Invalid Email or Password"
-      },
-      { headers: corsHeaders }
-    );
-  }
-
-  return Response.json(
-    {
-      success: true,
-      message: "Login Successful",
-      user
-    },
-    { headers: corsHeaders }
-  );
-}
-// =========================
-// VIDEO UPLOAD API
-// =========================
-if (url.pathname === "/api/upload-video" && request.method === "POST") {
-
-  const body = await request.json();
-
-  const {
-    user_id,
-    title,
-    description,
-    video_url,
-    thumbnail_url
-  } = body;
-
-  if (!user_id || !title || !video_url) {
-    return Response.json(
-      {
-        success: false,
-        message: "User ID, title and video URL are required"
-      },
-      { headers: corsHeaders }
-    );
-  }
-
-  const user = await env.DB.prepare(
-    "SELECT id, username FROM users WHERE id = ?"
-  )
-  .bind(user_id)
-  .first();
-
-  if (!user) {
-    return Response.json(
-      {
-        success: false,
-        message: "User not found"
-      },
-      { headers: corsHeaders }
-    );
-  }
-
-  const result = await env.DB.prepare(
-    `INSERT INTO videos
-    (user_id, title, description, video_url, thumbnail_url)
-    VALUES (?, ?, ?, ?, ?)`
-  )
-  .bind(
-    user_id,
-    title,
-    description || "",
-    video_url,
-    thumbnail_url || ""
-  )
-  .run();
-
-  return Response.json(
-    {
-      success: true,
-      message: "Video uploaded successfully",
-      video_id: result.meta.last_row_id
-    },
-    { headers: corsHeaders }
-  );
-}
-      return Response.json(
-        {
-          success: false,
-          message: "API Not Found"
-        },
-        {
-          status: 404,
-          headers: corsHeaders
-        }
-      );
-
-    } catch (error) {
-
-      return Response.json(
-        {
-          success: false,
-          error: error.message
-        },
-        {
-          status: 500,
-          headers: corsHeaders
-        }
-      );
-
-    }
-
-  }
-}
+};
