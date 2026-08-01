@@ -1,9 +1,10 @@
 {
-  "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "rahul-live-api",
+  "name": "rahulsocialhub-db",
   "main": "worker.js",
   "compatibility_date": "2026-08-01",
-  "workers_dev": true,
+
+  "account_id": "e302a11815822cef65a4b419f7b18569",
+
   "d1_databases": [
     {
       "binding": "DB",
