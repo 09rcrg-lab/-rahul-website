@@ -1,551 +1,193 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+
     <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    >
+
+    <meta
+        name="theme-color"
+        content="#000000"
+    >
+
+    <meta
+        name="description"
+        content="Rahul Live - Short Video and LIVE Streaming"
+    >
 
     <title>Rahul Live</title>
 
-    <meta name="theme-color" content="#000000">
+    <link
+        rel="stylesheet"
+        href="style.css"
+    >
 
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        body {
-            background: #000;
-            color: #fff;
-            font-family: Arial, sans-serif;
-            min-height: 100vh;
-        }
-
-        button,
-        input {
-            font-family: inherit;
-        }
-
-        /* ================= AUTH ================= */
-
-        #authScreen {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            background:
-                radial-gradient(circle at top, #073b19 0%, #000 45%);
-        }
-
-        .authBox {
-            width: 100%;
-            max-width: 400px;
-            padding: 28px 22px;
-            border: 1px solid #19ff68;
-            border-radius: 20px;
-            background: rgba(5, 5, 5, 0.96);
-            box-shadow: 0 0 25px rgba(0, 255, 90, .18);
-        }
-
-        .logo {
-            text-align: center;
-            font-size: 32px;
-            font-weight: 800;
-            color: #19ff68;
-            margin-bottom: 8px;
-        }
-
-        .tagline {
-            text-align: center;
-            color: #aaa;
-            margin-bottom: 25px;
-        }
-
-        .authTabs {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 20px;
-        }
-
-        .authTabs button {
-            flex: 1;
-            padding: 12px;
-            border: 1px solid #333;
-            border-radius: 10px;
-            background: #111;
-            color: #aaa;
-        }
-
-        .authTabs button.active {
-            background: #19ff68;
-            color: #000;
-            border-color: #19ff68;
-            font-weight: bold;
-        }
-
-        .inputGroup {
-            margin-bottom: 14px;
-        }
-
-        .inputGroup input {
-            width: 100%;
-            padding: 14px;
-            border-radius: 10px;
-            border: 1px solid #333;
-            background: #111;
-            color: #fff;
-            outline: none;
-        }
-
-        .inputGroup input:focus {
-            border-color: #19ff68;
-        }
-
-        .mainBtn {
-            width: 100%;
-            padding: 14px;
-            border: 0;
-            border-radius: 10px;
-            background: #19ff68;
-            color: #000;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        .authMessage {
-            text-align: center;
-            margin-top: 15px;
-            color: #aaa;
-            font-size: 14px;
-        }
-
-        /* ================= APP ================= */
-
-        #appScreen {
-            display: none;
-            min-height: 100vh;
-            background: #000;
-        }
-
-        .topBar {
-            height: 58px;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 100;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 15px;
-            background: rgba(0,0,0,.88);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid #222;
-        }
-
-        .topLogo {
-            color: #19ff68;
-            font-size: 21px;
-            font-weight: bold;
-        }
-
-        .liveTopBtn {
-            border: 1px solid #ff304f;
-            background: #180006;
-            color: #ff304f;
-            border-radius: 20px;
-            padding: 7px 12px;
-            font-weight: bold;
-        }
-
-        .content {
-            padding-top: 58px;
-            padding-bottom: 70px;
-        }
-
-        .page {
-            display: none;
-        }
-
-        .page.active {
-            display: block;
-        }
-
-        /* ================= FEED ================= */
-
-        .videoFeed {
-            height: calc(100vh - 128px);
-            overflow-y: auto;
-            scroll-snap-type: y mandatory;
-        }
-
-        .videoCard {
-            position: relative;
-            height: calc(100vh - 128px);
-            scroll-snap-align: start;
-            background: #111;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-        }
-
-        .videoCard video {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            background: #111;
-        }
-
-        .videoOverlay {
-            position: absolute;
-            left: 15px;
-            right: 15px;
-            bottom: 20px;
-            z-index: 5;
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-end;
-        }
-
-        .videoInfo {
-            max-width: 70%;
-        }
-
-        .username {
-            font-weight: bold;
-            font-size: 17px;
-            margin-bottom: 8px;
-        }
-
-        .caption {
-            color: #ddd;
-            line-height: 1.4;
-        }
-
-        .videoActions {
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-            align-items: center;
-        }
-
-        .actionBtn {
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            border: 1px solid #555;
-            background: rgba(0,0,0,.55);
-            color: #fff;
-            font-size: 20px;
-        }
-
-        .actionCount {
-            font-size: 11px;
-            margin-top: -9px;
-        }
-
-        /* ================= LIVE ================= */
-
-        .sectionTitle {
-            padding: 20px 15px 10px;
-            font-size: 24px;
-            font-weight: bold;
-        }
-
-        .liveGrid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-            padding: 10px;
-        }
-
-        .liveCard {
-            min-height: 180px;
-            border-radius: 14px;
-            overflow: hidden;
-            position: relative;
-            background: linear-gradient(145deg, #190006, #111);
-            border: 1px solid #333;
-        }
-
-        .liveThumb {
-            height: 135px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 42px;
-            background: #151515;
-        }
-
-        .liveBadge {
-            position: absolute;
-            top: 8px;
-            left: 8px;
-            background: #ff1744;
-            color: #fff;
-            padding: 4px 8px;
-            border-radius: 6px;
-            font-size: 11px;
-            font-weight: bold;
-        }
-
-        .liveName {
-            padding: 9px;
-            font-weight: bold;
-        }
-
-        .startLiveBox {
-            margin: 15px;
-            padding: 20px;
-            border: 1px solid #ff1744;
-            border-radius: 15px;
-            text-align: center;
-            background: #100005;
-        }
-
-        .startLiveBtn {
-            margin-top: 12px;
-            padding: 13px 25px;
-            border: 0;
-            border-radius: 25px;
-            background: #ff1744;
-            color: #fff;
-            font-weight: bold;
-        }
-
-        /* ================= UPLOAD ================= */
-
-        .uploadBox {
-            margin: 20px 15px;
-            padding: 25px 15px;
-            border: 1px dashed #19ff68;
-            border-radius: 15px;
-            text-align: center;
-        }
-
-        .uploadBox input {
-            display: none;
-        }
-
-        .uploadBtn {
-            display: inline-block;
-            margin-top: 15px;
-            padding: 13px 20px;
-            border-radius: 25px;
-            background: #19ff68;
-            color: #000;
-            font-weight: bold;
-        }
-
-        /* ================= PROFILE ================= */
-
-        .profileBox {
-            padding: 25px 15px;
-            text-align: center;
-        }
-
-        .avatar {
-            width: 90px;
-            height: 90px;
-            border-radius: 50%;
-            margin: auto;
-            background: #19ff68;
-            color: #000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 35px;
-            font-weight: bold;
-        }
-
-        .profileName {
-            margin-top: 12px;
-            font-size: 21px;
-            font-weight: bold;
-        }
-
-        .profileStats {
-            display: flex;
-            justify-content: center;
-            gap: 35px;
-            margin-top: 20px;
-        }
-
-        .stat strong {
-            display: block;
-            font-size: 18px;
-        }
-
-        .stat span {
-            color: #999;
-            font-size: 12px;
-        }
-
-        .logoutBtn {
-            margin-top: 25px;
-            padding: 12px 25px;
-            border: 1px solid #ff304f;
-            background: transparent;
-            color: #ff304f;
-            border-radius: 20px;
-        }
-
-        /* ================= BOTTOM NAV ================= */
-
-        .bottomNav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 70px;
-            z-index: 100;
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            background: rgba(0,0,0,.94);
-            border-top: 1px solid #222;
-        }
-
-        .navBtn {
-            border: 0;
-            background: transparent;
-            color: #777;
-            font-size: 12px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .navBtn span {
-            font-size: 22px;
-        }
-
-        .navBtn.active {
-            color: #19ff68;
-        }
-
-        @media (min-width: 700px) {
-            .videoFeed {
-                max-width: 500px;
-                margin: auto;
-            }
-
-            .bottomNav,
-            .topBar {
-                max-width: 700px;
-                margin: auto;
-            }
-        }
-    </style>
 </head>
+
 
 <body>
 
-<!-- ========================================================= -->
-<!-- LOGIN / REGISTER -->
-<!-- ========================================================= -->
 
-<section id="authScreen">
+<!-- =====================================================
+     AUTH SCREEN
+===================================================== -->
+
+<div id="authScreen">
 
     <div class="authBox">
 
-        <div class="logo">RAHUL LIVE</div>
-
-        <div class="tagline">
-            Short Videos • LIVE • Social
+        <div class="logo">
+            Rahul Live
         </div>
 
+        <div class="tagline">
+            Short Videos • LIVE Streaming
+        </div>
+
+
+        <!-- AUTH TABS -->
+
         <div class="authTabs">
-            <button id="loginTab" class="active" onclick="showLogin()">
+
+            <button
+                id="loginTab"
+                class="active"
+                type="button"
+            >
                 Login
             </button>
 
-            <button id="registerTab" onclick="showRegister()">
+            <button
+                id="registerTab"
+                type="button"
+            >
                 Register
             </button>
+
         </div>
+
 
         <!-- LOGIN -->
 
-        <div id="loginForm">
+        <form id="loginForm">
 
             <div class="inputGroup">
+
                 <input
-                    type="text"
                     id="loginUsername"
+                    type="text"
                     placeholder="Username or Email"
-                    autocomplete="username">
+                    autocomplete="username"
+                    required
+                >
+
             </div>
+
 
             <div class="inputGroup">
+
                 <input
-                    type="password"
                     id="loginPassword"
+                    type="password"
                     placeholder="Password"
-                    autocomplete="current-password">
+                    autocomplete="current-password"
+                    required
+                >
+
             </div>
 
-            <button class="mainBtn" onclick="loginUser()">
+
+            <button
+                class="mainBtn"
+                type="submit"
+            >
                 Login
             </button>
 
-        </div>
+        </form>
+
 
         <!-- REGISTER -->
 
-        <div id="registerForm" style="display:none;">
+        <form
+            id="registerForm"
+            style="display:none;"
+        >
 
             <div class="inputGroup">
+
                 <input
-                    type="text"
                     id="registerUsername"
+                    type="text"
                     placeholder="Username"
-                    autocomplete="username">
+                    autocomplete="username"
+                    required
+                >
+
             </div>
 
+
             <div class="inputGroup">
+
                 <input
-                    type="email"
                     id="registerEmail"
+                    type="email"
                     placeholder="Email"
-                    autocomplete="email">
+                    autocomplete="email"
+                    required
+                >
+
             </div>
+
 
             <div class="inputGroup">
+
                 <input
-                    type="password"
                     id="registerPassword"
+                    type="password"
                     placeholder="Password"
-                    autocomplete="new-password">
+                    autocomplete="new-password"
+                    required
+                >
+
             </div>
 
-            <button class="mainBtn" onclick="registerUser()">
+
+            <button
+                class="mainBtn"
+                type="submit"
+            >
                 Create Account
             </button>
 
-        </div>
+        </form>
 
-        <div id="authMessage" class="authMessage"></div>
+
+        <div
+            id="authMessage"
+            class="authMessage"
+        ></div>
 
     </div>
 
-</section>
+</div>
 
 
-<!-- ========================================================= -->
-<!-- MAIN APP -->
-<!-- ========================================================= -->
 
-<section id="appScreen">
+<!-- =====================================================
+     MAIN APPLICATION
+===================================================== -->
 
-    <!-- TOP BAR -->
+<div id="appScreen">
+
+
+    <!-- =================================================
+         TOP BAR
+    ================================================== -->
 
     <header class="topBar">
 
@@ -553,70 +195,54 @@
             Rahul Live
         </div>
 
-        <button class="liveTopBtn" onclick="openPage('livePage')">
+
+        <button
+            id="topLiveBtn"
+            class="liveTopBtn"
+            type="button"
+        >
             🔴 LIVE
         </button>
 
     </header>
 
 
+
+    <!-- =================================================
+         CONTENT
+    ================================================== -->
+
     <main class="content">
 
-        <!-- ================= HOME ================= -->
 
-        <section id="homePage" class="page active">
+        <!-- =============================================
+             HOME / SHORT VIDEOS
+        ============================================== -->
 
-            <div class="videoFeed">
+        <section
+            id="homePage"
+            class="page active"
+        >
 
-                <div class="videoCard">
+            <div
+                id="videoFeed"
+                class="videoFeed"
+            >
 
-                    <video
-                        controls
-                        playsinline
-                        loop
-                        preload="metadata">
-                    </video>
+                <!-- Videos will be loaded by script.js -->
 
-                    <div class="videoOverlay">
-
-                        <div class="videoInfo">
-
-                            <div class="username">
-                                @rahul
-                            </div>
-
-                            <div class="caption">
-                                Welcome to Rahul Live 🎬
-                            </div>
-
-                        </div>
-
-                        <div class="videoActions">
-
-                            <button class="actionBtn">
-                                ❤️
-                            </button>
-
-                            <div class="actionCount">
-                                0
-                            </div>
-
-                            <button class="actionBtn">
-                                💬
-                            </button>
-
-                            <div class="actionCount">
-                                0
-                            </div>
-
-                            <button class="actionBtn">
-                                ↗️
-                            </button>
-
-                        </div>
-
-                    </div>
-
+                <div
+                    id="videoLoading"
+                    style="
+                        min-height:100%;
+                        display:flex;
+                        align-items:center;
+                        justify-content:center;
+                        color:#777;
+                        text-align:center;
+                    "
+                >
+                    Loading videos...
                 </div>
 
             </div>
@@ -624,45 +250,60 @@
         </section>
 
 
-        <!-- ================= LIVE ================= -->
 
-        <section id="livePage" class="page">
+        <!-- =============================================
+             LIVE PAGE
+        ============================================== -->
 
-            <div class="sectionTitle">
-                🔴 Live Now
-            </div>
+        <section
+            id="livePage"
+            class="page"
+        >
+
+            <h2 class="sectionTitle">
+                LIVE
+            </h2>
+
 
             <div class="startLiveBox">
 
-                <h3>Go Live</h3>
+                <h3>
+                    🔴 Go LIVE
+                </h3>
 
-                <p style="color:#aaa;margin-top:8px;">
-                    Start your own live stream
+                <p>
+                    Start your own live stream.
                 </p>
 
-                <button class="startLiveBtn"
-                        onclick="startLive()">
-                    🔴 Start Live
+
+                <button
+                    id="startLiveBtn"
+                    class="startLiveBtn"
+                    type="button"
+                >
+                    Start LIVE
                 </button>
 
             </div>
 
-            <div class="liveGrid">
 
-                <div class="liveCard">
+            <div
+                id="liveGrid"
+                class="liveGrid"
+            >
 
-                    <div class="liveThumb">
-                        👤
-                    </div>
+                <!-- Live streams will be loaded here -->
 
-                    <div class="liveBadge">
-                        LIVE
-                    </div>
-
-                    <div class="liveName">
-                        No live streams
-                    </div>
-
+                <div
+                    id="liveLoading"
+                    style="
+                        grid-column:1/-1;
+                        padding:30px;
+                        text-align:center;
+                        color:#777;
+                    "
+                >
+                    Loading LIVE streams...
                 </div>
 
             </div>
@@ -670,80 +311,213 @@
         </section>
 
 
-        <!-- ================= UPLOAD ================= -->
 
-        <section id="uploadPage" class="page">
+        <!-- =============================================
+             UPLOAD PAGE
+        ============================================== -->
 
-            <div class="sectionTitle">
-                ⬆️ Upload Video
-            </div>
+        <section
+            id="uploadPage"
+            class="page"
+        >
+
+            <h2 class="sectionTitle">
+                Upload Short Video
+            </h2>
+
 
             <div class="uploadBox">
 
                 <h3>
-                    Create a Short Video
+                    🎬 Create a Short
                 </h3>
 
-                <p style="color:#aaa;margin-top:8px;">
-                    Select a video from your device
+                <p>
+                    Select a video from your phone.
                 </p>
 
-                <input
-                    type="file"
-                    id="videoInput"
-                    accept="video/*">
 
                 <label
-                    for="videoInput"
-                    class="uploadBtn">
-                    📹 Select Video
+                    for="videoFile"
+                    class="uploadBtn"
+                >
+                    Select Video
                 </label>
 
-                <div id="selectedVideo"
-                     style="margin-top:15px;color:#19ff68;">
+
+                <input
+                    id="videoFile"
+                    type="file"
+                    accept="video/*"
+                >
+
+
+                <div id="selectedVideo">
+                    No video selected
                 </div>
+
+
+                <video
+                    id="uploadPreview"
+                    controls
+                    playsinline
+                    style="
+                        display:none;
+                        width:100%;
+                        margin-top:15px;
+                        max-height:400px;
+                        border-radius:12px;
+                        background:#000;
+                    "
+                ></video>
+
+
+                <div
+                    class="inputGroup"
+                    style="margin-top:15px;"
+                >
+
+                    <textarea
+                        id="videoCaption"
+                        placeholder="Write a caption..."
+                        maxlength="1000"
+                        style="
+                            width:100%;
+                            min-height:90px;
+                            padding:12px;
+                            border:1px solid #303030;
+                            border-radius:10px;
+                            background:#111;
+                            color:#fff;
+                            resize:vertical;
+                            outline:none;
+                        "
+                    ></textarea>
+
+                </div>
+
+
+                <button
+                    id="uploadVideoBtn"
+                    class="mainBtn"
+                    type="button"
+                >
+                    Upload Video
+                </button>
+
+
+                <div
+                    id="uploadMessage"
+                    class="authMessage"
+                ></div>
 
             </div>
 
         </section>
 
 
-        <!-- ================= PROFILE ================= -->
 
-        <section id="profilePage" class="page">
+        <!-- =============================================
+             PROFILE PAGE
+        ============================================== -->
+
+        <section
+            id="profilePage"
+            class="page"
+        >
 
             <div class="profileBox">
 
-                <div class="avatar">
+
+                <div
+                    id="profileAvatar"
+                    class="avatar"
+                >
                     R
                 </div>
 
-                <div class="profileName"
-                     id="profileUsername">
+
+                <div
+                    id="profileName"
+                    class="profileName"
+                >
                     Rahul
                 </div>
 
+
+                <div
+                    id="profileUsername"
+                    style="
+                        margin-top:5px;
+                        color:#888;
+                        font-size:13px;
+                    "
+                >
+                    @username
+                </div>
+
+
                 <div class="profileStats">
 
-                    <div class="stat">
-                        <strong>0</strong>
-                        <span>Videos</span>
-                    </div>
 
                     <div class="stat">
-                        <strong>0</strong>
-                        <span>Followers</span>
+
+                        <strong id="profileVideos">
+                            0
+                        </strong>
+
+                        <span>
+                            Videos
+                        </span>
+
                     </div>
 
+
                     <div class="stat">
-                        <strong>0</strong>
-                        <span>Following</span>
+
+                        <strong id="profileFollowers">
+                            0
+                        </strong>
+
+                        <span>
+                            Followers
+                        </span>
+
                     </div>
+
+
+                    <div class="stat">
+
+                        <strong id="profileFollowing">
+                            0
+                        </strong>
+
+                        <span>
+                            Following
+                        </span>
+
+                    </div>
+
 
                 </div>
 
-                <button class="logoutBtn"
-                        onclick="logoutUser()">
+
+                <div
+                    id="profileBio"
+                    style="
+                        margin-top:20px;
+                        color:#aaa;
+                        line-height:1.5;
+                    "
+                >
+                </div>
+
+
+                <button
+                    id="logoutBtn"
+                    class="logoutBtn"
+                    type="button"
+                >
                     Logout
                 </button>
 
@@ -751,297 +525,232 @@
 
         </section>
 
+
+
+        <!-- =============================================
+             LIVE STUDIO
+        ============================================== -->
+
+        <section
+            id="liveStudio"
+            class="page"
+            style="
+                position:fixed;
+                z-index:2000;
+                inset:0;
+                background:#000;
+                padding:0;
+            "
+        >
+
+
+            <div
+                style="
+                    position:absolute;
+                    z-index:20;
+                    top:0;
+                    left:0;
+                    right:0;
+                    height:60px;
+                    display:flex;
+                    align-items:center;
+                    justify-content:space-between;
+                    padding:0 15px;
+                    background:rgba(0,0,0,.65);
+                "
+            >
+
+                <strong>
+                    🔴 LIVE
+                </strong>
+
+
+                <button
+                    id="closeLiveStudio"
+                    type="button"
+                    style="
+                        width:38px;
+                        height:38px;
+                        border:0;
+                        border-radius:50%;
+                        background:rgba(255,255,255,.12);
+                        color:#fff;
+                        font-size:20px;
+                    "
+                >
+                    ×
+                </button>
+
+            </div>
+
+
+            <video
+                id="livePreview"
+                autoplay
+                muted
+                playsinline
+                style="
+                    width:100%;
+                    height:100%;
+                    object-fit:cover;
+                    background:#111;
+                "
+            ></video>
+
+
+            <div
+                style="
+                    position:absolute;
+                    z-index:20;
+                    left:15px;
+                    right:15px;
+                    bottom:25px;
+                    display:flex;
+                    flex-direction:column;
+                    gap:10px;
+                "
+            >
+
+                <input
+                    id="liveTitle"
+                    type="text"
+                    placeholder="LIVE title"
+                    maxlength="100"
+                    style="
+                        width:100%;
+                        min-height:46px;
+                        padding:12px;
+                        border:1px solid rgba(255,255,255,.25);
+                        border-radius:10px;
+                        background:rgba(0,0,0,.65);
+                        color:#fff;
+                        outline:none;
+                    "
+                >
+
+
+                <button
+                    id="goLiveConfirmBtn"
+                    type="button"
+                    style="
+                        width:100%;
+                        min-height:50px;
+                        border:0;
+                        border-radius:12px;
+                        background:#ff1744;
+                        color:#fff;
+                        font-weight:800;
+                    "
+                >
+                    🔴 Start Broadcasting
+                </button>
+
+
+                <button
+                    id="endLiveBtn"
+                    type="button"
+                    style="
+                        display:none;
+                        width:100%;
+                        min-height:50px;
+                        border:1px solid #ff1744;
+                        border-radius:12px;
+                        background:#000;
+                        color:#ff1744;
+                        font-weight:800;
+                    "
+                >
+                    End LIVE
+                </button>
+
+            </div>
+
+        </section>
+
+
     </main>
 
 
-    <!-- ================= BOTTOM NAV ================= -->
+
+    <!-- =================================================
+         BOTTOM NAVIGATION
+    ================================================== -->
 
     <nav class="bottomNav">
 
-        <button class="navBtn active"
-                onclick="openPage('homePage', this)">
-            <span>🏠</span>
+
+        <button
+            class="navBtn active"
+            data-page="homePage"
+            type="button"
+        >
+
+            <span>
+                🏠
+            </span>
+
             Home
+
         </button>
 
-        <button class="navBtn"
-                onclick="openPage('livePage', this)">
-            <span>🔴</span>
+
+        <button
+            class="navBtn"
+            data-page="livePage"
+            type="button"
+        >
+
+            <span>
+                🔴
+            </span>
+
             LIVE
+
         </button>
 
-        <button class="navBtn"
-                onclick="openPage('uploadPage', this)">
-            <span>➕</span>
-            Upload
+
+        <button
+            class="navBtn"
+            data-page="uploadPage"
+            type="button"
+        >
+
+            <span>
+                ＋
+            </span>
+
+            Create
+
         </button>
 
-        <button class="navBtn"
-                onclick="openPage('profilePage', this)">
-            <span>👤</span>
+
+        <button
+            class="navBtn"
+            data-page="profilePage"
+            type="button"
+        >
+
+            <span>
+                👤
+            </span>
+
             Profile
+
         </button>
+
 
     </nav>
 
-</section>
 
+</div>
 
-<script>
 
-    /* =========================================================
-       AUTH UI
-    ========================================================= */
 
-    function showLogin() {
+<!-- =====================================================
+     JAVASCRIPT
+===================================================== -->
 
-        document.getElementById("loginForm").style.display = "block";
-        document.getElementById("registerForm").style.display = "none";
-
-        document.getElementById("loginTab").classList.add("active");
-        document.getElementById("registerTab").classList.remove("active");
-
-        document.getElementById("authMessage").innerText = "";
-    }
-
-
-    function showRegister() {
-
-        document.getElementById("loginForm").style.display = "none";
-        document.getElementById("registerForm").style.display = "block";
-
-        document.getElementById("loginTab").classList.remove("active");
-        document.getElementById("registerTab").classList.add("active");
-
-        document.getElementById("authMessage").innerText = "";
-    }
-
-
-    /* =========================================================
-       TEMPORARY LOCAL AUTH
-       REAL DATABASE/API WILL BE CONNECTED IN NEXT FILES
-    ========================================================= */
-
-    function registerUser() {
-
-        const username =
-            document.getElementById("registerUsername").value.trim();
-
-        const email =
-            document.getElementById("registerEmail").value.trim();
-
-        const password =
-            document.getElementById("registerPassword").value;
-
-        const message =
-            document.getElementById("authMessage");
-
-
-        if (!username || !email || !password) {
-
-            message.innerText =
-                "Please fill all fields.";
-
-            return;
-        }
-
-
-        if (password.length < 6) {
-
-            message.innerText =
-                "Password must be at least 6 characters.";
-
-            return;
-        }
-
-
-        localStorage.setItem(
-            "rahul_user",
-            JSON.stringify({
-                username: username,
-                email: email,
-                password: password
-            })
-        );
-
-
-        message.innerText =
-            "Account created successfully.";
-
-        document.getElementById("loginUsername").value =
-            username;
-
-        showLogin();
-    }
-
-
-    function loginUser() {
-
-        const username =
-            document.getElementById("loginUsername").value.trim();
-
-        const password =
-            document.getElementById("loginPassword").value;
-
-        const saved =
-            localStorage.getItem("rahul_user");
-
-
-        if (!saved) {
-
-            document.getElementById("authMessage").innerText =
-                "Please register first.";
-
-            return;
-        }
-
-
-        const user =
-            JSON.parse(saved);
-
-
-        if (
-            (username === user.username ||
-             username === user.email) &&
-            password === user.password
-        ) {
-
-            localStorage.setItem(
-                "rahul_logged_in",
-                "true"
-            );
-
-            openApp(user.username);
-
-        } else {
-
-            document.getElementById("authMessage").innerText =
-                "Invalid username or password.";
-        }
-    }
-
-
-    function openApp(username) {
-
-        document.getElementById("authScreen").style.display =
-            "none";
-
-        document.getElementById("appScreen").style.display =
-            "block";
-
-        document.getElementById("profileUsername").innerText =
-            username;
-
-    }
-
-
-    function logoutUser() {
-
-        localStorage.removeItem(
-            "rahul_logged_in"
-        );
-
-        document.getElementById("appScreen").style.display =
-            "none";
-
-        document.getElementById("authScreen").style.display =
-            "flex";
-
-        showLogin();
-    }
-
-
-    /* =========================================================
-       PAGE NAVIGATION
-    ========================================================= */
-
-    function openPage(pageId, button) {
-
-        const pages =
-            document.querySelectorAll(".page");
-
-        pages.forEach(function(page) {
-            page.classList.remove("active");
-        });
-
-
-        const selected =
-            document.getElementById(pageId);
-
-        if (selected) {
-            selected.classList.add("active");
-        }
-
-
-        const navButtons =
-            document.querySelectorAll(".navBtn");
-
-        navButtons.forEach(function(btn) {
-            btn.classList.remove("active");
-        });
-
-
-        if (button) {
-            button.classList.add("active");
-        }
-    }
-
-
-    /* =========================================================
-       VIDEO SELECT
-    ========================================================= */
-
-    document
-        .getElementById("videoInput")
-        .addEventListener("change", function() {
-
-            const file = this.files[0];
-
-            if (!file) {
-                return;
-            }
-
-            document.getElementById("selectedVideo").innerText =
-                "Selected: " + file.name;
-        });
-
-
-    /* =========================================================
-       LIVE
-    ========================================================= */
-
-    function startLive() {
-
-        alert(
-            "Live camera and real-time streaming will be connected in the next files."
-        );
-    }
-
-
-    /* =========================================================
-       AUTO LOGIN
-    ========================================================= */
-
-    window.addEventListener("load", function() {
-
-        const loggedIn =
-            localStorage.getItem("rahul_logged_in");
-
-        const saved =
-            localStorage.getItem("rahul_user");
-
-
-        if (loggedIn === "true" && saved) {
-
-            const user =
-                JSON.parse(saved);
-
-            openApp(user.username);
-        }
-
-    });
-
-</script>
+<script src="script.js"></script>
 
 </body>
 </html>
