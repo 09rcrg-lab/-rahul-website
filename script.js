@@ -1,26 +1,22 @@
 /* =========================================================
-   RAHUL LIVE - SCRIPT.JS
-   Short Video + LIVE Application
+   RAHUL LIVE
+   script.js
 ========================================================= */
 
-"use strict";
+const API_BASE =
+    "https://rahulsocialhub-db.09rcrg.workers.dev";
+
+let currentUser =
+    JSON.parse(
+        localStorage.getItem("rahulLiveUser") || "null"
+    );
+
+let liveStream = null;
+let currentLiveId = null;
 
 
 /* =========================================================
-   APP CONFIG
-========================================================= */
-
-const APP_NAME = "Rahul Live";
-
-
-/*
-   आगे backend लगाते समय केवल यही API URL बदला जाएगा.
-*/
-const API_BASE_URL = "";
-
-
-/* =========================================================
-   DOM HELPERS
+   HELPERS
 ========================================================= */
 
 function $(id) {
@@ -28,49 +24,127 @@ function $(id) {
 }
 
 
-/* =========================================================
-   AUTH UI
-========================================================= */
-
-function showLogin() {
-
-    $("loginForm").style.display = "block";
-    $("registerForm").style.display = "none";
-
-    $("loginTab").classList.add("active");
-    $("registerTab").classList.remove("active");
-
-    $("authMessage").innerText = "";
-}
-
-
-function showRegister() {
-
-    $("loginForm").style.display = "none";
-    $("registerForm").style.display = "block";
-
-    $("loginTab").classList.remove("active");
-    $("registerTab").classList.add("active");
-
-    $("authMessage").innerText = "";
-}
-
-
-/* =========================================================
-   MESSAGE
-========================================================= */
-
 function showAuthMessage(message, success = false) {
 
     const box = $("authMessage");
 
     if (!box) return;
 
-    box.innerText = message;
+    box.textContent = message;
 
-    box.style.color = success
-        ? "#19ff68"
-        : "#ff6b6b";
+    box.style.color =
+        success ? "#19ff68" : "#ff526f";
+}
+
+
+function showUploadMessage(message, success = false) {
+
+    const box = $("uploadMessage");
+
+    if (!box) return;
+
+    box.textContent = message;
+
+    box.style.color =
+        success ? "#19ff68" : "#ff526f";
+}
+
+
+async function api(path, options = {}) {
+
+    try {
+
+        const response =
+            await fetch(
+                API_BASE + path,
+                {
+                    ...options,
+                    headers: {
+                        "Content-Type": "application/json",
+                        ...(options.headers || {})
+                    }
+                }
+            );
+
+
+        let data;
+
+        try {
+
+            data = await response.json();
+
+        } catch {
+
+            data = {
+                success: false,
+                error: "Invalid server response."
+            };
+
+        }
+
+
+        if (!response.ok && !data.error) {
+
+            data.error =
+                "Request failed.";
+
+        }
+
+
+        return data;
+
+    } catch (error) {
+
+        return {
+            success: false,
+            error: "Server connection failed."
+        };
+
+    }
+}
+
+
+/* =========================================================
+   AUTH TABS
+========================================================= */
+
+function showLogin() {
+
+    if ($("loginForm"))
+        $("loginForm").style.display = "block";
+
+    if ($("registerForm"))
+        $("registerForm").style.display = "none";
+
+
+    $("loginTab")
+        ?.classList.add("active");
+
+    $("registerTab")
+        ?.classList.remove("active");
+
+
+    showAuthMessage("");
+}
+
+
+function showRegister() {
+
+    if ($("loginForm"))
+        $("loginForm").style.display = "none";
+
+    if ($("registerForm"))
+        $("registerForm").style.display = "block";
+
+
+    $("loginTab")
+        ?.classList.remove("active");
+
+    $("registerTab")
+        ?.classList.add("active");
+
+
+    showAuthMessage("");
 }
 
 
@@ -78,142 +152,85 @@ function showAuthMessage(message, success = false) {
    REGISTER
 ========================================================= */
 
-async function registerUser() {
+async function registerUser(event) {
+
+    event.preventDefault();
+
 
     const username =
-        $("registerUsername").value.trim();
+        $("registerUsername")
+            .value
+            .trim();
 
     const email =
-        $("registerEmail").value.trim();
+        $("registerEmail")
+            .value
+            .trim();
 
     const password =
-        $("registerPassword").value;
+        $("registerPassword")
+            .value;
 
 
-    if (!username || !email || !password) {
+    if (
+        !username ||
+        !email ||
+        !password
+    ) {
 
         showAuthMessage(
-            "Please fill all fields."
+            "सभी जानकारी भरना जरूरी है।"
         );
 
         return;
     }
-
-
-    if (username.length < 3) {
-
-        showAuthMessage(
-            "Username must contain at least 3 characters."
-        );
-
-        return;
-    }
-
-
-    if (password.length < 6) {
-
-        showAuthMessage(
-            "Password must contain at least 6 characters."
-        );
-
-        return;
-    }
-
-
-    /*
-       Backend API available hone par registration
-       server par jayega.
-    */
-
-    if (API_BASE_URL) {
-
-        try {
-
-            const response = await fetch(
-                API_BASE_URL + "/api/register",
-                {
-                    method: "POST",
-
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-
-                    body: JSON.stringify({
-                        username,
-                        email,
-                        password
-                    })
-                }
-            );
-
-
-            const data =
-                await response.json();
-
-
-            if (!response.ok || data.success === false) {
-
-                showAuthMessage(
-                    data.error ||
-                    data.message ||
-                    "Registration failed."
-                );
-
-                return;
-            }
-
-        } catch (error) {
-
-            showAuthMessage(
-                "Server connection failed."
-            );
-
-            return;
-        }
-    }
-
-
-    /*
-       Temporary local account storage.
-       Backend connect hone ke baad server account
-       primary authentication hoga.
-    */
-
-    const user = {
-
-        username: username,
-
-        email: email,
-
-        password: password,
-
-        createdAt: new Date().toISOString()
-    };
-
-
-    localStorage.setItem(
-        "rahul_user",
-        JSON.stringify(user)
-    );
 
 
     showAuthMessage(
-        "Account created successfully.",
+        "Account बनाया जा रहा है...",
         true
     );
 
 
-    setTimeout(function() {
+    const result =
+        await api(
+            "/api/register",
+            {
+                method: "POST",
 
-        $("loginUsername").value =
-            username;
+                body: JSON.stringify({
+                    username,
+                    email,
+                    password
+                })
+            }
+        );
 
-        $("loginPassword").value =
-            "";
 
-        showLogin();
+    if (!result.success) {
 
-    }, 700);
+        showAuthMessage(
+            result.error ||
+            "Registration failed."
+        );
+
+        return;
+    }
+
+
+    showAuthMessage(
+        "Account successfully बन गया। अब Login करें।",
+        true
+    );
+
+
+    $("registerForm").reset();
+
+
+    setTimeout(
+        () => showLogin(),
+        1000
+    );
 }
 
 
@@ -221,157 +238,76 @@ async function registerUser() {
    LOGIN
 ========================================================= */
 
-async function loginUser() {
+async function loginUser(event) {
 
-    const usernameOrEmail =
-        $("loginUsername").value.trim();
+    event.preventDefault();
+
+
+    const username =
+        $("loginUsername")
+            .value
+            .trim();
 
     const password =
-        $("loginPassword").value;
+        $("loginPassword")
+            .value;
 
 
-    if (!usernameOrEmail || !password) {
+    if (
+        !username ||
+        !password
+    ) {
 
         showAuthMessage(
-            "Please enter username/email and password."
+            "Username/Email और Password डालें।"
         );
 
         return;
     }
 
 
-    /*
-       Future API login support.
-    */
-
-    if (API_BASE_URL) {
-
-        try {
-
-            const response = await fetch(
-                API_BASE_URL + "/api/login",
-                {
-                    method: "POST",
-
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-
-                    body: JSON.stringify({
-                        username: usernameOrEmail,
-                        email: usernameOrEmail,
-                        password: password
-                    })
-                }
-            );
+    showAuthMessage(
+        "Login हो रहा है...",
+        true
+    );
 
 
-            const data =
-                await response.json();
+    const result =
+        await api(
+            "/api/login",
+            {
+                method: "POST",
 
-
-            if (response.ok && data.success) {
-
-                const user =
-                    data.user || {
-                        username: usernameOrEmail
-                    };
-
-
-                localStorage.setItem(
-                    "rahul_user",
-                    JSON.stringify(user)
-                );
-
-                localStorage.setItem(
-                    "rahul_logged_in",
-                    "true"
-                );
-
-
-                openApp(
-                    user.username ||
-                    usernameOrEmail
-                );
-
-                return;
+                body: JSON.stringify({
+                    username,
+                    password
+                })
             }
-
-        } catch (error) {
-
-            console.log(
-                "API login unavailable, using local login."
-            );
-        }
-    }
+        );
 
 
-    /*
-       Local login fallback.
-    */
-
-    const saved =
-        localStorage.getItem("rahul_user");
-
-
-    if (!saved) {
+    if (!result.success) {
 
         showAuthMessage(
-            "Account not found. Please register first."
+            result.error ||
+            "Login failed."
         );
 
         return;
     }
 
 
-    let user;
-
-    try {
-
-        user = JSON.parse(saved);
-
-    } catch (error) {
-
-        showAuthMessage(
-            "Account data is corrupted. Please register again."
-        );
-
-        localStorage.removeItem(
-            "rahul_user"
-        );
-
-        return;
-    }
-
-
-    const validUsername =
-        usernameOrEmail === user.username ||
-        usernameOrEmail === user.email;
-
-
-    const validPassword =
-        password === user.password;
-
-
-    if (!validUsername || !validPassword) {
-
-        showAuthMessage(
-            "Invalid username/email or password."
-        );
-
-        return;
-    }
+    currentUser =
+        result.user;
 
 
     localStorage.setItem(
-        "rahul_logged_in",
-        "true"
+        "rahulLiveUser",
+        JSON.stringify(currentUser)
     );
 
 
-    openApp(
-        user.username
-    );
+    openApp();
 }
 
 
@@ -379,25 +315,21 @@ async function loginUser() {
    OPEN APP
 ========================================================= */
 
-function openApp(username) {
+function openApp() {
 
-    $("authScreen").style.display =
-        "none";
-
-    $("appScreen").style.display =
-        "block";
+    if ($("authScreen"))
+        $("authScreen").style.display = "none";
 
 
-    if ($("profileUsername")) {
-
-        $("profileUsername").innerText =
-            username || "User";
-    }
+    if ($("appScreen"))
+        $("appScreen").style.display = "block";
 
 
-    openPage(
-        "homePage"
-    );
+    loadProfile();
+    loadVideos();
+    loadLiveStreams();
+
+    showPage("homePage");
 }
 
 
@@ -405,40 +337,34 @@ function openApp(username) {
    LOGOUT
 ========================================================= */
 
-function logoutUser() {
+function logout() {
 
-    /*
-       Stop all videos before leaving.
-    */
+    stopCamera();
 
-    stopAllVideos();
+
+    currentUser = null;
+
+    currentLiveId = null;
 
 
     localStorage.removeItem(
-        "rahul_logged_in"
+        "rahulLiveUser"
     );
 
 
-    $("appScreen").style.display =
-        "none";
-
-    $("authScreen").style.display =
-        "flex";
+    if ($("appScreen"))
+        $("appScreen").style.display = "none";
 
 
-    $("loginUsername").value =
-        "";
+    if ($("authScreen"))
+        $("authScreen").style.display = "flex";
 
-    $("loginPassword").value =
-        "";
+
+    $("loginForm")
+        ?.reset();
 
 
     showLogin();
-
-    showAuthMessage(
-        "You have been logged out.",
-        true
-    );
 }
 
 
@@ -446,221 +372,601 @@ function logoutUser() {
    PAGE NAVIGATION
 ========================================================= */
 
-function openPage(pageId, button = null) {
+function showPage(pageId) {
 
-    const pages =
-        document.querySelectorAll(".page");
+    document
+        .querySelectorAll(".page")
+        .forEach(page => {
 
+            page.classList.remove("active");
 
-    pages.forEach(function(page) {
-
-        page.classList.remove(
-            "active"
-        );
-    });
+        });
 
 
     const page =
         $(pageId);
 
 
-    if (!page) return;
+    if (page)
+        page.classList.add("active");
 
 
-    page.classList.add(
-        "active"
-    );
+    document
+        .querySelectorAll(".navBtn")
+        .forEach(button => {
+
+            button.classList.toggle(
+                "active",
+                button.dataset.page === pageId
+            );
+
+        });
 
 
-    const navButtons =
-        document.querySelectorAll(".navBtn");
+    if (pageId === "homePage")
+        loadVideos();
 
 
-    navButtons.forEach(function(btn) {
-
-        btn.classList.remove(
-            "active"
-        );
-    });
+    if (pageId === "livePage")
+        loadLiveStreams();
 
 
-    if (button) {
-
-        button.classList.add(
-            "active"
-        );
-    }
-
-
-    /*
-       Page-specific actions.
-    */
-
-    if (pageId === "homePage") {
-
-        prepareVideoFeed();
-    }
-
-
-    if (pageId === "livePage") {
-
-        prepareLivePage();
-    }
-
-
-    window.scrollTo(
-        0,
-        0
-    );
+    if (pageId === "profilePage")
+        loadProfile();
 }
 
 
 /* =========================================================
-   VIDEO SELECT / UPLOAD PREVIEW
+   LOAD SHORT VIDEOS
 ========================================================= */
 
-function setupVideoSelector() {
+async function loadVideos() {
 
-    const input =
-        $("videoInput");
-
-    if (!input) return;
+    const feed =
+        $("videoFeed");
 
 
-    input.addEventListener(
-        "change",
-        function() {
-
-            const file =
-                this.files &&
-                this.files[0];
+    if (!feed)
+        return;
 
 
-            const output =
-                $("selectedVideo");
+    feed.innerHTML = `
+        <div style="
+            min-height:100%;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            color:#777;
+        ">
+            Videos loading...
+        </div>
+    `;
 
 
-            if (!file) {
-
-                if (output) {
-                    output.innerText = "";
-                }
-
-                return;
-            }
+    const result =
+        await api("/api/videos");
 
 
-            if (!file.type.startsWith("video/")) {
+    if (!result.success) {
 
-                if (output) {
+        feed.innerHTML = `
+            <div style="
+                padding:40px 20px;
+                text-align:center;
+                color:#ff526f;
+            ">
+                ${escapeHtml(
+                    result.error ||
+                    "Videos load नहीं हो पाए।"
+                )}
+            </div>
+        `;
 
-                    output.innerText =
-                        "Please select a video file.";
-
-                    output.style.color =
-                        "#ff6b6b";
-                }
-
-                this.value = "";
-
-                return;
-            }
-
-
-            if (output) {
-
-                output.innerText =
-                    "Selected: " +
-                    file.name;
-
-                output.style.color =
-                    "#19ff68";
-            }
+        return;
+    }
 
 
-            /*
-               Local preview is created here.
-               Actual server upload will be connected
-               with the video API later.
-            */
+    const videos =
+        result.videos || [];
 
-            createVideoPreview(
-                file
+
+    if (!videos.length) {
+
+        feed.innerHTML = `
+            <div style="
+                min-height:100%;
+                display:flex;
+                flex-direction:column;
+                align-items:center;
+                justify-content:center;
+                text-align:center;
+                color:#777;
+                padding:30px;
+            ">
+
+                <div style="
+                    font-size:50px;
+                    margin-bottom:15px;
+                ">
+                    🎬
+                </div>
+
+                <strong>
+                    अभी कोई Short Video नहीं है।
+                </strong>
+
+                <span style="
+                    margin-top:8px;
+                ">
+                    पहला Short Video upload करें।
+                </span>
+
+            </div>
+        `;
+
+        return;
+    }
+
+
+    feed.innerHTML = "";
+
+
+    videos.forEach(
+        video => {
+
+            feed.appendChild(
+                createVideoCard(video)
             );
+
         }
     );
+
+
+    setupVideoObserver();
 }
 
 
 /* =========================================================
-   VIDEO PREVIEW
+   VIDEO CARD
 ========================================================= */
 
-function createVideoPreview(file) {
+function createVideoCard(video) {
 
-    const oldPreview =
-        $("uploadVideoPreview");
-
-
-    if (oldPreview) {
-
-        oldPreview.remove();
-    }
+    const card =
+        document.createElement("article");
 
 
-    const url =
-        URL.createObjectURL(file);
+    card.className =
+        "videoCard";
 
 
-    const video =
+    const videoElement =
         document.createElement("video");
 
 
-    video.id =
-        "uploadVideoPreview";
-
-    video.src =
-        url;
-
-    video.controls =
-        true;
-
-    video.playsInline =
-        true;
-
-    video.style.width =
-        "100%";
-
-    video.style.maxHeight =
-        "400px";
-
-    video.style.marginTop =
-        "15px";
-
-    video.style.borderRadius =
-        "12px";
+    videoElement.src =
+        video.video_url || "";
 
 
-    const box =
-        document.querySelector(
-            ".uploadBox"
-        );
+    videoElement.playsInline = true;
+    videoElement.loop = true;
+    videoElement.preload = "metadata";
+    videoElement.muted = true;
 
 
-    if (box) {
+    if (video.thumbnail_url) {
 
-        box.appendChild(
-            video
-        );
+        videoElement.poster =
+            video.thumbnail_url;
+
     }
+
+
+    const overlay =
+        document.createElement("div");
+
+    overlay.className =
+        "videoOverlay";
+
+
+    const info =
+        document.createElement("div");
+
+    info.className =
+        "videoInfo";
+
+
+    info.innerHTML = `
+        <div class="username">
+            @${escapeHtml(
+                video.username || "user"
+            )}
+        </div>
+
+        <div class="caption">
+            ${escapeHtml(
+                video.caption || ""
+            )}
+        </div>
+    `;
+
+
+    const actions =
+        document.createElement("div");
+
+    actions.className =
+        "videoActions";
+
+
+    /* LIKE */
+
+    const likeButton =
+        document.createElement("button");
+
+
+    likeButton.className =
+        "actionBtn";
+
+    likeButton.type =
+        "button";
+
+    likeButton.innerHTML =
+        "❤️";
+
+
+    const likeCount =
+        document.createElement("div");
+
+
+    likeCount.className =
+        "actionCount";
+
+
+    likeCount.textContent =
+        formatCount(
+            video.likes_count || 0
+        );
+
+
+    likeButton.onclick =
+        async event => {
+
+            event.stopPropagation();
+
+
+            if (!currentUser) {
+
+                alert(
+                    "पहले Login करें।"
+                );
+
+                return;
+            }
+
+
+            const result =
+                await api(
+                    "/api/videos/like",
+                    {
+                        method: "POST",
+
+                        body: JSON.stringify({
+                            video_id:
+                                video.id,
+
+                            user_id:
+                                currentUser.id
+                        })
+                    }
+                );
+
+
+            if (!result.success) {
+
+                alert(
+                    result.error ||
+                    "Like failed."
+                );
+
+                return;
+            }
+
+
+            let count =
+                Number(
+                    video.likes_count || 0
+                );
+
+
+            if (result.liked) {
+
+                count++;
+
+            } else {
+
+                count =
+                    Math.max(
+                        0,
+                        count - 1
+                    );
+
+            }
+
+
+            video.likes_count =
+                count;
+
+
+            likeCount.textContent =
+                formatCount(count);
+        };
+
+
+    /* COMMENT */
+
+    const commentButton =
+        document.createElement("button");
+
+
+    commentButton.className =
+        "actionBtn";
+
+    commentButton.type =
+        "button";
+
+    commentButton.innerHTML =
+        "💬";
+
+
+    const commentCount =
+        document.createElement("div");
+
+
+    commentCount.className =
+        "actionCount";
+
+
+    commentCount.textContent =
+        formatCount(
+            video.comments_count || 0
+        );
+
+
+    commentButton.onclick =
+        async event => {
+
+            event.stopPropagation();
+
+
+            if (!currentUser) {
+
+                alert(
+                    "पहले Login करें।"
+                );
+
+                return;
+            }
+
+
+            const text =
+                prompt(
+                    "Comment लिखें:"
+                );
+
+
+            if (
+                !text ||
+                !text.trim()
+            )
+                return;
+
+
+            const result =
+                await api(
+                    "/api/videos/comment",
+                    {
+                        method: "POST",
+
+                        body: JSON.stringify({
+                            video_id:
+                                video.id,
+
+                            user_id:
+                                currentUser.id,
+
+                            comment:
+                                text.trim()
+                        })
+                    }
+                );
+
+
+            if (!result.success) {
+
+                alert(
+                    result.error ||
+                    "Comment failed."
+                );
+
+                return;
+            }
+
+
+            video.comments_count =
+                Number(
+                    video.comments_count || 0
+                ) + 1;
+
+
+            commentCount.textContent =
+                formatCount(
+                    video.comments_count
+                );
+        };
+
+
+    /* SHARE */
+
+    const shareButton =
+        document.createElement("button");
+
+
+    shareButton.className =
+        "actionBtn";
+
+    shareButton.type =
+        "button";
+
+    shareButton.innerHTML =
+        "↗️";
+
+
+    const shareCount =
+        document.createElement("div");
+
+
+    shareCount.className =
+        "actionCount";
+
+
+    shareCount.textContent =
+        formatCount(
+            video.shares_count || 0
+        );
+
+
+    shareButton.onclick =
+        async event => {
+
+            event.stopPropagation();
+
+
+            const shareData = {
+                title:
+                    "Rahul Live",
+
+                text:
+                    video.caption ||
+                    "Watch this Short Video",
+
+                url:
+                    window.location.href
+            };
+
+
+            try {
+
+                if (
+                    navigator.share
+                ) {
+
+                    await navigator.share(
+                        shareData
+                    );
+
+                } else if (
+                    navigator.clipboard
+                ) {
+
+                    await navigator.clipboard.writeText(
+                        window.location.href
+                    );
+
+                    alert(
+                        "Link copied."
+                    );
+
+                }
+
+            } catch {
+
+                // Share cancelled.
+
+            }
+        };
+
+
+    actions.appendChild(likeButton);
+    actions.appendChild(likeCount);
+
+    actions.appendChild(commentButton);
+    actions.appendChild(commentCount);
+
+    actions.appendChild(shareButton);
+    actions.appendChild(shareCount);
+
+
+    overlay.appendChild(info);
+    overlay.appendChild(actions);
+
+
+    card.appendChild(videoElement);
+    card.appendChild(overlay);
+
+
+    let viewed = false;
+
+
+    videoElement.addEventListener(
+        "play",
+        () => {
+
+            if (
+                viewed ||
+                !currentUser
+            )
+                return;
+
+
+            viewed = true;
+
+
+            api(
+                "/api/videos/view",
+                {
+                    method: "POST",
+
+                    body: JSON.stringify({
+                        video_id:
+                            video.id,
+
+                        user_id:
+                            currentUser.id
+                    })
+                }
+            );
+
+        }
+    );
+
+
+    card.addEventListener(
+        "click",
+        event => {
+
+            if (
+                event.target.closest(
+                    ".videoActions"
+                )
+            )
+                return;
+
+
+            videoElement.muted =
+                !videoElement.muted;
+        }
+    );
+
+
+    return card;
 }
 
 
 /* =========================================================
-   VIDEO FEED
+   VIDEO AUTO PLAY
 ========================================================= */
 
-function prepareVideoFeed() {
+function setupVideoObserver() {
 
     const videos =
         document.querySelectorAll(
@@ -668,67 +974,351 @@ function prepareVideoFeed() {
         );
 
 
-    videos.forEach(function(video) {
-
-        video.pause();
-
-    });
+    if (!videos.length)
+        return;
 
 
-    /*
-       Current feed video remains ready.
-       Future API will dynamically load
-       uploaded short videos here.
-    */
-}
+    const observer =
+        new IntersectionObserver(
+            entries => {
+
+                entries.forEach(
+                    entry => {
+
+                        const video =
+                            entry.target;
 
 
-/* =========================================================
-   STOP ALL VIDEOS
-========================================================= */
+                        if (
+                            entry.isIntersecting
+                        ) {
 
-function stopAllVideos() {
+                            videos.forEach(
+                                other => {
 
-    const videos =
-        document.querySelectorAll(
-            "video"
+                                    if (
+                                        other !== video
+                                    ) {
+
+                                        other.pause();
+
+                                    }
+
+                                }
+                            );
+
+
+                            video
+                                .play()
+                                .catch(
+                                    () => {}
+                                );
+
+                        } else {
+
+                            video.pause();
+
+                        }
+
+                    }
+                );
+
+            },
+            {
+                threshold: 0.75
+            }
         );
 
 
-    videos.forEach(function(video) {
+    videos.forEach(
+        video => {
 
-        try {
+            observer.observe(video);
 
-            video.pause();
-
-        } catch (error) {
-
-            console.log(
-                "Video stop error",
-                error
-            );
         }
-    });
+    );
 }
 
 
 /* =========================================================
-   LIVE PAGE
+   VIDEO FILE SELECT
 ========================================================= */
 
-function prepareLivePage() {
+function setupVideoSelection() {
+
+    const input =
+        $("videoFile");
+
+
+    if (!input)
+        return;
+
+
+    input.addEventListener(
+        "change",
+        () => {
+
+            const file =
+                input.files?.[0];
+
+
+            if (!file) {
+
+                $("selectedVideo")
+                    .textContent =
+                    "No video selected";
+
+
+                $("uploadPreview")
+                    .style.display =
+                    "none";
+
+
+                return;
+            }
+
+
+            $("selectedVideo")
+                .textContent =
+                file.name;
+
+
+            const preview =
+                $("uploadPreview");
+
+
+            preview.src =
+                URL.createObjectURL(file);
+
+
+            preview.style.display =
+                "block";
+        }
+    );
+}
+
+
+/* =========================================================
+   UPLOAD VIDEO
+========================================================= */
+
+async function uploadVideo() {
+
+    const input =
+        $("videoFile");
+
+
+    const file =
+        input?.files?.[0];
+
+
+    if (!file) {
+
+        showUploadMessage(
+            "पहले video select करें।"
+        );
+
+        return;
+    }
+
 
     /*
-       Future:
-       - Load active live streams
-       - Connect WebRTC/stream server
-       - Show live viewers
-       - Live chat
-    */
+     * D1 database में actual video file
+     * store नहीं करनी चाहिए।
+     *
+     * Actual video storage/streaming service
+     * connect करने के बाद यहां real upload
+     * होगा।
+     */
 
-    console.log(
-        "LIVE page ready."
+    showUploadMessage(
+        "Video storage अभी connect करना बाकी है।",
+        false
     );
+}
+
+
+/* =========================================================
+   LIVE LIST
+========================================================= */
+
+async function loadLiveStreams() {
+
+    const grid =
+        $("liveGrid");
+
+
+    if (!grid)
+        return;
+
+
+    grid.innerHTML = `
+        <div style="
+            grid-column:1/-1;
+            padding:30px;
+            text-align:center;
+            color:#777;
+        ">
+            LIVE loading...
+        </div>
+    `;
+
+
+    const result =
+        await api("/api/live");
+
+
+    if (!result.success) {
+
+        grid.innerHTML = `
+            <div style="
+                grid-column:1/-1;
+                padding:30px;
+                text-align:center;
+                color:#ff526f;
+            ">
+                ${escapeHtml(
+                    result.error ||
+                    "LIVE load नहीं हुआ।"
+                )}
+            </div>
+        `;
+
+        return;
+    }
+
+
+    const streams =
+        result.live_streams || [];
+
+
+    if (!streams.length) {
+
+        grid.innerHTML = `
+            <div style="
+                grid-column:1/-1;
+                padding:40px 20px;
+                text-align:center;
+                color:#777;
+            ">
+                🔴<br><br>
+                अभी कोई LIVE नहीं है।
+            </div>
+        `;
+
+        return;
+    }
+
+
+    grid.innerHTML = "";
+
+
+    streams.forEach(
+        stream => {
+
+            const card =
+                document.createElement("div");
+
+
+            card.className =
+                "liveCard";
+
+
+            card.innerHTML = `
+                <div class="liveThumb">
+                    🔴
+                </div>
+
+                <div class="liveBadge">
+                    LIVE
+                </div>
+
+                <div class="liveName">
+                    ${escapeHtml(
+                        stream.title ||
+                        "Live Stream"
+                    )}
+
+                    <br>
+
+                    <span style="
+                        color:#888;
+                        font-size:11px;
+                    ">
+                        @${escapeHtml(
+                            stream.username ||
+                            "user"
+                        )}
+                    </span>
+                </div>
+            `;
+
+
+            card.onclick =
+                () => {
+
+                    alert(
+                        "Real LIVE playback को streaming provider से connect करना बाकी है।"
+                    );
+
+                };
+
+
+            grid.appendChild(card);
+
+        }
+    );
+}
+
+
+/* =========================================================
+   OPEN LIVE STUDIO
+========================================================= */
+
+async function openLiveStudio() {
+
+    if (!currentUser) {
+
+        alert(
+            "पहले Login करें।"
+        );
+
+        return;
+    }
+
+
+    $("liveStudio")
+        ?.classList.add("active");
+
+
+    try {
+
+        liveStream =
+            await navigator.mediaDevices.getUserMedia(
+                {
+                    video: {
+                        facingMode: "user"
+                    },
+
+                    audio: true
+                }
+            );
+
+
+        $("livePreview").srcObject =
+            liveStream;
+
+
+    } catch (error) {
+
+        $("liveStudio")
+            ?.classList.remove("active");
+
+
+        alert(
+            "Camera और Microphone permission जरूरी है।"
+        );
+    }
 }
 
 
@@ -738,375 +1328,499 @@ function prepareLivePage() {
 
 async function startLive() {
 
-    /*
-       Browser camera/microphone permission test.
-       Actual broadcasting server connection will be
-       added in the LIVE streaming backend file.
-    */
-
-    if (
-        !navigator.mediaDevices ||
-        !navigator.mediaDevices.getUserMedia
-    ) {
+    if (!currentUser) {
 
         alert(
-            "Camera and microphone are not supported in this browser."
+            "पहले Login करें।"
         );
 
         return;
     }
 
 
-    try {
-
-        const stream =
-            await navigator.mediaDevices.getUserMedia({
-                video: true,
-                audio: true
-            });
+    const title =
+        $("liveTitle")
+            .value
+            .trim() ||
+        "Rahul Live";
 
 
-        /*
-           Store the stream temporarily.
-           The next LIVE implementation will use
-           this stream for actual broadcasting.
-        */
+    const result =
+        await api(
+            "/api/live/start",
+            {
+                method: "POST",
 
-        window.rahulLiveStream =
-            stream;
+                body: JSON.stringify({
+                    user_id:
+                        currentUser.id,
 
-
-        openLiveStudio(
-            stream
+                    title
+                })
+            }
         );
 
-    } catch (error) {
 
-        console.error(
-            "Camera/Microphone error:",
-            error
-        );
-
+    if (!result.success) {
 
         alert(
-            "Camera aur microphone permission allow karo."
+            result.error ||
+            "LIVE start नहीं हुआ।"
         );
+
+        return;
     }
+
+
+    currentLiveId =
+        result.live_id;
+
+
+    $("goLiveConfirmBtn")
+        .style.display =
+        "none";
+
+
+    $("endLiveBtn")
+        .style.display =
+        "block";
+
+
+    alert(
+        "LIVE session शुरू हो गई है।"
+    );
 }
 
 
 /* =========================================================
-   LIVE STUDIO
+   END LIVE
 ========================================================= */
 
-function openLiveStudio(stream) {
+async function endLive() {
 
-    let studio =
-        $("liveStudio");
+    if (!currentLiveId) {
 
+        closeLiveStudio();
 
-    if (!studio) {
-
-        studio =
-            document.createElement("div");
-
-        studio.id =
-            "liveStudio";
+        return;
+    }
 
 
-        studio.style.position =
-            "fixed";
+    const result =
+        await api(
+            "/api/live/end",
+            {
+                method: "POST",
 
-        studio.style.inset =
-            "0";
-
-        studio.style.zIndex =
-            "9999";
-
-        studio.style.background =
-            "#000";
-
-        studio.style.display =
-            "flex";
-
-        studio.style.flexDirection =
-            "column";
-
-        studio.style.alignItems =
-            "center";
-
-        studio.style.justifyContent =
-            "center";
-
-
-        studio.innerHTML = `
-            <div style="
-                width:100%;
-                height:100%;
-                display:flex;
-                flex-direction:column;
-                align-items:center;
-                justify-content:center;
-                padding:20px;
-            ">
-
-                <div style="
-                    position:absolute;
-                    top:20px;
-                    left:20px;
-                    color:#ff1744;
-                    font-weight:bold;
-                    font-size:18px;
-                ">
-                    🔴 LIVE STUDIO
-                </div>
-
-                <video
-                    id="livePreview"
-                    autoplay
-                    playsinline
-                    muted
-                    style="
-                        width:100%;
-                        max-width:500px;
-                        max-height:70vh;
-                        object-fit:cover;
-                        border-radius:15px;
-                        background:#111;
-                    ">
-                </video>
-
-                <div style="
-                    margin-top:20px;
-                    display:flex;
-                    gap:10px;
-                ">
-
-                    <button
-                        id="endLiveBtn"
-                        style="
-                            padding:14px 25px;
-                            border:0;
-                            border-radius:25px;
-                            background:#ff1744;
-                            color:#fff;
-                            font-weight:bold;
-                        ">
-                        End LIVE
-                    </button>
-
-                </div>
-
-            </div>
-        `;
-
-
-        document.body.appendChild(
-            studio
+                body: JSON.stringify({
+                    live_id:
+                        currentLiveId
+                })
+            }
         );
+
+
+    if (!result.success) {
+
+        alert(
+            result.error ||
+            "LIVE बंद नहीं हुआ।"
+        );
+
+        return;
     }
 
 
-    const preview =
-        $("livePreview");
+    currentLiveId =
+        null;
 
 
-    if (preview) {
-
-        preview.srcObject =
-            stream;
-    }
+    $("goLiveConfirmBtn")
+        .style.display =
+        "block";
 
 
-    const endButton =
-        $("endLiveBtn");
+    $("endLiveBtn")
+        .style.display =
+        "none";
 
 
-    if (endButton) {
+    stopCamera();
 
-        endButton.onclick =
-            stopLive;
-    }
+
+    $("liveStudio")
+        .classList.remove("active");
+
+
+    loadLiveStreams();
 }
 
 
 /* =========================================================
-   STOP LIVE
+   CLOSE LIVE STUDIO
 ========================================================= */
 
-function stopLive() {
+function closeLiveStudio() {
 
-    const stream =
-        window.rahulLiveStream;
+    if (currentLiveId) {
+
+        const answer =
+            confirm(
+                "LIVE चालू है। क्या LIVE बंद करना है?"
+            );
 
 
-    if (stream) {
+        if (answer) {
 
-        stream.getTracks()
-            .forEach(function(track) {
+            endLive();
 
-                track.stop();
+        }
 
-            });
+        return;
+    }
 
-        window.rahulLiveStream =
+
+    stopCamera();
+
+
+    $("liveStudio")
+        ?.classList.remove("active");
+}
+
+
+/* =========================================================
+   STOP CAMERA
+========================================================= */
+
+function stopCamera() {
+
+    if (!liveStream)
+        return;
+
+
+    liveStream
+        .getTracks()
+        .forEach(
+            track => track.stop()
+        );
+
+
+    liveStream =
+        null;
+
+
+    if ($("livePreview")) {
+
+        $("livePreview")
+            .srcObject =
             null;
     }
-
-
-    const studio =
-        $("liveStudio");
-
-
-    if (studio) {
-
-        studio.remove();
-    }
 }
 
 
 /* =========================================================
-   PAGE VISIBILITY
+   PROFILE
 ========================================================= */
 
-document.addEventListener(
-    "visibilitychange",
-    function() {
+async function loadProfile() {
 
-        if (document.hidden) {
-
-            /*
-               Background mein camera/live stream
-               accidentally continue na ho.
-            */
-
-            const activePage =
-                document.querySelector(
-                    ".page.active"
-                );
+    if (!currentUser)
+        return;
 
 
-            if (
-                activePage &&
-                activePage.id !== "livePage"
-            ) {
-
-                stopAllVideos();
-            }
-        }
-    }
-);
-
-
-/* =========================================================
-   INITIALIZE APP
-========================================================= */
-
-function initializeApp() {
-
-    setupVideoSelector();
-
-
-    const loggedIn =
-        localStorage.getItem(
-            "rahul_logged_in"
-        );
-
-
-    const savedUser =
-        localStorage.getItem(
-            "rahul_user"
+    const result =
+        await api(
+            "/api/profile?username=" +
+            encodeURIComponent(
+                currentUser.username
+            )
         );
 
 
     if (
-        loggedIn === "true" &&
-        savedUser
-    ) {
-
-        try {
-
-            const user =
-                JSON.parse(
-                    savedUser
-                );
+        !result.success ||
+        !result.user
+    )
+        return;
 
 
-            openApp(
-                user.username
-            );
-
-        } catch (error) {
-
-            localStorage.removeItem(
-                "rahul_logged_in"
-            );
-
-            localStorage.removeItem(
-                "rahul_user"
-            );
+    const user =
+        result.user;
 
 
-            $("authScreen").style.display =
-                "flex";
+    currentUser = {
+        ...currentUser,
+        ...user
+    };
 
-            $("appScreen").style.display =
-                "none";
-        }
 
-    } else {
+    localStorage.setItem(
+        "rahulLiveUser",
+        JSON.stringify(currentUser)
+    );
 
-        $("authScreen").style.display =
-            "flex";
 
-        $("appScreen").style.display =
-            "none";
-    }
+    $("profileName")
+        .textContent =
+        user.username ||
+        "User";
+
+
+    $("profileUsername")
+        .textContent =
+        "@" +
+        (
+            user.username ||
+            "user"
+        );
+
+
+    $("profileVideos")
+        .textContent =
+        user.videos_count || 0;
+
+
+    $("profileFollowers")
+        .textContent =
+        user.followers_count || 0;
+
+
+    $("profileFollowing")
+        .textContent =
+        user.following_count || 0;
+
+
+    $("profileBio")
+        .textContent =
+        user.bio || "";
+
+
+    $("profileAvatar")
+        .textContent =
+        (
+            user.username ||
+            "R"
+        )
+        .charAt(0)
+        .toUpperCase();
 }
 
 
 /* =========================================================
-   START
+   HTML SECURITY
+========================================================= */
+
+function escapeHtml(value) {
+
+    return String(value ?? "")
+        .replaceAll(
+            "&",
+            "&amp;"
+        )
+        .replaceAll(
+            "<",
+            "&lt;"
+        )
+        .replaceAll(
+            ">",
+            "&gt;"
+        )
+        .replaceAll(
+            '"',
+            "&quot;"
+        )
+        .replaceAll(
+            "'",
+            "&#039;"
+        );
+}
+
+
+/* =========================================================
+   NUMBER FORMAT
+========================================================= */
+
+function formatCount(value) {
+
+    const number =
+        Number(value || 0);
+
+
+    if (number >= 1000000) {
+
+        return (
+            number / 1000000
+        )
+        .toFixed(1)
+        .replace(
+            ".0",
+            ""
+        ) + "M";
+    }
+
+
+    if (number >= 1000) {
+
+        return (
+            number / 1000
+        )
+        .toFixed(1)
+        .replace(
+            ".0",
+            ""
+        ) + "K";
+    }
+
+
+    return String(number);
+}
+
+
+/* =========================================================
+   DOM READY
 ========================================================= */
 
 document.addEventListener(
     "DOMContentLoaded",
-    function() {
+    () => {
 
-        initializeApp();
+        /* LOGIN / REGISTER */
+
+        $("loginTab")
+            ?.addEventListener(
+                "click",
+                showLogin
+            );
+
+
+        $("registerTab")
+            ?.addEventListener(
+                "click",
+                showRegister
+            );
+
+
+        $("loginForm")
+            ?.addEventListener(
+                "submit",
+                loginUser
+            );
+
+
+        $("registerForm")
+            ?.addEventListener(
+                "submit",
+                registerUser
+            );
+
+
+        /* NAVIGATION */
+
+        document
+            .querySelectorAll(".navBtn")
+            .forEach(button => {
+
+                button.addEventListener(
+                    "click",
+                    () => {
+
+                        showPage(
+                            button.dataset.page
+                        );
+
+                    }
+                );
+
+            });
+
+
+        /* TOP LIVE */
+
+        $("topLiveBtn")
+            ?.addEventListener(
+                "click",
+                () => {
+
+                    showPage(
+                        "livePage"
+                    );
+
+                }
+            );
+
+
+        /* LIVE */
+
+        $("startLiveBtn")
+            ?.addEventListener(
+                "click",
+                openLiveStudio
+            );
+
+
+        $("goLiveConfirmBtn")
+            ?.addEventListener(
+                "click",
+                startLive
+            );
+
+
+        $("endLiveBtn")
+            ?.addEventListener(
+                "click",
+                endLive
+            );
+
+
+        $("closeLiveStudio")
+            ?.addEventListener(
+                "click",
+                closeLiveStudio
+            );
+
+
+        /* VIDEO */
+
+        setupVideoSelection();
+
+
+        $("uploadVideoBtn")
+            ?.addEventListener(
+                "click",
+                uploadVideo
+            );
+
+
+        /* LOGOUT */
+
+        $("logoutBtn")
+            ?.addEventListener(
+                "click",
+                logout
+            );
+
+
+        /* EXISTING SESSION */
+
+        if (currentUser) {
+
+            openApp();
+
+        } else {
+
+            $("authScreen")
+                .style.display =
+                "flex";
+
+
+            $("appScreen")
+                .style.display =
+                "none";
+
+
+            showLogin();
+
+        }
 
     }
 );
-
-
-/* =========================================================
-   GLOBAL EXPORTS
-   Required because index.html uses onclick=""
-========================================================= */
-
-window.showLogin =
-    showLogin;
-
-window.showRegister =
-    showRegister;
-
-window.registerUser =
-    registerUser;
-
-window.loginUser =
-    loginUser;
-
-window.logoutUser =
-    logoutUser;
-
-window.openApp =
-    openApp;
-
-window.openPage =
-    openPage;
-
-window.startLive =
-    startLive;
-
-window.stopLive =
-    stopLive;
