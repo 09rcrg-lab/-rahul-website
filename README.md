@@ -1,171 +1,66 @@
-# Rahul Live
+# Rahul Live 🚀
 
-Rahul Live is a short-video and live-streaming social application.
+Rahul Live एक short-video और live-streaming platform है।
 
 ## Features
 
-- User Registration
-- User Login
-- Short Video Feed
-- Video Upload
-- Video Likes
-- Video Comments
-- Video Shares
-- Video Views
-- Follow / Unfollow
-- User Profiles
-- Live Streaming
-- Live Viewers
-- Live Chat
-- Live Reactions
-- Live Notifications
-- User Reports
-- Live Moderation
-- Admin System
+- 🔐 Login
+- 📝 Register
+- 🎬 Short Videos
+- ❤️ Video Likes
+- 💬 Video Comments
+- 👁️ Video Views
+- 👥 Follow System
+- 🔴 LIVE Streaming
+- 👤 User Profile
+- 📱 Mobile Friendly
+- 🌐 Browser Support
+- ☁️ Cloudflare Workers
+- 🗄️ Cloudflare D1 Database
 
 ## Project Files
 
-- `.gitignore`
-- `README.md`
-- `database.sql`
-- `index.html`
-- `script.js`
-- `style.css`
-- `worker.js`
-- `wrangler.jsonc`
+- `index.html` — Website/App interface
+- `style.css` — Design and responsive UI
+- `script.js` — Frontend functionality
+- `worker.js` — Backend API
+- `database.sql` — Database tables
+- `wrangler.jsonc` — Cloudflare Worker configuration
+- `manifest.json` — Web App / PWA configuration
+- `.gitignore` — Git ignored files
 
-## Database
+## Backend
 
-The project uses Cloudflare D1.
+Backend is powered by Cloudflare Workers.
 
 Database:
 
 `rahulsocialhub-db`
 
-Worker binding:
+D1 binding:
 
 `DB`
 
-The database structure is stored in:
+## Important
 
-`database.sql`
+Short-video files और real LIVE video streaming के लिए अलग video storage/streaming infrastructure को connect करना होगा।
 
-## Backend
+Database में video files सीधे store नहीं की जाएंगी।
 
-The backend is handled by:
+## Project Goal
 
-`worker.js`
+Rahul Live को ऐसा platform बनाना है जो:
 
-Main API areas include:
+- Android पर काम करे
+- Chrome और दूसरे browsers में चले
+- Mobile पर fast और responsive हो
+- Short Videos और LIVE Streaming support करे
+- आगे चलकर notifications, messaging, monetization और creator features support कर सके
 
-- `/api/register`
-- `/api/login`
-- `/api/profile`
-- `/api/test`
-- `/api/health`
+## Development
 
-## Short Videos
+Project को file-by-file develop किया जा रहा है ताकि हर feature को properly test और connect किया जा सके।
 
-The application is designed for vertical short-video content.
+---
 
-Planned working features include:
-
-- Upload videos
-- Video feed
-- Video playback
-- Likes
-- Comments
-- Shares
-- Views
-- Follow system
-- Creator profiles
-
-## LIVE Streaming
-
-Rahul Live also supports the LIVE streaming system.
-
-Planned working LIVE features include:
-
-- Start LIVE
-- Camera access
-- Microphone access
-- Live broadcast
-- Live viewers
-- Live chat
-- Live reactions
-- Live notifications
-- Live moderation
-- End LIVE
-
-The browser camera and microphone permission system is already prepared in the frontend.
-
-The actual live broadcasting infrastructure will be connected through the backend/streaming system.
-
-## Authentication
-
-Users must:
-
-1. Register an account
-2. Login
-3. Enter the main application
-
-The main application should not be shown before authentication.
-
-## Mobile Support
-
-The interface is designed primarily for mobile devices.
-
-The project is also intended to work in:
-
-- Android browsers
-- Chrome
-- iPhone browsers
-- Desktop browsers
-
-The application can later be packaged as an Android application.
-
-## Design
-
-The main design direction is:
-
-- Black background
-- Neon green branding
-- Mobile-first interface
-- Vertical video experience
-- LIVE streaming interface
-- Fast and simple navigation
-
-## Development Rule
-
-Features should be implemented as working functionality wherever technically possible.
-
-Placeholder buttons should not be used when a real implementation can be connected.
-
-Development is being done one complete project file at a time.
-
-## Cloudflare
-
-The project uses Cloudflare Workers and Cloudflare D1.
-
-The Worker configuration is stored in:
-
-`wrangler.jsonc`
-
-The D1 database binding is:
-
-`DB`
-
-## Project Status
-
-Current project foundation:
-
-- Authentication UI
-- Short-video UI
-- LIVE UI
-- Video selection
-- Camera/microphone permission
-- Cloudflare Worker foundation
-- D1 database structure
-- Responsive mobile interface
-
-Next development stages will connect the frontend to the backend and implement the actual video and LIVE streaming functionality.
+© 2026 Rahul Live
