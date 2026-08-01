@@ -4,16 +4,19 @@ export default {
 
     const url = new URL(request.url);
 
+    const origin = request.headers.get("Origin") || "*";
+
     const corsHeaders = {
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type"
+      "Access-Control-Allow-Origin": origin,
+      "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type",
+      "Access-Control-Max-Age": "86400"
     };
 
 
-    /* =====================================================
-       OPTIONS / CORS
-    ===================================================== */
+    // =====================================================
+    // CORS PREFLIGHT
+    // =====================================================
 
     if (request.method === "OPTIONS") {
 
@@ -25,108 +28,219 @@ export default {
     }
 
 
-    try {
+    // =====================================================
+    // RESPONSE HELPERS
+    // =====================================================
+
+    function json(data, status = 200) {
+
+      return new Response(
+        JSON.stringify(data),
+        {
+          status,
+          headers: {
+            ...corsHeaders,
+            "Content-Type": "application/json; charset=UTF-8"
+          }
+        }
+      );
+
+    }
 
 
-      /* ===================================================
-         HOME
-      =================================================== */
+    function error(message, status = 400) {
 
-      if (
-        url.pathname === "/" &&
-        request.method === "GET"
-      ) {
+      return json({
+        success: false,
+        error: message
+      }, status);
 
-        return json({
-          success: true,
-          message: "Rahul Live API Running 🚀"
-        });
+    }
+
+
+    async function getBody() {
+
+      try {
+
+        return await request.json();
+
+      } catch {
+
+        return null;
 
       }
 
+    }
 
-      /* ===================================================
-         TEST DATABASE
-      =================================================== */
 
-      if (
-        url.pathname === "/api/test" &&
-        request.method === "GET"
-      ) {
+    // =====================================================
+    // PASSWORD HASH
+    // =====================================================
+
+    async function hashPassword(password) {
+
+      const data =
+        new TextEncoder().encode(password);
+
+      const hash =
+        await crypto.subtle.digest(
+          "SHA-256",
+          data
+        );
+
+      return Array
+        .from(new Uint8Array(hash))
+        .map(
+          byte =>
+            byte
+              .toString(16)
+              .padStart(2, "0")
+        )
+        .join("");
+
+    }
+
+
+    // =====================================================
+    // HOME
+    // =====================================================
+
+    if (
+      url.pathname === "/" &&
+      request.method === "GET"
+    ) {
+
+      return json({
+        success: true,
+        message: "Rahul Live API Running 🚀",
+        version: "2.0",
+        database: "D1"
+      });
+
+    }
+
+
+    // =====================================================
+    // DATABASE TEST
+    // =====================================================
+
+    if (
+      url.pathname === "/api/test" &&
+      request.method === "GET"
+    ) {
+
+      try {
 
         const result =
           await env.DB
-            .prepare(
-              "SELECT name FROM sqlite_master WHERE type='table' ORDER BY name"
-            )
+            .prepare(`
+              SELECT name
+              FROM sqlite_master
+              WHERE type = 'table'
+              ORDER BY name
+            `)
             .all();
-
 
         return json({
           success: true,
           tables: result.results || []
         });
 
+      } catch (e) {
+
+        return error(
+          e.message,
+          500
+        );
+
+      }
+
+    }
+
+
+    // =====================================================
+    // REGISTER
+    // =====================================================
+
+    if (
+      url.pathname === "/api/register" &&
+      request.method === "POST"
+    ) {
+
+      const body =
+        await getBody();
+
+      if (!body) {
+
+        return error(
+          "Invalid JSON."
+        );
+
       }
 
 
-      /* ===================================================
-         REGISTER
-      =================================================== */
+      const username =
+        String(
+          body.username || ""
+        ).trim();
+
+      const email =
+        String(
+          body.email || ""
+        ).trim()
+        .toLowerCase();
+
+      const password =
+        String(
+          body.password || ""
+        );
+
 
       if (
-        url.pathname === "/api/register" &&
-        request.method === "POST"
+        !username ||
+        !email ||
+        !password
       ) {
 
-        const body =
-          await request.json();
+        return error(
+          "Username, email और password जरूरी हैं।"
+        );
+
+      }
 
 
-        const username =
-          String(body.username || "").trim();
+      if (
+        username.length < 3
+      ) {
 
-        const email =
-          String(body.email || "").trim().toLowerCase();
+        return error(
+          "Username कम से कम 3 characters का होना चाहिए।"
+        );
 
-        const password =
-          String(body.password || "");
-
-
-        if (
-          !username ||
-          !email ||
-          !password
-        ) {
-
-          return json({
-            success: false,
-            error: "All fields are required."
-          }, 400);
-
-        }
+      }
 
 
-        if (password.length < 6) {
+      if (
+        password.length < 6
+      ) {
 
-          return json({
-            success: false,
-            error: "Password must be at least 6 characters."
-          }, 400);
+        return error(
+          "Password कम से कम 6 characters का होना चाहिए।"
+        );
 
-        }
+      }
 
+
+      try {
 
         const existing =
           await env.DB
-            .prepare(
-              `
+            .prepare(`
               SELECT id
               FROM users
               WHERE username = ? OR email = ?
               LIMIT 1
-              `
-            )
+            `)
             .bind(
               username,
               email
@@ -136,18 +250,23 @@ export default {
 
         if (existing) {
 
-          return json({
-            success: false,
-            error: "Username or email already exists."
-          }, 409);
+          return error(
+            "Username या Email पहले से मौजूद है।",
+            409
+          );
 
         }
 
 
+        const passwordHash =
+          await hashPassword(
+            password
+          );
+
+
         const result =
           await env.DB
-            .prepare(
-              `
+            .prepare(`
               INSERT INTO users
               (
                 username,
@@ -155,62 +274,83 @@ export default {
                 password
               )
               VALUES (?, ?, ?)
-              `
-            )
+            `)
             .bind(
               username,
               email,
-              password
+              passwordHash
             )
             .run();
 
 
         return json({
           success: true,
-          message: "Account created successfully.",
+          message: "Account successfully created.",
           user_id: result.meta.last_row_id
-        });
+        }, 201);
+
+
+      } catch (e) {
+
+        return error(
+          e.message,
+          500
+        );
+
+      }
+
+    }
+
+
+    // =====================================================
+    // LOGIN
+    // =====================================================
+
+    if (
+      url.pathname === "/api/login" &&
+      request.method === "POST"
+    ) {
+
+      const body =
+        await getBody();
+
+      if (!body) {
+
+        return error(
+          "Invalid JSON."
+        );
 
       }
 
 
-      /* ===================================================
-         LOGIN
-      =================================================== */
+      const username =
+        String(
+          body.username || ""
+        ).trim();
+
+      const password =
+        String(
+          body.password || ""
+        );
+
 
       if (
-        url.pathname === "/api/login" &&
-        request.method === "POST"
+        !username ||
+        !password
       ) {
 
-        const body =
-          await request.json();
+        return error(
+          "Username/Email और password जरूरी हैं।"
+        );
+
+      }
 
 
-        const username =
-          String(body.username || "").trim();
-
-        const password =
-          String(body.password || "");
-
-
-        if (
-          !username ||
-          !password
-        ) {
-
-          return json({
-            success: false,
-            error: "Username/email and password are required."
-          }, 400);
-
-        }
-
+      try {
 
         const user =
           await env.DB
-            .prepare(
-              `
+            .prepare(`
               SELECT
                 id,
                 username,
@@ -220,28 +360,44 @@ export default {
                 avatar_url,
                 followers_count,
                 following_count,
-                videos_count
+                videos_count,
+                created_at
               FROM users
-              WHERE
-                (username = ? OR email = ?)
-                AND password = ?
+              WHERE username = ? OR email = ?
               LIMIT 1
-              `
-            )
+            `)
             .bind(
               username,
-              username.toLowerCase(),
-              password
+              username.toLowerCase()
             )
             .first();
 
 
         if (!user) {
 
-          return json({
-            success: false,
-            error: "Invalid username/email or password."
-          }, 401);
+          return error(
+            "Username या Email गलत है।",
+            401
+          );
+
+        }
+
+
+        const passwordHash =
+          await hashPassword(
+            password
+          );
+
+
+        if (
+          passwordHash !==
+          user.password
+        ) {
+
+          return error(
+            "Password गलत है।",
+            401
+          );
 
         }
 
@@ -251,90 +407,37 @@ export default {
 
         return json({
           success: true,
+          message: "Login successful.",
           user
         });
 
-      }
 
+      } catch (e) {
 
-      /* ===================================================
-         PROFILE
-      =================================================== */
-
-      if (
-        url.pathname === "/api/profile" &&
-        request.method === "GET"
-      ) {
-
-        const username =
-          String(
-            url.searchParams.get("username") || ""
-          ).trim();
-
-
-        if (!username) {
-
-          return json({
-            success: false,
-            error: "Username is required."
-          }, 400);
-
-        }
-
-
-        const user =
-          await env.DB
-            .prepare(
-              `
-              SELECT
-                id,
-                username,
-                email,
-                bio,
-                avatar_url,
-                followers_count,
-                following_count,
-                videos_count
-              FROM users
-              WHERE username = ?
-              LIMIT 1
-              `
-            )
-            .bind(username)
-            .first();
-
-
-        if (!user) {
-
-          return json({
-            success: false,
-            error: "User not found."
-          }, 404);
-
-        }
-
-
-        return json({
-          success: true,
-          user
-        });
+        return error(
+          e.message,
+          500
+        );
 
       }
 
+    }
 
-      /* ===================================================
-         GET SHORT VIDEOS
-      =================================================== */
 
-      if (
-        url.pathname === "/api/videos" &&
-        request.method === "GET"
-      ) {
+    // =====================================================
+    // GET VIDEOS
+    // =====================================================
+
+    if (
+      url.pathname === "/api/videos" &&
+      request.method === "GET"
+    ) {
+
+      try {
 
         const result =
           await env.DB
-            .prepare(
-              `
+            .prepare(`
               SELECT
                 videos.id,
                 videos.user_id,
@@ -347,19 +450,15 @@ export default {
                 videos.views_count,
                 videos.status,
                 videos.created_at,
-                users.username
+                users.username,
+                users.avatar_url
               FROM videos
-
               INNER JOIN users
                 ON users.id = videos.user_id
-
               WHERE videos.status = 'published'
-
               ORDER BY videos.created_at DESC
-
               LIMIT 100
-              `
-            )
+            `)
             .all();
 
 
@@ -368,53 +467,74 @@ export default {
           videos: result.results || []
         });
 
+
+      } catch (e) {
+
+        return error(
+          e.message,
+          500
+        );
+
+      }
+
+    }
+
+
+    // =====================================================
+    // LIKE VIDEO
+    // =====================================================
+
+    if (
+      url.pathname === "/api/videos/like" &&
+      request.method === "POST"
+    ) {
+
+      const body =
+        await getBody();
+
+      if (!body) {
+
+        return error(
+          "Invalid JSON."
+        );
+
       }
 
 
-      /* ===================================================
-         LIKE / UNLIKE VIDEO
-      =================================================== */
+      const videoId =
+        Number(
+          body.video_id
+        );
+
+      const userId =
+        Number(
+          body.user_id
+        );
+
 
       if (
-        url.pathname === "/api/videos/like" &&
-        request.method === "POST"
+        !videoId ||
+        !userId
       ) {
 
-        const body =
-          await request.json();
+        return error(
+          "video_id और user_id जरूरी हैं।"
+        );
+
+      }
 
 
-        const videoId =
-          Number(body.video_id);
-
-        const userId =
-          Number(body.user_id);
-
-
-        if (
-          !videoId ||
-          !userId
-        ) {
-
-          return json({
-            success: false,
-            error: "Video and user are required."
-          }, 400);
-
-        }
-
+      try {
 
         const existing =
           await env.DB
-            .prepare(
-              `
+            .prepare(`
               SELECT id
               FROM video_likes
               WHERE video_id = ?
               AND user_id = ?
               LIMIT 1
-              `
-            )
+            `)
             .bind(
               videoId,
               userId
@@ -425,13 +545,11 @@ export default {
         if (existing) {
 
           await env.DB
-            .prepare(
-              `
+            .prepare(`
               DELETE FROM video_likes
               WHERE video_id = ?
               AND user_id = ?
-              `
-            )
+            `)
             .bind(
               videoId,
               userId
@@ -440,8 +558,7 @@ export default {
 
 
           await env.DB
-            .prepare(
-              `
+            .prepare(`
               UPDATE videos
               SET likes_count =
                 CASE
@@ -450,8 +567,7 @@ export default {
                   ELSE 0
                 END
               WHERE id = ?
-              `
-            )
+            `)
             .bind(videoId)
             .run();
 
@@ -465,16 +581,14 @@ export default {
 
 
         await env.DB
-          .prepare(
-            `
+          .prepare(`
             INSERT INTO video_likes
             (
               video_id,
               user_id
             )
             VALUES (?, ?)
-            `
-          )
+          `)
           .bind(
             videoId,
             userId
@@ -483,13 +597,12 @@ export default {
 
 
         await env.DB
-          .prepare(
-            `
+          .prepare(`
             UPDATE videos
-            SET likes_count = likes_count + 1
+            SET likes_count =
+              likes_count + 1
             WHERE id = ?
-            `
-          )
+          `)
           .bind(videoId)
           .run();
 
@@ -499,59 +612,84 @@ export default {
           liked: true
         });
 
+
+      } catch (e) {
+
+        return error(
+          e.message,
+          500
+        );
+
+      }
+
+    }
+
+
+    // =====================================================
+    // COMMENT VIDEO
+    // =====================================================
+
+    if (
+      url.pathname === "/api/videos/comment" &&
+      request.method === "POST"
+    ) {
+
+      const body =
+        await getBody();
+
+      if (!body) {
+
+        return error(
+          "Invalid JSON."
+        );
+
       }
 
 
-      /* ===================================================
-         VIDEO COMMENT
-      =================================================== */
+      const videoId =
+        Number(
+          body.video_id
+        );
+
+      const userId =
+        Number(
+          body.user_id
+        );
+
+      const comment =
+        String(
+          body.comment || ""
+        ).trim();
+
 
       if (
-        url.pathname === "/api/videos/comment" &&
-        request.method === "POST"
+        !videoId ||
+        !userId ||
+        !comment
       ) {
 
-        const body =
-          await request.json();
+        return error(
+          "Video, user और comment जरूरी हैं।"
+        );
+
+      }
 
 
-        const videoId =
-          Number(body.video_id);
+      if (
+        comment.length > 1000
+      ) {
 
-        const userId =
-          Number(body.user_id);
+        return error(
+          "Comment बहुत लंबा है।"
+        );
 
-        const comment =
-          String(body.comment || "").trim();
-
-
-        if (
-          !videoId ||
-          !userId ||
-          !comment
-        ) {
-
-          return json({
-            success: false,
-            error: "Video, user and comment are required."
-          }, 400);
-
-        }
+      }
 
 
-        if (comment.length > 1000) {
-
-          return json({
-            success: false,
-            error: "Comment is too long."
-          }, 400);
-
-        }
-
+      try {
 
         await env.DB
-          .prepare(
-            `
+          .prepare(`
             INSERT INTO video_comments
             (
               video_id,
@@ -559,8 +697,7 @@ export default {
               comment
             )
             VALUES (?, ?, ?)
-            `
-          )
+          `)
           .bind(
             videoId,
             userId,
@@ -570,14 +707,12 @@ export default {
 
 
         await env.DB
-          .prepare(
-            `
+          .prepare(`
             UPDATE videos
             SET comments_count =
               comments_count + 1
             WHERE id = ?
-            `
-          )
+          `)
           .bind(videoId)
           .run();
 
@@ -587,66 +722,85 @@ export default {
           message: "Comment added."
         });
 
+
+      } catch (e) {
+
+        return error(
+          e.message,
+          500
+        );
+
+      }
+
+    }
+
+
+    // =====================================================
+    // VIDEO VIEW
+    // =====================================================
+
+    if (
+      url.pathname === "/api/videos/view" &&
+      request.method === "POST"
+    ) {
+
+      const body =
+        await getBody();
+
+      if (!body) {
+
+        return error(
+          "Invalid JSON."
+        );
+
       }
 
 
-      /* ===================================================
-         VIDEO VIEW
-      =================================================== */
+      const videoId =
+        Number(
+          body.video_id
+        );
 
-      if (
-        url.pathname === "/api/videos/view" &&
-        request.method === "POST"
-      ) {
-
-        const body =
-          await request.json();
+      const userId =
+        body.user_id
+          ? Number(body.user_id)
+          : null;
 
 
-        const videoId =
-          Number(body.video_id);
+      if (!videoId) {
 
-        const userId =
-          Number(body.user_id);
+        return error(
+          "video_id जरूरी है।"
+        );
+
+      }
 
 
-        if (!videoId) {
-
-          return json({
-            success: false,
-            error: "Video ID is required."
-          }, 400);
-
-        }
-
+      try {
 
         await env.DB
-          .prepare(
-            `
+          .prepare(`
             INSERT INTO video_views
             (
               video_id,
               user_id
             )
             VALUES (?, ?)
-            `
-          )
+          `)
           .bind(
             videoId,
-            userId || null
+            userId
           )
           .run();
 
 
         await env.DB
-          .prepare(
-            `
+          .prepare(`
             UPDATE videos
             SET views_count =
               views_count + 1
             WHERE id = ?
-            `
-          )
+          `)
           .bind(videoId)
           .run();
 
@@ -655,292 +809,112 @@ export default {
           success: true
         });
 
+
+      } catch (e) {
+
+        return error(
+          e.message,
+          500
+        );
+
+      }
+
+    }
+
+
+    // =====================================================
+    // START LIVE
+    // =====================================================
+
+    if (
+      url.pathname === "/api/live/start" &&
+      request.method === "POST"
+    ) {
+
+      const body =
+        await getBody();
+
+      if (!body) {
+
+        return error(
+          "Invalid JSON."
+        );
+
       }
 
 
-      /* ===================================================
-         FOLLOW USER
-      =================================================== */
+      const userId =
+        Number(
+          body.user_id
+        );
 
-      if (
-        url.pathname === "/api/follow" &&
-        request.method === "POST"
-      ) {
-
-        const body =
-          await request.json();
-
-
-        const followerId =
-          Number(body.follower_id);
-
-        const followingId =
-          Number(body.following_id);
+      const title =
+        String(
+          body.title || "Rahul Live"
+        )
+        .trim()
+        .slice(0, 150);
 
 
-        if (
-          !followerId ||
-          !followingId
-        ) {
+      if (!userId) {
 
-          return json({
-            success: false,
-            error: "Follower and following user are required."
-          }, 400);
+        return error(
+          "user_id जरूरी है।"
+        );
 
-        }
+      }
 
 
-        if (
-          followerId === followingId
-        ) {
+      try {
 
-          return json({
-            success: false,
-            error: "You cannot follow yourself."
-          }, 400);
-
-        }
-
-
-        const existing =
+        const user =
           await env.DB
-            .prepare(
-              `
+            .prepare(`
               SELECT id
-              FROM follows
-              WHERE follower_id = ?
-              AND following_id = ?
+              FROM users
+              WHERE id = ?
               LIMIT 1
-              `
-            )
-            .bind(
-              followerId,
-              followingId
-            )
+            `)
+            .bind(userId)
             .first();
 
 
-        if (existing) {
+        if (!user) {
 
-          await env.DB
-            .prepare(
-              `
-              DELETE FROM follows
-              WHERE follower_id = ?
-              AND following_id = ?
-              `
-            )
-            .bind(
-              followerId,
-              followingId
-            )
-            .run();
-
-
-          await env.DB
-            .prepare(
-              `
-              UPDATE users
-              SET followers_count =
-                CASE
-                  WHEN followers_count > 0
-                  THEN followers_count - 1
-                  ELSE 0
-                END
-              WHERE id = ?
-              `
-            )
-            .bind(followingId)
-            .run();
-
-
-          await env.DB
-            .prepare(
-              `
-              UPDATE users
-              SET following_count =
-                CASE
-                  WHEN following_count > 0
-                  THEN following_count - 1
-                  ELSE 0
-                END
-              WHERE id = ?
-              `
-            )
-            .bind(followerId)
-            .run();
-
-
-          return json({
-            success: true,
-            following: false
-          });
+          return error(
+            "User नहीं मिला।",
+            404
+          );
 
         }
 
 
-        await env.DB
-          .prepare(
-            `
-            INSERT INTO follows
-            (
-              follower_id,
-              following_id
-            )
-            VALUES (?, ?)
-            `
-          )
-          .bind(
-            followerId,
-            followingId
-          )
-          .run();
-
-
-        await env.DB
-          .prepare(
-            `
-            UPDATE users
-            SET followers_count =
-              followers_count + 1
-            WHERE id = ?
-            `
-          )
-          .bind(followingId)
-          .run();
-
-
-        await env.DB
-          .prepare(
-            `
-            UPDATE users
-            SET following_count =
-              following_count + 1
-            WHERE id = ?
-            `
-          )
-          .bind(followerId)
-          .run();
-
-
-        return json({
-          success: true,
-          following: true
-        });
-
-      }
-
-
-      /* ===================================================
-         GET LIVE STREAMS
-      =================================================== */
-
-      if (
-        url.pathname === "/api/live" &&
-        request.method === "GET"
-      ) {
-
-        const result =
+        const alreadyLive =
           await env.DB
-            .prepare(
-              `
-              SELECT
-                live_streams.id,
-                live_streams.user_id,
-                live_streams.title,
-                live_streams.stream_url,
-                live_streams.playback_url,
-                live_streams.thumbnail_url,
-                live_streams.viewers_count,
-                live_streams.started_at,
-                users.username
-              FROM live_streams
-
-              INNER JOIN users
-                ON users.id = live_streams.user_id
-
-              WHERE live_streams.status = 'live'
-
-              ORDER BY live_streams.started_at DESC
-
-              LIMIT 100
-              `
-            )
-            .all();
-
-
-        return json({
-          success: true,
-          live_streams:
-            result.results || []
-        });
-
-      }
-
-
-      /* ===================================================
-         START LIVE
-      =================================================== */
-
-      if (
-        url.pathname === "/api/live/start" &&
-        request.method === "POST"
-      ) {
-
-        const body =
-          await request.json();
-
-
-        const userId =
-          Number(body.user_id);
-
-        const title =
-          String(
-            body.title ||
-            "Rahul Live"
-          ).trim();
-
-
-        if (!userId) {
-
-          return json({
-            success: false,
-            error: "User ID is required."
-          }, 400);
-
-        }
-
-
-        const active =
-          await env.DB
-            .prepare(
-              `
+            .prepare(`
               SELECT id
               FROM live_streams
               WHERE user_id = ?
               AND status = 'live'
               LIMIT 1
-              `
-            )
+            `)
             .bind(userId)
             .first();
 
 
-        if (active) {
+        if (alreadyLive) {
 
-          return json({
-            success: false,
-            error: "You already have an active LIVE."
-          }, 409);
+          return error(
+            "आप पहले से LIVE हैं।",
+            409
+          );
 
         }
 
 
         const result =
           await env.DB
-            .prepare(
-              `
+            .prepare(`
               INSERT INTO live_streams
               (
                 user_id,
@@ -948,8 +922,7 @@ export default {
                 status
               )
               VALUES (?, ?, 'live')
-              `
-            )
+            `)
             .bind(
               userId,
               title || "Rahul Live"
@@ -959,54 +932,85 @@ export default {
 
         return json({
           success: true,
-          live_id:
-            result.meta.last_row_id
+          live_id: result.meta.last_row_id,
+          message: "LIVE session created."
         });
+
+
+      } catch (e) {
+
+        return error(
+          e.message,
+          500
+        );
+
+      }
+
+    }
+
+
+    // =====================================================
+    // END LIVE
+    // =====================================================
+
+    if (
+      url.pathname === "/api/live/end" &&
+      request.method === "POST"
+    ) {
+
+      const body =
+        await getBody();
+
+      if (!body) {
+
+        return error(
+          "Invalid JSON."
+        );
 
       }
 
 
-      /* ===================================================
-         END LIVE
-      =================================================== */
-
-      if (
-        url.pathname === "/api/live/end" &&
-        request.method === "POST"
-      ) {
-
-        const body =
-          await request.json();
+      const liveId =
+        Number(
+          body.live_id
+        );
 
 
-        const liveId =
-          Number(body.live_id);
+      if (!liveId) {
+
+        return error(
+          "live_id जरूरी है।"
+        );
+
+      }
 
 
-        if (!liveId) {
+      try {
 
-          return json({
-            success: false,
-            error: "LIVE ID is required."
-          }, 400);
+        const result =
+          await env.DB
+            .prepare(`
+              UPDATE live_streams
+              SET
+                status = 'ended',
+                ended_at = CURRENT_TIMESTAMP
+              WHERE id = ?
+              AND status = 'live'
+            `)
+            .bind(liveId)
+            .run();
+
+
+        if (
+          !result.meta.changes
+        ) {
+
+          return error(
+            "LIVE session नहीं मिली।",
+            404
+          );
 
         }
-
-
-        await env.DB
-          .prepare(
-            `
-            UPDATE live_streams
-
-            SET
-              status = 'ended',
-              ended_at = CURRENT_TIMESTAMP
-
-            WHERE id = ?
-            `
-          )
-          .bind(liveId)
-          .run();
 
 
         return json({
@@ -1014,60 +1018,83 @@ export default {
           message: "LIVE ended."
         });
 
+
+      } catch (e) {
+
+        return error(
+          e.message,
+          500
+        );
+
       }
 
-
-      /* ===================================================
-         NOT FOUND
-      =================================================== */
-
-      return json({
-        success: false,
-        error: "API endpoint not found."
-      }, 404);
+    }
 
 
-    } catch (error) {
+    // =====================================================
+    // GET LIVE STREAMS
+    // =====================================================
 
-      return json({
-        success: false,
-        error:
-          error?.message ||
-          "Internal server error."
-      }, 500);
+    if (
+      url.pathname === "/api/live" &&
+      request.method === "GET"
+    ) {
+
+      try {
+
+        const result =
+          await env.DB
+            .prepare(`
+              SELECT
+                live_streams.id,
+                live_streams.user_id,
+                live_streams.title,
+                live_streams.stream_url,
+                live_streams.playback_url,
+                live_streams.thumbnail_url,
+                live_streams.status,
+                live_streams.viewers_count,
+                live_streams.started_at,
+                users.username,
+                users.avatar_url
+              FROM live_streams
+              INNER JOIN users
+                ON users.id = live_streams.user_id
+              WHERE live_streams.status = 'live'
+              ORDER BY live_streams.started_at DESC
+              LIMIT 100
+            `)
+            .all();
+
+
+        return json({
+          success: true,
+          live_streams:
+            result.results || []
+        });
+
+
+      } catch (e) {
+
+        return error(
+          e.message,
+          500
+        );
+
+      }
 
     }
+
+
+    // =====================================================
+    // 404
+    // =====================================================
+
+    return error(
+      "API endpoint not found.",
+      404
+    );
 
   }
 
 };
-
-
-/* =========================================================
-   JSON RESPONSE
-========================================================= */
-
-function json(data, status = 200) {
-
-  return new Response(
-    JSON.stringify(data),
-    {
-      status,
-
-      headers: {
-        "Content-Type":
-          "application/json; charset=UTF-8",
-
-        "Access-Control-Allow-Origin":
-          "*",
-
-        "Access-Control-Allow-Methods":
-          "GET, POST, OPTIONS",
-
-        "Access-Control-Allow-Headers":
-          "Content-Type"
-      }
-    }
-  );
-
-}
