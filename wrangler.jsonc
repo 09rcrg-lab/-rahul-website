@@ -1,11 +1,11 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
 
-  "name": "instaboost-hub",
+  "name": "rahul-live-api",
 
   "main": "worker.js",
 
-  "compatibility_date": "2026-07-31",
+  "compatibility_date": "2026-08-01",
 
   "workers_dev": true,
 
@@ -13,7 +13,7 @@
     {
       "binding": "DB",
       "database_name": "rahulsocialhub-db",
-      "database_id": "ca8c7270-d634-4b1d-8229-ef10b1af2655"
+      "database_id": "PASTE_YOUR_D1_DATABASE_ID_HERE"
     }
   ]
 }
