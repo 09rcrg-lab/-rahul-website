@@ -1,49 +1,34 @@
-# =========================================================
-# RAHUL LIVE - GITIGNORE
-# =========================================================
+# Cloudflare
+.wrangler/
+.dev.vars
 
 # Node
 node_modules/
 npm-debug.log*
 yarn-debug.log*
-yarn-error.log*
 pnpm-debug.log*
 
-# Wrangler
-.wrangler/
-.dev.vars
-.dev.vars.*
+# Environment
 .env
 .env.*
 
-# Cloudflare local files
-.clou​dflare/
-.cloudflare/
-
-# OS files
+# OS
 .DS_Store
 Thumbs.db
-desktop.ini
 
-# Editors
+# Editor
 .vscode/
 .idea/
-
-# Logs
-*.log
 
 # Temporary files
 *.tmp
 *.temp
-*.cache
+*.log
 
-# Local secrets
-*.secret
-secrets.json
+# Local database files
+*.sqlite
+*.sqlite3
 
-# Build/output
-dist/
-build/
-
-# Local development
-coverage/
+# Secrets
+*.key
+*.pem
