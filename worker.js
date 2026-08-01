@@ -3,168 +3,216 @@ export default {
 
     const url = new URL(request.url);
 
-    // =========================
-    // HOME API
-    // =========================
-    if (url.pathname === "/") {
-      return Response.json({
-        success: true,
-        message: "InstaBoost Hub API Running 🚀"
-      });
+    const corsHeaders = {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type"
+    };
+
+    if (request.method === "OPTIONS") {
+      return new Response(null, { headers: corsHeaders });
     }
 
-    // =========================
-    // REGISTER API
-    // =========================
-    if (url.pathname === "/api/register" && request.method === "POST") {
+    try {
 
-      try {
-
-        const { username, email, password } = await request.json();
-
-        const check = await env.DB.prepare(
-          "SELECT id FROM users WHERE email = ?"
-        ).bind(email).first();
-
-        if (check) {
-          return Response.json({
-            success: false,
-            message: "Email already exists"
-          });
-        }
-
-        const referral = "REF" + Date.now();
-
-        await env.DB.prepare(`
-          INSERT INTO users
-          (username,email,password,referral_code)
-          VALUES(?,?,?,?)
-        `)
-        .bind(username, email, password, referral)
-        .run();
-
-        return Response.json({
-          success: true,
-          message: "Registration Successful"
-        });
-
-      } catch (e) {
-
-        return Response.json({
-          success: false,
-          error: e.message
-        });
-
+      // =========================
+      // HOME API
+      // =========================
+      if (url.pathname === "/") {
+        return Response.json(
+          {
+            success: true,
+            app: "Rahul Social Hub",
+            version: "1.0.0",
+            message: "API Running 🚀"
+          },
+          { headers: corsHeaders }
+        );
       }
 
-    }    // =========================
-    // LOGIN API
-    // =========================
-    if (url.pathname === "/api/login" && request.method === "POST") {
+      // ===== NEXT PART BELOW =====
+// =========================
+// REGISTER API
+// =========================
+if (url.pathname === "/api/register" && request.method === "POST") {
 
-      try {
+  const body = await request.json();
+  const { username, email, password } = body;
 
-        const { email, password } = await request.json();
-
-        const user = await env.DB.prepare(
-          "SELECT * FROM users WHERE email = ? AND password = ?"
-        )
-        .bind(email, password)
-        .first();
-
-        if (!user) {
-          return Response.json({
-            success: false,
-            message: "Invalid email or password"
-          });
-        }
-
-        return Response.json({
-          success: true,
-          message: "Login Successful",
-          user
-        });
-
-      } catch (e) {
-
-        return Response.json({
-          success: false,
-          error: e.message
-        });
-
-      }
-
-    }
-
-    // =========================
-    // SERVICES API
-    // =========================
-    if (url.pathname === "/api/services" && request.method === "GET") {
-
-      const services = await env.DB.prepare(
-        "SELECT * FROM services WHERE status='Active'"
-      ).all();
-
-      return Response.json({
-        success: true,
-        services: services.results
-      });
-
-    }    // =========================
-    // ORDER API
-    // =========================
-    if (url.pathname === "/api/order" && request.method === "POST") {
-
-      try {
-
-        const {
-          user_id,
-          service_id,
-          instagram_username,
-          quantity,
-          amount
-        } = await request.json();
-
-        await env.DB.prepare(`
-          INSERT INTO orders
-          (user_id, service_id, instagram_username, quantity, amount)
-          VALUES (?, ?, ?, ?, ?)
-        `)
-        .bind(
-          user_id,
-          service_id,
-          instagram_username,
-          quantity,
-          amount
-        )
-        .run();
-
-        return Response.json({
-          success: true,
-          message: "Order Placed Successfully"
-        });
-
-      } catch (e) {
-
-        return Response.json({
-          success: false,
-          error: e.message
-        });
-
-      }
-
-    }
-
-    // =========================
-    // API NOT FOUND
-    // =========================
+  if (!username || !email || !password) {
     return Response.json(
       {
         success: false,
-        message: "API Route Not Found"
+        message: "All fields are required"
       },
-      { status: 404 }
+      { headers: corsHeaders }
     );
+  }
+
+  const existing = await env.DB.prepare(
+    "SELECT id FROM users WHERE email = ? OR username = ?"
+  )
+  .bind(email, username)
+  .first();
+
+  if (existing) {
+    return Response.json(
+      {
+        success: false,
+        message: "Username or Email already exists"
+      },
+      { headers: corsHeaders }
+    );
+  }
+
+  await env.DB.prepare(
+    "INSERT INTO users (username, email, password) VALUES (?, ?, ?)"
+  )
+  .bind(username, email, password)
+  .run();
+
+  return Response.json(
+    {
+      success: true,
+      message: "Registration Successful"
+    },
+    { headers: corsHeaders }
+  );
+}
+// =========================
+// LOGIN API
+// =========================
+if (url.pathname === "/api/login" && request.method === "POST") {
+
+  const body = await request.json();
+  const { email, password } = body;
+
+  if (!email || !password) {
+    return Response.json(
+      {
+        success: false,
+        message: "Email and Password are required"
+      },
+      { headers: corsHeaders }
+    );
+  }
+
+  const user = await env.DB.prepare(
+    `SELECT id, username, email
+     FROM users
+     WHERE email = ? AND password = ?`
+  )
+  .bind(email, password)
+  .first();
+
+  if (!user) {
+    return Response.json(
+      {
+        success: false,
+        message: "Invalid Email or Password"
+      },
+      { headers: corsHeaders }
+    );
+  }
+
+  return Response.json(
+    {
+      success: true,
+      message: "Login Successful",
+      user
+    },
+    { headers: corsHeaders }
+  );
+}
+// =========================
+// VIDEO UPLOAD API
+// =========================
+if (url.pathname === "/api/upload-video" && request.method === "POST") {
+
+  const body = await request.json();
+
+  const {
+    user_id,
+    title,
+    description,
+    video_url,
+    thumbnail_url
+  } = body;
+
+  if (!user_id || !title || !video_url) {
+    return Response.json(
+      {
+        success: false,
+        message: "User ID, title and video URL are required"
+      },
+      { headers: corsHeaders }
+    );
+  }
+
+  const user = await env.DB.prepare(
+    "SELECT id, username FROM users WHERE id = ?"
+  )
+  .bind(user_id)
+  .first();
+
+  if (!user) {
+    return Response.json(
+      {
+        success: false,
+        message: "User not found"
+      },
+      { headers: corsHeaders }
+    );
+  }
+
+  const result = await env.DB.prepare(
+    `INSERT INTO videos
+    (user_id, title, description, video_url, thumbnail_url)
+    VALUES (?, ?, ?, ?, ?)`
+  )
+  .bind(
+    user_id,
+    title,
+    description || "",
+    video_url,
+    thumbnail_url || ""
+  )
+  .run();
+
+  return Response.json(
+    {
+      success: true,
+      message: "Video uploaded successfully",
+      video_id: result.meta.last_row_id
+    },
+    { headers: corsHeaders }
+  );
+}
+      return Response.json(
+        {
+          success: false,
+          message: "API Not Found"
+        },
+        {
+          status: 404,
+          headers: corsHeaders
+        }
+      );
+
+    } catch (error) {
+
+      return Response.json(
+        {
+          success: false,
+          error: error.message
+        },
+        {
+          status: 500,
+          headers: corsHeaders
+        }
+      );
+
+    }
 
   }
-};
+}
