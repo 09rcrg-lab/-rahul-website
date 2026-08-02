@@ -2,1203 +2,262 @@
 <html lang="hi">
 <head>
   <meta charset="UTF-8">
-
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
-  >
-
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="theme-color" content="#ffffff">
-
+  <meta name="description" content="Rahul Live - Chat Only LIVE">
   <title>Rahul Live</title>
-
   <link rel="manifest" href="manifest.json">
-
-  <style>
-    *{
-      box-sizing:border-box;
-      margin:0;
-      padding:0;
-      -webkit-tap-highlight-color:transparent;
-    }
-
-    body{
-      font-family:Arial,Helvetica,sans-serif;
-      background:#ffffff;
-      color:#111111;
-      min-height:100vh;
-    }
-
-    button,
-    input{
-      font:inherit;
-    }
-
-    .screen{
-      display:none;
-      min-height:100vh;
-    }
-
-    .screen.active{
-      display:block;
-    }
-
-    /* ================= LOGIN / REGISTER ================= */
-
-    .auth{
-      min-height:100vh;
-      display:flex;
-      justify-content:center;
-      align-items:center;
-      padding:20px;
-      background:#ffffff;
-    }
-
-    .auth-box{
-      width:100%;
-      max-width:420px;
-      border:1px solid #e5e5e5;
-      border-radius:20px;
-      padding:28px 22px;
-      background:#ffffff;
-      box-shadow:0 8px 30px rgba(0,0,0,.08);
-    }
-
-    .logo{
-      text-align:center;
-      font-size:30px;
-      font-weight:800;
-      margin-bottom:8px;
-    }
-
-    .subtitle{
-      text-align:center;
-      color:#777;
-      margin-bottom:25px;
-    }
-
-    .auth-box h2{
-      text-align:center;
-      margin-bottom:20px;
-    }
-
-    .input{
-      width:100%;
-      height:50px;
-      border:1px solid #ddd;
-      border-radius:12px;
-      padding:0 15px;
-      outline:none;
-      margin-bottom:12px;
-      background:#fff;
-      color:#111;
-    }
-
-    .input:focus{
-      border-color:#111;
-    }
-
-    .primary-btn{
-      width:100%;
-      height:50px;
-      border:0;
-      border-radius:12px;
-      background:#111;
-      color:#fff;
-      font-weight:700;
-      cursor:pointer;
-      margin-top:5px;
-    }
-
-    .switch{
-      text-align:center;
-      margin-top:18px;
-      color:#666;
-    }
-
-    .switch button{
-      border:0;
-      background:none;
-      color:#111;
-      font-weight:700;
-      cursor:pointer;
-    }
-
-    .message{
-      min-height:20px;
-      text-align:center;
-      margin-top:12px;
-      font-size:14px;
-    }
-
-    /* ================= APP ================= */
-
-    .app{
-      min-height:100vh;
-      background:#fff;
-    }
-
-    .topbar{
-      height:64px;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      padding:0 16px;
-      border-bottom:1px solid #eee;
-      position:sticky;
-      top:0;
-      background:#fff;
-      z-index:10;
-    }
-
-    .brand{
-      font-size:22px;
-      font-weight:800;
-    }
-
-    .logout-btn{
-      border:1px solid #ddd;
-      background:#fff;
-      border-radius:10px;
-      padding:9px 13px;
-      cursor:pointer;
-    }
-
-    .home{
-      padding:20px 16px 100px;
-      max-width:700px;
-      margin:auto;
-    }
-
-    .welcome{
-      margin-bottom:20px;
-    }
-
-    .welcome h2{
-      margin-bottom:5px;
-    }
-
-    .welcome p{
-      color:#777;
-    }
-
-    .live-card{
-      border:1px solid #e5e5e5;
-      border-radius:20px;
-      padding:20px;
-      box-shadow:0 6px 25px rgba(0,0,0,.06);
-    }
-
-    .live-title{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      margin-bottom:18px;
-    }
-
-    .live-title strong{
-      font-size:20px;
-    }
-
-    .live-badge{
-      background:#111;
-      color:#fff;
-      border-radius:20px;
-      padding:6px 10px;
-      font-size:12px;
-      font-weight:700;
-    }
-
-    .start-live{
-      width:100%;
-      height:52px;
-      border:0;
-      border-radius:13px;
-      background:#111;
-      color:#fff;
-      font-weight:700;
-      cursor:pointer;
-      font-size:16px;
-    }
-
-    /* ================= LIVE ROOM ================= */
-
-    .live-room{
-      padding:16px;
-      max-width:700px;
-      margin:auto;
-      min-height:100vh;
-      background:#fff;
-    }
-
-    .room-header{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      border-bottom:1px solid #eee;
-      padding-bottom:14px;
-    }
-
-    .room-info h2{
-      font-size:20px;
-      margin-bottom:5px;
-    }
-
-    .room-info p{
-      color:#777;
-      font-size:14px;
-    }
-
-    .end-live{
-      border:1px solid #ddd;
-      background:#fff;
-      border-radius:10px;
-      padding:9px 12px;
-      cursor:pointer;
-    }
-
-    .seat{
-      height:180px;
-      margin:18px 0;
-      border:1px solid #e5e5e5;
-      border-radius:20px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      flex-direction:column;
-      background:#fff;
-    }
-
-    .seat-icon{
-      font-size:45px;
-      margin-bottom:10px;
-    }
-
-    .seat p{
-      color:#777;
-    }
-
-    .viewers{
-      border:1px solid #eee;
-      border-radius:15px;
-      padding:14px;
-      margin-bottom:15px;
-    }
-
-    .viewers-head{
-      display:flex;
-      justify-content:space-between;
-      margin-bottom:12px;
-      font-weight:700;
-    }
-
-    .viewer-list{
-      display:flex;
-      flex-wrap:wrap;
-      gap:8px;
-    }
-
-    .viewer{
-      border:1px solid #ddd;
-      border-radius:20px;
-      padding:7px 10px;
-      background:#fff;
-      font-size:13px;
-      cursor:pointer;
-    }
-
-    .host-label{
-      font-size:11px;
-      font-weight:700;
-      margin-left:4px;
-    }
-
-    /* ================= CHAT ================= */
-
-    .chat{
-      border:1px solid #e5e5e5;
-      border-radius:18px;
-      overflow:hidden;
-      background:#fff;
-    }
-
-    .chat-header{
-      padding:14px;
-      border-bottom:1px solid #eee;
-      font-weight:700;
-    }
-
-    .chat-messages{
-      height:320px;
-      overflow-y:auto;
-      padding:14px;
-    }
-
-    .chat-message{
-      margin-bottom:12px;
-    }
-
-    .chat-name{
-      font-size:13px;
-      font-weight:700;
-    }
-
-    .chat-text{
-      margin-top:3px;
-      color:#444;
-      word-break:break-word;
-    }
-
-    .chat-form{
-      display:flex;
-      gap:8px;
-      padding:10px;
-      border-top:1px solid #eee;
-    }
-
-    .chat-input{
-      flex:1;
-      height:46px;
-      border:1px solid #ddd;
-      border-radius:11px;
-      padding:0 12px;
-      outline:none;
-    }
-
-    .send-btn{
-      width:52px;
-      border:0;
-      border-radius:11px;
-      background:#111;
-      color:#fff;
-      cursor:pointer;
-    }
-
-    /* ================= MODERATION ================= */
-
-    .moderation{
-      display:none;
-      position:fixed;
-      left:0;
-      right:0;
-      bottom:0;
-      background:#fff;
-      border-top:1px solid #ddd;
-      padding:18px;
-      z-index:100;
-      box-shadow:0 -5px 25px rgba(0,0,0,.12);
-    }
-
-    .moderation.active{
-      display:block;
-    }
-
-    .moderation h3{
-      margin-bottom:15px;
-    }
-
-    .moderation-buttons{
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
-    }
-
-    .mod-btn{
-      border:1px solid #ddd;
-      background:#fff;
-      border-radius:10px;
-      padding:10px 14px;
-      cursor:pointer;
-    }
-
-    .close-mod{
-      margin-top:12px;
-      width:100%;
-      height:44px;
-      border:0;
-      border-radius:10px;
-      background:#111;
-      color:#fff;
-    }
-
-    /* ================= MOBILE ================= */
-
-    @media(max-width:500px){
-      .auth-box{
-        border:0;
-        box-shadow:none;
-        padding:20px 5px;
-      }
-
-      .seat{
-        height:150px;
-      }
-
-      .chat-messages{
-        height:300px;
-      }
-    }
-  </style>
+  <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
-
-  <!-- ================= LOGIN ================= -->
-
-  <section id="loginScreen" class="screen active">
-    <div class="auth">
+  <!-- ================= APP ================= -->
+  <div id="app">
+    <!-- ================= AUTH SCREEN ================= -->
+    <section id="authScreen" class="screen">
       <div class="auth-box">
-
-        <div class="logo">Rahul Live</div>
-        <div class="subtitle">Login करके LIVE Chat में जाएँ</div>
-
-        <h2>Login</h2>
-
-        <input
-          id="loginEmail"
-          class="input"
-          type="email"
-          placeholder="Email"
-          autocomplete="email"
-        >
-
-        <input
-          id="loginPassword"
-          class="input"
-          type="password"
-          placeholder="Password"
-          autocomplete="current-password"
-        >
-
-        <button id="loginBtn" class="primary-btn">
-          Login
-        </button>
-
-        <div id="loginMessage" class="message"></div>
-
-        <div class="switch">
-          Account नहीं है?
-          <button id="showRegisterBtn">Register</button>
-        </div>
-
-      </div>
-    </div>
-  </section>
-
-
-  <!-- ================= REGISTER ================= -->
-
-  <section id="registerScreen" class="screen">
-    <div class="auth">
-      <div class="auth-box">
-
-        <div class="logo">Rahul Live</div>
-        <div class="subtitle">नया account बनाएँ</div>
-
-        <h2>Register</h2>
-
-        <input
-          id="registerUsername"
-          class="input"
-          type="text"
-          placeholder="Username"
-          autocomplete="username"
-        >
-
-        <input
-          id="registerEmail"
-          class="input"
-          type="email"
-          placeholder="Email"
-          autocomplete="email"
-        >
-
-        <input
-          id="registerPassword"
-          class="input"
-          type="password"
-          placeholder="Password"
-          autocomplete="new-password"
-        >
-
-        <button id="registerBtn" class="primary-btn">
-          Register
-        </button>
-
-        <div id="registerMessage" class="message"></div>
-
-        <div class="switch">
-          पहले से account है?
-          <button id="showLoginBtn">Login</button>
-        </div>
-
-      </div>
-    </div>
-  </section>
-
-
-  <!-- ================= MAIN APP ================= -->
-
-  <section id="appScreen" class="screen">
-
-    <div class="app">
-
-      <header class="topbar">
-        <div class="brand">Rahul Live</div>
-
-        <button id="logoutBtn" class="logout-btn">
-          Logout
-        </button>
-      </header>
-
-      <main class="home">
-
-        <div class="welcome">
-          <h2>Welcome 👋</h2>
-          <p id="welcomeUser">Rahul Live में आपका स्वागत है।</p>
-        </div>
-
-        <div class="live-card">
-
-          <div class="live-title">
-            <strong>🔴 LIVE Chat</strong>
-            <span class="live-badge">CHAT ONLY</span>
-          </div>
-
-          <p style="color:#777;margin-bottom:18px;">
-            एक ही LIVE room में सभी लोग बैठकर बात कर सकते हैं।
-          </p>
-
-          <button id="startLiveBtn" class="start-live">
-            🔴 Start LIVE Chat
+        <div class="app-logo">RL</div>
+        <h1>Rahul Live</h1>
+        <p class="subtitle">Chat • LIVE • Connect</p>
+        <!-- LOGIN -->
+        <div id="loginForm" class="auth-form">
+          <h2>Login</h2>
+          <input
+            type="text"
+            id="loginUsername"
+            placeholder="Username"
+            autocomplete="username"
+          >
+          <input
+            type="password"
+            id="loginPassword"
+            placeholder="Password"
+            autocomplete="current-password"
+          >
+          <button id="loginBtn" type="button">
+            Login
           </button>
-
+          <p>
+            Account नहीं है?
+            <button id="showRegisterBtn" class="link-btn" type="button">
+              Register
+            </button>
+          </p>
         </div>
-
-      </main>
-
-    </div>
-
-  </section>
-
-
-  <!-- ================= LIVE ROOM ================= -->
-
-  <section id="liveScreen" class="screen">
-
-    <div class="live-room">
-
-      <div class="room-header">
-
-        <div class="room-info">
-          <h2>🔴 LIVE Chat</h2>
-          <p id="roomHost">Host: —</p>
+        <!-- REGISTER -->
+        <div id="registerForm" class="auth-form hidden">
+          <h2>Register</h2>
+          <input
+            type="text"
+            id="registerUsername"
+            placeholder="Username"
+            autocomplete="username"
+          >
+          <input
+            type="email"
+            id="registerEmail"
+            placeholder="Email"
+            autocomplete="email"
+          >
+          <input
+            type="password"
+            id="registerPassword"
+            placeholder="Password"
+            autocomplete="new-password"
+          >
+          <button id="registerBtn" type="button">
+            Register
+          </button>
+          <p>
+            पहले से account है?
+            <button id="showLoginBtn" class="link-btn" type="button">
+              Login
+            </button>
+          </p>
         </div>
-
-        <button id="endLiveBtn" class="end-live">
-          End LIVE
-        </button>
-
+        <div id="authMessage" class="message"></div>
       </div>
-
-
-      <!-- SINGLE LIVE SEAT -->
-
-      <div class="seat">
-
-        <div class="seat-icon">💬</div>
-
-        <strong>LIVE Chat Room</strong>
-
-        <p>यहाँ सभी लोग बैठकर बात कर सकते हैं।</p>
-
-      </div>
-
-
-      <!-- VIEWERS -->
-
-      <div class="viewers">
-
-        <div class="viewers-head">
-          <span>👥 People in LIVE</span>
-          <span id="viewerCount">0</span>
+    </section>
+    <!-- ================= LIVE APP ================= -->
+    <section id="liveApp" class="screen hidden">
+      <!-- TOP BAR -->
+      <header class="top-bar">
+        <div class="brand">
+          <strong>Rahul Live</strong>
         </div>
-
-        <div id="viewerList" class="viewer-list"></div>
-
-      </div>
-
-
-      <!-- CHAT -->
-
-      <div class="chat">
-
-        <div class="chat-header">
-          💬 Live Chat
+        <div class="top-actions">
+          <span id="onlineStatus" class="online-status">
+            ● Online
+          </span>
+          <button id="logoutBtn" class="icon-btn" type="button">
+            Logout
+          </button>
         </div>
-
-        <div id="chatMessages" class="chat-messages">
-
-          <div class="chat-message">
-            <div class="chat-name">Rahul Live</div>
-            <div class="chat-text">
-              LIVE Chat में आपका स्वागत है 👋
+      </header>
+      <!-- ================= LIVE ROOM ================= -->
+      <main class="live-room">
+        <!-- LIVE HEADER -->
+        <div class="live-header">
+          <div class="live-info">
+            <span class="live-badge">
+              🔴 LIVE
+            </span>
+            <span id="liveTitle">
+              Chat LIVE Room
+            </span>
+          </div>
+          <div class="viewer-count">
+            👥 <span id="viewerCount">0</span>
+          </div>
+        </div>
+        <!-- ================= HOST ================= -->
+        <section class="host-card">
+          <div class="host-avatar" id="hostAvatar">
+            H
+          </div>
+          <div class="host-info">
+            <strong id="hostName">
+              Host
+            </strong>
+            <span>
+              🎙️ LIVE Host
+            </span>
+          </div>
+          <span class="host-label">
+            HOST
+          </span>
+        </section>
+        <!-- ================= ROOM AREA ================= -->
+        <section class="room-content">
+          <div class="room-message">
+            <div class="room-icon">
+              💬
+            </div>
+            <h2>Chat-only LIVE</h2>
+            <p>
+              यहाँ लोग बैठकर LIVE chat कर सकते हैं।
+            </p>
+          </div>
+        </section>
+        <!-- ================= CHAT ================= -->
+        <section class="chat-section">
+          <div class="chat-header">
+            <strong>Live Chat</strong>
+            <span id="chatUserCount">
+              0 viewers
+            </span>
+          </div>
+          <!-- CHAT MESSAGES -->
+          <div id="chatMessages" class="chat-messages">
+            <div class="system-message">
+              LIVE room में आपका स्वागत है 👋
             </div>
           </div>
-
-        </div>
-
-        <form id="chatForm" class="chat-form">
-
-          <input
-            id="chatInput"
-            class="chat-input"
-            type="text"
-            maxlength="500"
-            placeholder="Message लिखें..."
-            autocomplete="off"
-          >
-
-          <button class="send-btn" type="submit">
-            ➤
+          <!-- EMOJI PANEL -->
+          <div id="emojiPanel" class="emoji-panel hidden">
+            <button type="button" data-emoji="😀">😀</button>
+            <button type="button" data-emoji="😂">😂</button>
+            <button type="button" data-emoji="🤣">🤣</button>
+            <button type="button" data-emoji="😆">😆</button>
+            <button type="button" data-emoji="❤️">❤️</button>
+            <button type="button" data-emoji="🔥">🔥</button>
+            <button type="button" data-emoji="👍">👍</button>
+            <button type="button" data-emoji="👏">👏</button>
+            <button type="button" data-emoji="🎉">🎉</button>
+            <button type="button" data-emoji="😎">😎</button>
+            <button type="button" data-emoji="🤡">🤡</button>
+            <button type="button" data-emoji="😡">😡</button>
+            <button type="button" data-emoji="😭">😭</button>
+            <button type="button" data-emoji="😱">😱</button>
+            <button type="button" data-emoji="💀">💀</button>
+            <button type="button" data-emoji="🔨">🔨</button>
+          </div>
+          <!-- QUICK REACTIONS -->
+          <div class="quick-reactions">
+            <button type="button" data-reaction="😂">
+              😂
+            </button>
+            <button type="button" data-reaction="❤️">
+              ❤️
+            </button>
+            <button type="button" data-reaction="🔥">
+              🔥
+            </button>
+            <button type="button" data-reaction="👏">
+              👏
+            </button>
+            <button type="button" data-reaction="🔨">
+              🔨
+            </button>
+          </div>
+          <!-- CHAT INPUT -->
+          <div class="chat-input-area">
+            <button
+              id="emojiBtn"
+              class="emoji-btn"
+              type="button"
+              aria-label="Emoji"
+            >
+              😀
+            </button>
+            <input
+              type="text"
+              id="chatInput"
+              placeholder="Message लिखें..."
+              maxlength="500"
+              autocomplete="off"
+            >
+            <button
+              id="sendChatBtn"
+              class="send-btn"
+              type="button"
+            >
+              Send
+            </button>
+          </div>
+        </section>
+        <!-- ================= VIEWERS ================= -->
+        <section class="viewers-section">
+          <div class="section-title">
+            <strong>Viewers</strong>
+            <span id="viewerTotal">0</span>
+          </div>
+          <div id="viewerList" class="viewer-list">
+            <!-- Viewers यहाँ JavaScript से आएँगे -->
+          </div>
+        </section>
+        <!-- ================= HOST CONTROLS ================= -->
+        <section id="hostControls" class="host-controls hidden">
+          <h3>Host Controls</h3>
+          <div class="control-buttons">
+            <button id="muteBtn" type="button">
+              🔇 Mute
+            </button>
+            <button id="kickBtn" type="button">
+              👢 Kick
+            </button>
+            <button id="blockBtn" type="button">
+              🚫 Block
+            </button>
+            <button id="endLiveBtn" class="danger-btn" type="button">
+              🛑 End LIVE
+            </button>
+          </div>
+        </section>
+        <!-- ================= USER ACTIONS ================= -->
+        <section class="user-actions">
+          <button id="joinLiveBtn" type="button">
+            🔴 Join LIVE
           </button>
-
-        </form>
-
-      </div>
-
-    </div>
-
-  </section>
-
-
-  <!-- ================= HOST MODERATION ================= -->
-
-  <div id="moderationPanel" class="moderation">
-
-    <h3 id="moderationUser">
-      User Controls
-    </h3>
-
-    <div class="moderation-buttons">
-
-      <button id="muteUserBtn" class="mod-btn">
-        🔇 Mute
-      </button>
-
-      <button id="kickUserBtn" class="mod-btn">
-        🚫 Kick
-      </button>
-
-      <button id="blockUserBtn" class="mod-btn">
-        ⛔ Block
-      </button>
-
-    </div>
-
-    <button id="closeModerationBtn" class="close-mod">
-      Close
-    </button>
-
+          <button id="leaveLiveBtn" type="button">
+            🚪 Leave LIVE
+          </button>
+        </section>
+      </main>
+    </section>
   </div>
-
-
-  <script>
-    /*
-      Rahul Live
-      New Chat-Only LIVE UI
-
-      अभी यह index.html का नया interface है।
-      Backend API को अगली file में इसी structure के साथ जोड़ा जाएगा।
-    */
-
-    const API_BASE =
-      "https://rahulsocialhub-db.09rcrg.workers.dev";
-
-    const loginScreen = document.getElementById("loginScreen");
-    const registerScreen = document.getElementById("registerScreen");
-    const appScreen = document.getElementById("appScreen");
-    const liveScreen = document.getElementById("liveScreen");
-
-    const loginMessage = document.getElementById("loginMessage");
-    const registerMessage = document.getElementById("registerMessage");
-
-    let currentUser = null;
-    let currentLive = null;
-    let selectedUser = null;
-
-
-    function showScreen(screen){
-      document.querySelectorAll(".screen").forEach(item=>{
-        item.classList.remove("active");
-      });
-
-      screen.classList.add("active");
-    }
-
-
-    document.getElementById("showRegisterBtn").onclick = ()=>{
-      loginMessage.textContent = "";
-      showScreen(registerScreen);
-    };
-
-
-    document.getElementById("showLoginBtn").onclick = ()=>{
-      registerMessage.textContent = "";
-      showScreen(loginScreen);
-    };
-
-
-    /* ================= REGISTER ================= */
-
-    document.getElementById("registerBtn").onclick = async ()=>{
-
-      const username =
-        document.getElementById("registerUsername").value.trim();
-
-      const email =
-        document.getElementById("registerEmail").value.trim();
-
-      const password =
-        document.getElementById("registerPassword").value;
-
-      if(!username || !email || !password){
-        registerMessage.textContent =
-          "सभी जानकारी भरें।";
-        return;
-      }
-
-      registerMessage.textContent =
-        "Register हो रहा है...";
-
-      try{
-
-        const response = await fetch(
-          API_BASE + "/api/register",
-          {
-            method:"POST",
-            headers:{
-              "Content-Type":"application/json"
-            },
-            body:JSON.stringify({
-              username,
-              email,
-              password
-            })
-          }
-        );
-
-        const data = await response.json();
-
-        if(data.success){
-
-          registerMessage.textContent =
-            "Register सफल हुआ। अब Login करें।";
-
-          document.getElementById("loginEmail").value = email;
-
-          document.getElementById("registerUsername").value = "";
-          document.getElementById("registerEmail").value = "";
-          document.getElementById("registerPassword").value = "";
-
-          setTimeout(()=>{
-            showScreen(loginScreen);
-          },800);
-
-        }else{
-
-          registerMessage.textContent =
-            data.message || "Register नहीं हो पाया।";
-
-        }
-
-      }catch(error){
-
-        registerMessage.textContent =
-          "Server से connection नहीं हो पाया।";
-
-      }
-
-    };
-
-
-    /* ================= LOGIN ================= */
-
-    document.getElementById("loginBtn").onclick = async ()=>{
-
-      const email =
-        document.getElementById("loginEmail").value.trim();
-
-      const password =
-        document.getElementById("loginPassword").value;
-
-      if(!email || !password){
-
-        loginMessage.textContent =
-          "Email और password भरें।";
-
-        return;
-      }
-
-      loginMessage.textContent =
-        "Login हो रहा है...";
-
-      /*
-        Login API existing backend में अलग endpoint होने पर
-        worker.js के final version में इसी UI से connect किया जाएगा।
-
-        अभी गलत endpoint बनाकर existing backend को नहीं तोड़ रहे।
-      */
-
-      try{
-
-        const response = await fetch(
-          API_BASE + "/api/login",
-          {
-            method:"POST",
-            headers:{
-              "Content-Type":"application/json"
-            },
-            body:JSON.stringify({
-              email,
-              password
-            })
-          }
-        );
-
-        const data = await response.json();
-
-        if(data.success){
-
-          currentUser =
-            data.user || {
-              email:email
-            };
-
-          localStorage.setItem(
-            "rahul_live_user",
-            JSON.stringify(currentUser)
-          );
-
-          document.getElementById("welcomeUser").textContent =
-            "Welcome, " +
-            (currentUser.username || email);
-
-          showScreen(appScreen);
-
-        }else{
-
-          loginMessage.textContent =
-            data.message || "Login failed.";
-
-        }
-
-      }catch(error){
-
-        loginMessage.textContent =
-          "Login API अभी available नहीं है।";
-
-      }
-
-    };
-
-
-    /* ================= LOGOUT ================= */
-
-    document.getElementById("logoutBtn").onclick = ()=>{
-
-      currentUser = null;
-      currentLive = null;
-
-      localStorage.removeItem("rahul_live_user");
-
-      showScreen(loginScreen);
-
-    };
-
-
-    /* ================= START LIVE ================= */
-
-    document.getElementById("startLiveBtn").onclick = ()=>{
-
-      if(!currentUser){
-
-        showScreen(loginScreen);
-        return;
-
-      }
-
-      currentLive = {
-        host: currentUser,
-        id:null
-      };
-
-      document.getElementById("roomHost").textContent =
-        "Host: " +
-        (currentUser.username || currentUser.email);
-
-      document.getElementById("endLiveBtn").style.display =
-        "block";
-
-      showScreen(liveScreen);
-
-    };
-
-
-    /* ================= END LIVE ================= */
-
-    document.getElementById("endLiveBtn").onclick = ()=>{
-
-      currentLive = null;
-
-      showScreen(appScreen);
-
-    };
-
-
-    /* ================= CHAT UI ================= */
-
-    document.getElementById("chatForm").addEventListener(
-      "submit",
-      async (event)=>{
-
-        event.preventDefault();
-
-        const input =
-          document.getElementById("chatInput");
-
-        const text =
-          input.value.trim();
-
-        if(!text){
-          return;
-        }
-
-        addChatMessage(
-          currentUser?.username ||
-          currentUser?.email ||
-          "User",
-          text
-        );
-
-        input.value = "";
-
-        /*
-          Backend realtime chat अगली Worker implementation
-          में इसी room से connect होगा।
-        */
-
-      }
-    );
-
-
-    function addChatMessage(username,text){
-
-      const container =
-        document.getElementById("chatMessages");
-
-      const message =
-        document.createElement("div");
-
-      message.className =
-        "chat-message";
-
-      const name =
-        document.createElement("div");
-
-      name.className =
-        "chat-name";
-
-      name.textContent =
-        username;
-
-      const body =
-        document.createElement("div");
-
-      body.className =
-        "chat-text";
-
-      body.textContent =
-        text;
-
-      message.appendChild(name);
-      message.appendChild(body);
-
-      container.appendChild(message);
-
-      container.scrollTop =
-        container.scrollHeight;
-
-    }
-
-
-    /* ================= VIEWER ================= */
-
-    function addViewer(user){
-
-      const list =
-        document.getElementById("viewerList");
-
-      const item =
-        document.createElement("button");
-
-      item.className =
-        "viewer";
-
-      item.textContent =
-        user.username || user.email || "User";
-
-      item.onclick = ()=>{
-
-        /*
-          केवल Host moderation controls देख सकता है।
-        */
-
-        if(
-          currentUser &&
-          currentLive &&
-          currentUser.email === currentLive.host.email
-        ){
-
-          selectedUser = user;
-
-          document.getElementById(
-            "moderationUser"
-          ).textContent =
-            "User: " +
-            (user.username || user.email);
-
-          document.getElementById(
-            "moderationPanel"
-          ).classList.add("active");
-
-        }
-
-      };
-
-      list.appendChild(item);
-
-      updateViewerCount();
-
-    }
-
-
-    function updateViewerCount(){
-
-      const count =
-        document.querySelectorAll(
-          "#viewerList .viewer"
-        ).length;
-
-      document.getElementById(
-        "viewerCount"
-      ).textContent = count;
-
-    }
-
-
-    /* ================= MODERATION ================= */
-
-    document.getElementById(
-      "closeModerationBtn"
-    ).onclick = ()=>{
-
-      document.getElementById(
-        "moderationPanel"
-      ).classList.remove("active");
-
-      selectedUser = null;
-
-    };
-
-
-    document.getElementById(
-      "muteUserBtn"
-    ).onclick = ()=>{
-
-      if(!selectedUser) return;
-
-      alert(
-        (selectedUser.username || "User") +
-        " को Mute किया जाएगा।"
-      );
-
-    };
-
-
-    document.getElementById(
-      "kickUserBtn"
-    ).onclick = ()=>{
-
-      if(!selectedUser) return;
-
-      alert(
-        (selectedUser.username || "User") +
-        " को LIVE से Kick किया जाएगा।"
-      );
-
-      document.getElementById(
-        "moderationPanel"
-      ).classList.remove("active");
-
-    };
-
-
-    document.getElementById(
-      "blockUserBtn"
-    ).onclick = ()=>{
-
-      if(!selectedUser) return;
-
-      alert(
-        (selectedUser.username || "User") +
-        " को Block किया जाएगा।"
-      );
-
-      document.getElementById(
-        "moderationPanel"
-      ).classList.remove("active");
-
-    };
-
-
-    /* ================= RESTORE LOGIN ================= */
-
-    try{
-
-      const saved =
-        localStorage.getItem(
-          "rahul_live_user"
-        );
-
-      if(saved){
-
-        currentUser =
-          JSON.parse(saved);
-
-        document.getElementById(
-          "welcomeUser"
-        ).textContent =
-          "Welcome, " +
-          (
-            currentUser.username ||
-            currentUser.email ||
-            "User"
-          );
-
-        showScreen(appScreen);
-
-      }
-
-    }catch(error){
-
-      localStorage.removeItem(
-        "rahul_live_user"
-      );
-
-    }
-
-  </script>
-
+  <!-- ================= TOAST ================= -->
+  <div id="toast" class="toast hidden"></div>
+  <!-- ================= SCRIPT ================= -->
+  <script src="script.js"></script>
 </body>
 </html>
