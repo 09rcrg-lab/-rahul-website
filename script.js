@@ -1,26 +1,23 @@
+"use strict";
 /* =========================================================
    RAHUL LIVE
-   Frontend Controller
+   Cloudflare Worker + D1 Connected Frontend
    ========================================================= */
-"use strict";
-/* =========================
-   STATE
-========================= */
-const state = {
-  loggedIn: false,
-  username: "",
-  email: "",
+const API_BASE =
+  "https://rahulsocialhub-db.09rcrg.workers.dev";
+let state = {
+  token: localStorage.getItem("rahulLiveToken") || "",
+  user: null,
+  roomId: null,
   isHost: false,
-  joinedLive: false,
-  mutedUsers: new Set(),
-  blockedUsers: new Set(),
-  kickedUsers: new Set(),
-  viewers: [],
-  messages: []
+  joined: false,
+  muted: false,
+  blocked: false,
+  pollTimer: null
 };
-/* =========================
+/* =========================================================
    ELEMENTS
-========================= */
+   ========================================================= */
 const authScreen = document.getElementById("authScreen");
 const liveApp = document.getElementById("liveApp");
 const loginForm = document.getElementById("loginForm");
@@ -32,33 +29,70 @@ const registerEmail = document.getElementById("registerEmail");
 const registerPassword = document.getElementById("registerPassword");
 const loginBtn = document.getElementById("loginBtn");
 const registerBtn = document.getElementById("registerBtn");
-const showRegisterBtn = document.getElementById("showRegisterBtn");
-const showLoginBtn = document.getElementById("showLoginBtn");
-const authMessage = document.getElementById("authMessage");
-const logoutBtn = document.getElementById("logoutBtn");
-const hostName = document.getElementById("hostName");
-const hostAvatar = document.getElementById("hostAvatar");
-const viewerCount = document.getElementById("viewerCount");
-const viewerTotal = document.getElementById("viewerTotal");
-const chatUserCount = document.getElementById("chatUserCount");
-const viewerList = document.getElementById("viewerList");
-const chatMessages = document.getElementById("chatMessages");
-const emojiBtn = document.getElementById("emojiBtn");
-const emojiPanel = document.getElementById("emojiPanel");
-const chatInput = document.getElementById("chatInput");
-const sendChatBtn = document.getElementById("sendChatBtn");
-const joinLiveBtn = document.getElementById("joinLiveBtn");
-const leaveLiveBtn = document.getElementById("leaveLiveBtn");
-const hostControls = document.getElementById("hostControls");
-const muteBtn = document.getElementById("muteBtn");
-const kickBtn = document.getElementById("kickBtn");
-const blockBtn = document.getElementById("blockBtn");
-const endLiveBtn = document.getElementById("endLiveBtn");
-const toast = document.getElementById("toast");
-/* =========================
+const showRegisterBtn =
+  document.getElementById("showRegisterBtn");
+const showLoginBtn =
+  document.getElementById("showLoginBtn");
+const authMessage =
+  document.getElementById("authMessage");
+const logoutBtn =
+  document.getElementById("logoutBtn");
+const onlineStatus =
+  document.getElementById("onlineStatus");
+const liveTitle =
+  document.getElementById("liveTitle");
+const viewerCount =
+  document.getElementById("viewerCount");
+const viewerTotal =
+  document.getElementById("viewerTotal");
+const chatUserCount =
+  document.getElementById("chatUserCount");
+const hostName =
+  document.getElementById("hostName");
+const hostAvatar =
+  document.getElementById("hostAvatar");
+const chatMessages =
+  document.getElementById("chatMessages");
+const viewerList =
+  document.getElementById("viewerList");
+const emojiBtn =
+  document.getElementById("emojiBtn");
+const emojiPanel =
+  document.getElementById("emojiPanel");
+const chatInput =
+  document.getElementById("chatInput");
+const sendChatBtn =
+  document.getElementById("sendChatBtn");
+const joinLiveBtn =
+  document.getElementById("joinLiveBtn");
+const leaveLiveBtn =
+  document.getElementById("leaveLiveBtn");
+const hostControls =
+  document.getElementById("hostControls");
+const muteBtn =
+  document.getElementById("muteBtn");
+const kickBtn =
+  document.getElementById("kickBtn");
+const blockBtn =
+  document.getElementById("blockBtn");
+const endLiveBtn =
+  document.getElementById("endLiveBtn");
+const toast =
+  document.getElementById("toast");
+/* =========================================================
    HELPERS
-========================= */
-function showMessage(message, type = "normal") {
+   ========================================================= */
+function showToast(message) {
+  if (!toast) return;
+  toast.textContent = message;
+  toast.classList.remove("hidden");
+  clearTimeout(window.rahulToastTimer);
+  window.rahulToastTimer =
+    setTimeout(() => {
+      toast.classList.add("hidden");
+    }, 3000);
+}
+function showAuthMessage(message, type = "") {
   if (!authMessage) return;
   authMessage.textContent = message;
   if (type === "error") {
@@ -66,294 +100,699 @@ function showMessage(message, type = "normal") {
   } else if (type === "success") {
     authMessage.style.color = "#168a36";
   } else {
-    authMessage.style.color = "#777777";
+    authMessage.style.color = "";
   }
 }
-function showToast(message) {
-  if (!toast) return;
-  toast.textContent = message;
-  toast.classList.remove("hidden");
-  clearTimeout(showToast.timer);
-  showToast.timer = setTimeout(() => {
-    toast.classList.add("hidden");
-  }, 2500);
+function initialLetter(name) {
+  if (!name) return "R";
+  return name
+    .trim()
+    .charAt(0)
+    .toUpperCase();
 }
-function getInitial(name) {
-  if (!name) return "?";
-  return name.trim().charAt(0).toUpperCase();
+function setOnline(online) {
+  if (!onlineStatus) return;
+  if (online) {
+    onlineStatus.textContent = "● Online";
+  } else {
+    onlineStatus.textContent = "● Offline";
+  }
 }
-function cleanText(value) {
-  return String(value)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
+function authHeaders() {
+  const headers = {
+    "Content-Type": "application/json"
+  };
+  if (state.token) {
+    headers.Authorization =
+      `Bearer ${state.token}`;
+  }
+  return headers;
 }
-function saveSession() {
-  localStorage.setItem(
-    "rahulLiveSession",
-    JSON.stringify({
-      username: state.username,
-      email: state.email,
-      isHost: state.isHost
-    })
-  );
+/* =========================================================
+   API REQUEST
+   ========================================================= */
+async function api(path, options = {}) {
+  const config = {
+    method: options.method || "GET",
+    headers: {
+      ...authHeaders(),
+      ...(options.headers || {})
+    }
+  };
+  if (options.body !== undefined) {
+    config.body =
+      typeof options.body === "string"
+        ? options.body
+        : JSON.stringify(options.body);
+  }
+  try {
+    const response =
+      await fetch(
+        API_BASE + path,
+        config
+      );
+    let data = {};
+    try {
+      data = await response.json();
+    } catch {
+      data = {};
+    }
+    if (!response.ok) {
+      const error =
+        data.error ||
+        data.message ||
+        `Request failed (${response.status})`;
+      throw new Error(error);
+    }
+    return data;
+  } catch (error) {
+    setOnline(false);
+    throw error;
+  }
 }
-function removeSession() {
-  localStorage.removeItem("rahulLiveSession");
-}
-/* =========================
+/* =========================================================
    AUTH SCREEN
-========================= */
+   ========================================================= */
 function showLogin() {
   loginForm.classList.remove("hidden");
   registerForm.classList.add("hidden");
-  showMessage("");
+  showAuthMessage("");
 }
 function showRegister() {
   loginForm.classList.add("hidden");
   registerForm.classList.remove("hidden");
-  showMessage("");
+  showAuthMessage("");
 }
-/* =========================
+/* =========================================================
    REGISTER
-========================= */
-function registerUser() {
-  const username = registerUsername.value.trim();
-  const email = registerEmail.value.trim();
-  const password = registerPassword.value;
+   ========================================================= */
+async function registerUser() {
+  const username =
+    registerUsername.value.trim();
+  const email =
+    registerEmail.value.trim();
+  const password =
+    registerPassword.value;
   if (!username || !email || !password) {
-    showMessage("सभी जानकारी भरें।", "error");
-    return;
-  }
-  if (username.length < 3) {
-    showMessage("Username कम से कम 3 अक्षर का होना चाहिए।", "error");
-    return;
-  }
-  if (password.length < 6) {
-    showMessage("Password कम से कम 6 अक्षर का होना चाहिए।", "error");
-    return;
-  }
-  const users = JSON.parse(
-    localStorage.getItem("rahulLiveUsers") || "[]"
-  );
-  const alreadyExists = users.some(
-    user =>
-      user.username.toLowerCase() === username.toLowerCase() ||
-      user.email.toLowerCase() === email.toLowerCase()
-  );
-  if (alreadyExists) {
-    showMessage("Username या Email पहले से मौजूद है।", "error");
-    return;
-  }
-  users.push({
-    username,
-    email,
-    password
-  });
-  localStorage.setItem(
-    "rahulLiveUsers",
-    JSON.stringify(users)
-  );
-  registerPassword.value = "";
-  showLogin();
-  loginUsername.value = username;
-  showMessage(
-    "Registration सफल हुआ। अब Login करें।",
-    "success"
-  );
-}
-/* =========================
-   LOGIN
-========================= */
-function loginUser() {
-  const username = loginUsername.value.trim();
-  const password = loginPassword.value;
-  if (!username || !password) {
-    showMessage("Username और Password भरें।", "error");
-    return;
-  }
-  const users = JSON.parse(
-    localStorage.getItem("rahulLiveUsers") || "[]"
-  );
-  const user = users.find(
-    item =>
-      item.username.toLowerCase() === username.toLowerCase() &&
-      item.password === password
-  );
-  if (!user) {
-    showMessage(
-      "Username या Password गलत है।",
+    showAuthMessage(
+      "सभी जानकारी भरें।",
       "error"
     );
     return;
   }
-  state.loggedIn = true;
-  state.username = user.username;
-  state.email = user.email;
-  /*
-    Demo में username "host" या "admin" को Host बनाया गया है।
-    बाद में Worker/D1 से actual role आएगा।
-  */
-  state.isHost =
-    user.username.toLowerCase() === "host" ||
-    user.username.toLowerCase() === "admin";
-  saveSession();
-  loginPassword.value = "";
-  openLiveApp();
+  if (username.length < 3) {
+    showAuthMessage(
+      "Username कम से कम 3 अक्षर का होना चाहिए।",
+      "error"
+    );
+    return;
+  }
+  if (password.length < 6) {
+    showAuthMessage(
+      "Password कम से कम 6 अक्षर का होना चाहिए।",
+      "error"
+    );
+    return;
+  }
+  registerBtn.disabled = true;
+  registerBtn.textContent = "Registering...";
+  try {
+    const data =
+      await api(
+        "/api/register",
+        {
+          method: "POST",
+          body: {
+            username,
+            email,
+            password
+          }
+        }
+      );
+    showAuthMessage(
+      data.message ||
+      "Registration सफल हुआ। अब Login करें।",
+      "success"
+    );
+    registerPassword.value = "";
+    loginUsername.value = username;
+    setTimeout(() => {
+      showLogin();
+    }, 700);
+  } catch (error) {
+    showAuthMessage(
+      error.message,
+      "error"
+    );
+  } finally {
+    registerBtn.disabled = false;
+    registerBtn.textContent = "Register";
+  }
 }
-/* =========================
-   OPEN APP
-========================= */
-function openLiveApp() {
+/* =========================================================
+   LOGIN
+   ========================================================= */
+async function loginUser() {
+  const username =
+    loginUsername.value.trim();
+  const password =
+    loginPassword.value;
+  if (!username || !password) {
+    showAuthMessage(
+      "Username और Password भरें।",
+      "error"
+    );
+    return;
+  }
+  loginBtn.disabled = true;
+  loginBtn.textContent = "Login...";
+  try {
+    const data =
+      await api(
+        "/api/login",
+        {
+          method: "POST",
+          body: {
+            username,
+            password
+          }
+        }
+      );
+    if (!data.token) {
+      throw new Error(
+        "Login token नहीं मिला।"
+      );
+    }
+    state.token =
+      data.token;
+    state.user =
+      data.user;
+    state.isHost =
+      data.user.role === "host" ||
+      data.user.role === "admin";
+    localStorage.setItem(
+      "rahulLiveToken",
+      state.token
+    );
+    showLiveApp();
+    showToast(
+      `Welcome ${data.user.username} 👋`
+    );
+    await loadLiveRooms();
+  } catch (error) {
+    showAuthMessage(
+      error.message,
+      "error"
+    );
+  } finally {
+    loginBtn.disabled = false;
+    loginBtn.textContent = "Login";
+  }
+}
+/* =========================================================
+   SESSION RESTORE
+   ========================================================= */
+async function restoreSession() {
+  if (!state.token) {
+    showLogin();
+    return;
+  }
+  try {
+    const data =
+      await api("/api/me");
+    state.user =
+      data.user;
+    state.isHost =
+      data.user.role === "host" ||
+      data.user.role === "admin";
+    showLiveApp();
+    await loadLiveRooms();
+  } catch {
+    clearSession();
+    showLogin();
+  }
+}
+/* =========================================================
+   SHOW LIVE APP
+   ========================================================= */
+function showLiveApp() {
   authScreen.classList.add("hidden");
   liveApp.classList.remove("hidden");
-  hostName.textContent = state.username;
-  hostAvatar.textContent = getInitial(state.username);
-  if (state.isHost) {
-    hostControls.classList.remove("hidden");
-  } else {
-    hostControls.classList.add("hidden");
+  setOnline(true);
+  if (state.user) {
+    hostName.textContent =
+      state.user.username;
+    hostAvatar.textContent =
+      initialLetter(
+        state.user.username
+      );
   }
-  renderViewers();
-  showToast(
-    `Welcome ${state.username} 👋`
-  );
+  updateHostControls();
+  updateButtons();
 }
-/* =========================
-   LOGOUT
-========================= */
-function logoutUser() {
-  state.loggedIn = false;
-  state.joinedLive = false;
+/* =========================================================
+   CLEAR SESSION
+   ========================================================= */
+function clearSession() {
+  state.token = "";
+  state.user = null;
+  state.roomId = null;
+  state.joined = false;
   state.isHost = false;
-  state.viewers = [];
-  state.messages = [];
-  removeSession();
+  state.muted = false;
+  state.blocked = false;
+  localStorage.removeItem(
+    "rahulLiveToken"
+  );
+  stopPolling();
+}
+/* =========================================================
+   LOGOUT
+   ========================================================= */
+async function logoutUser() {
+  if (state.joined && state.roomId) {
+    try {
+      await api(
+        "/api/live/leave",
+        {
+          method: "POST",
+          body: {
+            roomId: state.roomId
+          }
+        }
+      );
+    } catch {}
+  }
+  clearSession();
   liveApp.classList.add("hidden");
   authScreen.classList.remove("hidden");
+  loginPassword.value = "";
   showLogin();
   showToast("Logout हो गया।");
 }
-/* =========================
-   LIVE JOIN
-========================= */
-function joinLive() {
-  if (!state.loggedIn) {
-    showToast("पहले Login करें।");
-    return;
+/* =========================================================
+   LOAD LIVE ROOMS
+   ========================================================= */
+async function loadLiveRooms() {
+  try {
+    const data =
+      await api(
+        "/api/live/rooms"
+      );
+    setOnline(true);
+    if (
+      data.rooms &&
+      data.rooms.length > 0
+    ) {
+      const room =
+        data.rooms[0];
+      state.roomId =
+        Number(room.id);
+      liveTitle.textContent =
+        room.title ||
+        "Chat LIVE Room";
+      hostName.textContent =
+        room.host_name ||
+        "Host";
+      hostAvatar.textContent =
+        initialLetter(
+          room.host_name ||
+          "Host"
+        );
+      viewerCount.textContent =
+        room.viewer_count || 0;
+      updateButtons();
+      return room;
+    }
+    state.roomId = null;
+    viewerCount.textContent = "0";
+    liveTitle.textContent =
+      "Chat LIVE Room";
+    hostName.textContent =
+      "No LIVE";
+    hostAvatar.textContent =
+      "H";
+    updateButtons();
+    return null;
+  } catch (error) {
+    showToast(
+      "LIVE rooms load नहीं हो सके।"
+    );
+    return null;
   }
-  if (state.joinedLive) {
-    showToast("आप पहले से LIVE में हैं।");
-    return;
-  }
-  state.joinedLive = true;
-  const exists = state.viewers.some(
-    viewer =>
-      viewer.username.toLowerCase() ===
-      state.username.toLowerCase()
-  );
-  if (!exists) {
-    state.viewers.push({
-      username: state.username,
-      muted: false,
-      blocked: false
-    });
-  }
-  renderViewers();
-  addSystemMessage(
-    `${state.username} LIVE में join हुए 👋`
-  );
-  showToast("आप LIVE में join हो गए।");
 }
-/* =========================
-   LIVE LEAVE
-========================= */
-function leaveLive() {
-  if (!state.joinedLive) {
-    showToast("आप LIVE में नहीं हैं।");
+/* =========================================================
+   JOIN / START LIVE
+   ========================================================= */
+async function joinLive() {
+  if (!state.user) {
+    showToast(
+      "पहले Login करें।"
+    );
     return;
   }
-  state.joinedLive = false;
-  state.viewers = state.viewers.filter(
-    viewer =>
-      viewer.username !== state.username
-  );
-  renderViewers();
-  addSystemMessage(
-    `${state.username} LIVE से चले गए।`
-  );
-  showToast("आप LIVE से बाहर आ गए।");
+  if (state.joined) {
+    showToast(
+      "आप पहले से LIVE में हैं।"
+    );
+    return;
+  }
+  joinLiveBtn.disabled = true;
+  joinLiveBtn.textContent =
+    "Connecting...";
+  try {
+    let room =
+      await loadLiveRooms();
+    /*
+      अगर कोई LIVE नहीं है,
+      तो पहला user नया LIVE शुरू करेगा।
+    */
+    if (!room) {
+      const startData =
+        await api(
+          "/api/live/start",
+          {
+            method: "POST",
+            body: {
+              title:
+                "Chat LIVE Room"
+            }
+          }
+        );
+      state.roomId =
+        Number(startData.roomId);
+      state.isHost = true;
+      liveTitle.textContent =
+        startData.title ||
+        "Chat LIVE Room";
+      hostName.textContent =
+        state.user.username;
+      hostAvatar.textContent =
+        initialLetter(
+          state.user.username
+        );
+      updateHostControls();
+    } else {
+      state.roomId =
+        Number(room.id);
+      /*
+        अगर room का host current user है,
+        तो current user Host है।
+      */
+      if (
+        Number(room.host_id) ===
+        Number(state.user.id)
+      ) {
+        state.isHost = true;
+      }
+    }
+    await api(
+      "/api/live/join",
+      {
+        method: "POST",
+        body: {
+          roomId: state.roomId
+        }
+      }
+    );
+    state.joined = true;
+    state.muted = false;
+    state.blocked = false;
+    addSystemMessage(
+      `${state.user.username} LIVE में join हुए 👋`
+    );
+    updateButtons();
+    updateHostControls();
+    showToast(
+      state.isHost
+        ? "आप LIVE Host हैं 🔴"
+        : "आप LIVE में join हो गए 🔴"
+    );
+    await refreshLive();
+    startPolling();
+  } catch (error) {
+    showToast(
+      error.message
+    );
+  } finally {
+    joinLiveBtn.disabled = false;
+    updateButtons();
+  }
 }
-/* =========================
+/* =========================================================
+   LEAVE LIVE
+   ========================================================= */
+async function leaveLive() {
+  if (!state.roomId) {
+    showToast(
+      "आप किसी LIVE में नहीं हैं।"
+    );
+    return;
+  }
+  try {
+    await api(
+      "/api/live/leave",
+      {
+        method: "POST",
+        body: {
+          roomId: state.roomId
+        }
+      }
+    );
+    addSystemMessage(
+      `${state.user.username} LIVE से चले गए।`
+    );
+  } catch (error) {
+    showToast(
+      error.message
+    );
+  } finally {
+    state.joined = false;
+    state.roomId = null;
+    state.isHost = false;
+    state.muted = false;
+    state.blocked = false;
+    stopPolling();
+    viewerList.innerHTML = "";
+    viewerCount.textContent = "0";
+    viewerTotal.textContent = "0";
+    chatUserCount.textContent = "0 viewers";
+    updateButtons();
+    updateHostControls();
+    showToast(
+      "आप LIVE से बाहर आ गए।"
+    );
+  }
+}
+/* =========================================================
+   REFRESH LIVE
+   ========================================================= */
+async function refreshLive() {
+  if (!state.roomId) return;
+  try {
+    await Promise.all([
+      loadViewers(),
+      loadMessages()
+    ]);
+    setOnline(true);
+  } catch (error) {
+    setOnline(false);
+  }
+}
+/* =========================================================
+   POLLING
+   ========================================================= */
+function startPolling() {
+  stopPolling();
+  state.pollTimer =
+    setInterval(
+      refreshLive,
+      3000
+    );
+}
+function stopPolling() {
+  if (state.pollTimer) {
+    clearInterval(
+      state.pollTimer
+    );
+    state.pollTimer = null;
+  }
+}
+/* =========================================================
    VIEWERS
-========================= */
-function renderViewers() {
+   ========================================================= */
+async function loadViewers() {
+  if (!state.roomId) return;
+  const data =
+    await api(
+      `/api/live/viewers?roomId=${encodeURIComponent(
+        state.roomId
+      )}`
+    );
+  const viewers =
+    data.viewers || [];
   viewerList.innerHTML = "";
-  state.viewers.forEach(viewer => {
-    const item = document.createElement("div");
-    item.className = "viewer-item";
-    const avatar = document.createElement("div");
-    avatar.className = "viewer-avatar";
-    avatar.textContent = getInitial(viewer.username);
-    const name = document.createElement("div");
-    name.className = "viewer-name";
-    name.textContent = viewer.username;
-    if (viewer.username === state.username) {
-      name.textContent += " (You)";
-    }
-    if (viewer.muted) {
-      name.textContent += " 🔇";
-    }
-    if (viewer.blocked) {
-      name.textContent += " 🚫";
+  viewers.forEach(viewer => {
+    const item =
+      document.createElement("div");
+    item.className =
+      "viewer-item";
+    const avatar =
+      document.createElement("div");
+    avatar.className =
+      "viewer-avatar";
+    avatar.textContent =
+      initialLetter(
+        viewer.username
+      );
+    const name =
+      document.createElement("div");
+    name.className =
+      "viewer-name";
+    name.textContent =
+      viewer.username;
+    if (
+      Number(viewer.id) ===
+      Number(state.user?.id)
+    ) {
+      name.textContent +=
+        " (You)";
     }
     item.appendChild(avatar);
     item.appendChild(name);
     viewerList.appendChild(item);
   });
-  const count = state.viewers.length;
-  viewerCount.textContent = count;
-  viewerTotal.textContent = count;
+  const count =
+    viewers.length;
+  viewerCount.textContent =
+    count;
+  viewerTotal.textContent =
+    count;
   chatUserCount.textContent =
     `${count} viewer${count === 1 ? "" : "s"}`;
 }
-/* =========================
+/* =========================================================
    CHAT
-========================= */
-function sendMessage() {
-  if (!state.loggedIn) {
-    showToast("पहले Login करें।");
+   ========================================================= */
+async function loadMessages() {
+  if (!state.roomId) return;
+  const data =
+    await api(
+      `/api/live/messages?roomId=${encodeURIComponent(
+        state.roomId
+      )}&limit=100`
+    );
+  const messages =
+    data.messages || [];
+  chatMessages.innerHTML = "";
+  if (!messages.length) {
+    addSystemMessage(
+      "LIVE room में आपका स्वागत है 👋"
+    );
     return;
   }
-  if (!state.joinedLive) {
-    showToast("पहले LIVE में Join करें।");
-    return;
-  }
-  const text = chatInput.value.trim();
-  if (!text) return;
-  if (state.blockedUsers.has(state.username)) {
-    showToast("आप इस LIVE में blocked हैं।");
-    return;
-  }
-  if (state.mutedUsers.has(state.username)) {
-    showToast("आपको Host ने mute किया है।");
-    return;
-  }
-  addChatMessage(
-    state.username,
-    text,
-    true
-  );
-  chatInput.value = "";
+  messages.forEach(message => {
+    if (
+      message.message_type ===
+      "system"
+    ) {
+      addSystemMessage(
+        message.message
+      );
+      return;
+    }
+    addChatMessage(
+      message.username,
+      message.message,
+      Number(message.user_id) ===
+      Number(state.user?.id)
+    );
+  });
+  chatMessages.scrollTop =
+    chatMessages.scrollHeight;
 }
+async function sendMessage() {
+  if (!state.joined) {
+    showToast(
+      "पहले LIVE में Join करें।"
+    );
+    return;
+  }
+  if (state.muted) {
+    showToast(
+      "आपको Host ने mute किया है।"
+    );
+    return;
+  }
+  if (state.blocked) {
+    showToast(
+      "आप blocked हैं।"
+    );
+    return;
+  }
+  const text =
+    chatInput.value.trim();
+  if (!text) return;
+  if (text.length > 500) {
+    showToast(
+      "Message बहुत लंबा है।"
+    );
+    return;
+  }
+  sendChatBtn.disabled = true;
+  try {
+    await api(
+      "/api/live/message",
+      {
+        method: "POST",
+        body: {
+          roomId:
+            state.roomId,
+          message:
+            text,
+          messageType:
+            "text"
+        }
+      }
+    );
+    chatInput.value = "";
+    await loadMessages();
+  } catch (error) {
+    showToast(
+      error.message
+    );
+    /*
+      Worker से mute/block response मिलने पर
+      local state भी update कर देते हैं।
+    */
+    if (
+      error.message
+        .toLowerCase()
+        .includes("mute")
+    ) {
+      state.muted = true;
+    }
+    if (
+      error.message
+        .toLowerCase()
+        .includes("block")
+    ) {
+      state.blocked = true;
+    }
+  } finally {
+    sendChatBtn.disabled = false;
+  }
+}
+/* =========================================================
+   CHAT UI
+   ========================================================= */
 function addChatMessage(
   username,
   text,
   mine = false
 ) {
-  const message = document.createElement("div");
+  const message =
+    document.createElement("div");
   message.className =
     `chat-message${mine ? " mine" : ""}`;
   const usernameElement =
@@ -368,15 +807,15 @@ function addChatMessage(
     "chat-text";
   textElement.textContent =
     text;
-  message.appendChild(usernameElement);
-  message.appendChild(textElement);
-  chatMessages.appendChild(message);
-  chatMessages.scrollTop =
-    chatMessages.scrollHeight;
-  state.messages.push({
-    username,
-    text
-  });
+  message.appendChild(
+    usernameElement
+  );
+  message.appendChild(
+    textElement
+  );
+  chatMessages.appendChild(
+    message
+  );
 }
 function addSystemMessage(text) {
   const message =
@@ -385,145 +824,184 @@ function addSystemMessage(text) {
     "system-message";
   message.textContent =
     text;
-  chatMessages.appendChild(message);
-  chatMessages.scrollTop =
-    chatMessages.scrollHeight;
+  chatMessages.appendChild(
+    message
+  );
 }
-/* =========================
+/* =========================================================
    EMOJI
-========================= */
+   ========================================================= */
 function toggleEmojiPanel() {
-  emojiPanel.classList.toggle("hidden");
+  emojiPanel.classList.toggle(
+    "hidden"
+  );
 }
 function insertEmoji(emoji) {
-  if (!chatInput) return;
   chatInput.value += emoji;
   chatInput.focus();
 }
-function sendReaction(emoji) {
-  if (!state.loggedIn) {
-    showToast("पहले Login करें।");
+async function sendReaction(emoji) {
+  if (!state.joined) {
+    showToast(
+      "पहले LIVE में Join करें।"
+    );
     return;
   }
-  if (!state.joinedLive) {
-    showToast("पहले LIVE में Join करें।");
+  if (state.muted) {
+    showToast(
+      "आप muted हैं।"
+    );
     return;
   }
-  if (state.mutedUsers.has(state.username)) {
-    showToast("आप muted हैं।");
-    return;
+  try {
+    await api(
+      "/api/live/message",
+      {
+        method: "POST",
+        body: {
+          roomId:
+            state.roomId,
+          message:
+            emoji,
+          messageType:
+            "reaction"
+        }
+      }
+    );
+    await loadMessages();
+  } catch (error) {
+    showToast(
+      error.message
+    );
   }
-  addChatMessage(
-    state.username,
-    emoji,
-    true
-  );
-  showToast(`Reaction ${emoji}`);
 }
-/* =========================
-   HOST USER SELECTION
-========================= */
+/* =========================================================
+   HOST CONTROLS
+   ========================================================= */
+function updateHostControls() {
+  if (!hostControls) return;
+  if (
+    state.isHost &&
+    state.joined
+  ) {
+    hostControls.classList.remove(
+      "hidden"
+    );
+  } else {
+    hostControls.classList.add(
+      "hidden"
+    );
+  }
+}
 function getTargetViewer() {
-  const available =
-    state.viewers.filter(
-      viewer =>
-        viewer.username !== state.username &&
-        !state.kickedUsers.has(viewer.username)
+  const items =
+    viewerList.querySelectorAll(
+      ".viewer-item"
     );
-  if (!available.length) {
-    showToast("कोई दूसरा viewer मौजूद नहीं है।");
-    return null;
-  }
   /*
-    अभी frontend version में पहला available viewer
-    target होगा।
-    बाद में viewer selection UI और API जोड़ेंगे।
+    API से actual viewer ID चाहिए।
+    इसलिए viewer list को दोबारा API से
+    पढ़ेंगे।
   */
-  return available[0];
+  return api(
+    `/api/live/viewers?roomId=${encodeURIComponent(
+      state.roomId
+    )}`
+  )
+  .then(data => {
+    const viewers =
+      data.viewers || [];
+    return viewers.find(
+      viewer =>
+        Number(viewer.id) !==
+        Number(state.user?.id)
+    ) || null;
+  });
 }
-/* =========================
-   MUTE
-========================= */
-function muteViewer() {
+/* =========================================================
+   MODERATION
+   ========================================================= */
+async function moderate(action) {
   if (!state.isHost) {
-    showToast("सिर्फ Host यह action कर सकता है।");
-    return;
-  }
-  const viewer =
-    getTargetViewer();
-  if (!viewer) return;
-  viewer.muted = true;
-  state.mutedUsers.add(
-    viewer.username
-  );
-  renderViewers();
-  addSystemMessage(
-    `${viewer.username} को Host ने mute किया 🔇`
-  );
-  showToast(
-    `${viewer.username} muted`
-  );
-}
-/* =========================
-   KICK
-========================= */
-function kickViewer() {
-  if (!state.isHost) {
-    showToast("सिर्फ Host यह action कर सकता है।");
-    return;
-  }
-  const viewer =
-    getTargetViewer();
-  if (!viewer) return;
-  state.kickedUsers.add(
-    viewer.username
-  );
-  state.viewers =
-    state.viewers.filter(
-      item =>
-        item.username !== viewer.username
+    showToast(
+      "सिर्फ Host यह action कर सकता है।"
     );
-  renderViewers();
-  addSystemMessage(
-    `${viewer.username} को LIVE से kick किया गया 👢`
-  );
-  showToast(
-    `${viewer.username} kicked`
-  );
-}
-/* =========================
-   BLOCK
-========================= */
-function blockViewer() {
-  if (!state.isHost) {
-    showToast("सिर्फ Host यह action कर सकता है।");
     return;
   }
-  const viewer =
-    getTargetViewer();
-  if (!viewer) return;
-  state.blockedUsers.add(
-    viewer.username
-  );
-  state.viewers =
-    state.viewers.filter(
-      item =>
-        item.username !== viewer.username
+  if (!state.roomId) {
+    showToast(
+      "LIVE room नहीं मिला।"
     );
-  renderViewers();
-  addSystemMessage(
-    `${viewer.username} को Host ने block किया 🚫`
-  );
-  showToast(
-    `${viewer.username} blocked`
-  );
+    return;
+  }
+  try {
+    const target =
+      await getTargetViewer();
+    if (!target) {
+      showToast(
+        "कोई दूसरा viewer मौजूद नहीं है।"
+      );
+      return;
+    }
+    await api(
+      "/api/live/moderate",
+      {
+        method: "POST",
+        body: {
+          roomId:
+            state.roomId,
+          targetUserId:
+            target.id,
+          action
+        }
+      }
+    );
+    if (action === "kick") {
+      addSystemMessage(
+        `${target.username} को LIVE से kick किया गया 👢`
+      );
+    } else if (action === "block") {
+      addSystemMessage(
+        `${target.username} को block किया गया 🚫`
+      );
+    } else if (action === "mute") {
+      addSystemMessage(
+        `${target.username} को mute किया गया 🔇`
+      );
+    }
+    await refreshLive();
+    showToast(
+      `${target.username}: ${action}`
+    );
+  } catch (error) {
+    showToast(
+      error.message
+    );
+  }
 }
-/* =========================
+async function muteViewer() {
+  await moderate("mute");
+}
+async function kickViewer() {
+  await moderate("kick");
+}
+async function blockViewer() {
+  await moderate("block");
+}
+/* =========================================================
    END LIVE
-========================= */
-function endLive() {
+   ========================================================= */
+async function endLive() {
   if (!state.isHost) {
-    showToast("सिर्फ Host LIVE समाप्त कर सकता है।");
+    showToast(
+      "सिर्फ Host LIVE समाप्त कर सकता है।"
+    );
+    return;
+  }
+  if (!state.roomId) {
+    showToast(
+      "LIVE room नहीं मिला।"
+    );
     return;
   }
   const confirmed =
@@ -531,61 +1009,100 @@ function endLive() {
       "क्या आप LIVE समाप्त करना चाहते हैं?"
     );
   if (!confirmed) return;
-  state.joinedLive = false;
-  state.viewers = [];
-  renderViewers();
-  addSystemMessage(
-    "🛑 Host ने LIVE समाप्त कर दिया।"
-  );
-  showToast(
-    "LIVE समाप्त हो गया।"
-  );
-}
-/* =========================
-   QUICK REACTIONS
-========================= */
-function setupReactions() {
-  const buttons =
-    document.querySelectorAll(
-      "[data-reaction]"
-    );
-  buttons.forEach(button => {
-    button.addEventListener(
-      "click",
-      () => {
-        const emoji =
-          button.getAttribute(
-            "data-reaction"
-          );
-        sendReaction(emoji);
+  try {
+    await api(
+      "/api/live/end",
+      {
+        method: "POST",
+        body: {
+          roomId:
+            state.roomId
+        }
       }
     );
-  });
+    addSystemMessage(
+      "🛑 Host ने LIVE समाप्त कर दिया।"
+    );
+    state.joined = false;
+    state.roomId = null;
+    state.isHost = false;
+    stopPolling();
+    viewerList.innerHTML = "";
+    viewerCount.textContent = "0";
+    viewerTotal.textContent = "0";
+    chatUserCount.textContent = "0 viewers";
+    updateButtons();
+    updateHostControls();
+    showToast(
+      "LIVE समाप्त हो गया।"
+    );
+  } catch (error) {
+    showToast(
+      error.message
+    );
+  }
 }
-/* =========================
+/* =========================================================
+   BUTTON STATES
+   ========================================================= */
+function updateButtons() {
+  if (state.joined) {
+    joinLiveBtn.disabled = true;
+    joinLiveBtn.textContent =
+      "🔴 LIVE में Joined";
+    leaveLiveBtn.disabled = false;
+  } else {
+    joinLiveBtn.disabled = false;
+    joinLiveBtn.textContent =
+      "🔴 Join LIVE";
+    leaveLiveBtn.disabled = true;
+  }
+}
+/* =========================================================
    EMOJI BUTTONS
-========================= */
+   ========================================================= */
 function setupEmojiButtons() {
-  const buttons =
-    document.querySelectorAll(
+  document
+    .querySelectorAll(
       "[data-emoji]"
-    );
-  buttons.forEach(button => {
-    button.addEventListener(
-      "click",
-      () => {
-        const emoji =
-          button.getAttribute(
-            "data-emoji"
+    )
+    .forEach(button => {
+      button.addEventListener(
+        "click",
+        () => {
+          insertEmoji(
+            button.getAttribute(
+              "data-emoji"
+            )
           );
-        insertEmoji(emoji);
-      }
-    );
-  });
+        }
+      );
+    });
 }
-/* =========================
+/* =========================================================
+   QUICK REACTIONS
+   ========================================================= */
+function setupReactionButtons() {
+  document
+    .querySelectorAll(
+      "[data-reaction]"
+    )
+    .forEach(button => {
+      button.addEventListener(
+        "click",
+        () => {
+          sendReaction(
+            button.getAttribute(
+              "data-reaction"
+            )
+          );
+        }
+      );
+    });
+}
+/* =========================================================
    KEYBOARD
-========================= */
+   ========================================================= */
 function setupKeyboard() {
   chatInput.addEventListener(
     "keydown",
@@ -600,31 +1117,9 @@ function setupKeyboard() {
     }
   );
 }
-/* =========================
-   RESTORE SESSION
-========================= */
-function restoreSession() {
-  const saved =
-    localStorage.getItem(
-      "rahulLiveSession"
-    );
-  if (!saved) return;
-  try {
-    const session =
-      JSON.parse(saved);
-    if (!session.username) return;
-    state.loggedIn = true;
-    state.username = session.username;
-    state.email = session.email || "";
-    state.isHost = Boolean(session.isHost);
-    openLiveApp();
-  } catch (error) {
-    removeSession();
-  }
-}
-/* =========================
-   EVENT LISTENERS
-========================= */
+/* =========================================================
+   EVENTS
+   ========================================================= */
 showRegisterBtn.addEventListener(
   "click",
   showRegister
@@ -677,10 +1172,37 @@ endLiveBtn.addEventListener(
   "click",
   endLive
 );
-/* =========================
-   INITIALIZE
-========================= */
+/* =========================================================
+   CLOSE EMOJI PANEL OUTSIDE
+   ========================================================= */
+document.addEventListener(
+  "click",
+  event => {
+    if (
+      emojiPanel.classList.contains(
+        "hidden"
+      )
+    ) {
+      return;
+    }
+    if (
+      event.target === emojiBtn ||
+      emojiPanel.contains(
+        event.target
+      )
+    ) {
+      return;
+    }
+    emojiPanel.classList.add(
+      "hidden"
+    );
+  }
+);
+/* =========================================================
+   START
+   ========================================================= */
 setupEmojiButtons();
-setupReactions();
+setupReactionButtons();
 setupKeyboard();
+updateButtons();
 restoreSession();
