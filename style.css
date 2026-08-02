@@ -1,859 +1,562 @@
-/* =========================================================
-   RAHUL LIVE
-   style.css
-========================================================= */
-
 * {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-    -webkit-tap-highlight-color: transparent;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
-
 html,
 body {
-    width: 100%;
-    min-height: 100%;
-    background: #000;
-    color: #fff;
-    font-family: Arial, Helvetica, sans-serif;
+  width: 100%;
+  min-height: 100%;
+  font-family: Arial, Helvetica, sans-serif;
+  background: #ffffff;
+  color: #111111;
 }
-
 body {
-    overflow-x: hidden;
+  overflow-x: hidden;
 }
-
+/* ================= COMMON ================= */
 button,
 input {
-    font: inherit;
+  font: inherit;
 }
-
 button {
-    border: 0;
-    cursor: pointer;
+  cursor: pointer;
+  border: none;
 }
-
-input {
-    outline: none;
+.hidden {
+  display: none !important;
 }
-
-
-/* =========================================================
-   AUTH
-========================================================= */
-
+.screen {
+  width: 100%;
+  min-height: 100vh;
+}
+/* ================= AUTH ================= */
 #authScreen {
-    min-height: 100vh;
-    min-height: 100dvh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-    background:
-        radial-gradient(
-            circle at top,
-            #123d20 0,
-            #061008 25%,
-            #000 60%
-        );
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 24px;
+  background: #ffffff;
 }
-
-.authBox {
-    width: 100%;
-    max-width: 420px;
-    padding: 30px 22px;
-    border: 1px solid #18351f;
-    border-radius: 24px;
-    background: rgba(5, 10, 7, 0.96);
-    box-shadow:
-        0 0 35px rgba(0, 255, 80, 0.08);
+.auth-box {
+  width: 100%;
+  max-width: 420px;
+  padding: 30px 24px;
+  border: 1px solid #e5e5e5;
+  border-radius: 22px;
+  background: #ffffff;
+  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.08);
+  text-align: center;
 }
-
-.logo {
-    text-align: center;
-    font-size: 34px;
-    font-weight: 900;
-    color: #20ff68;
-    text-shadow:
-        0 0 15px rgba(32, 255, 104, 0.5);
+.app-logo {
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 20px;
+  background: #111111;
+  color: #ffffff;
+  font-size: 25px;
+  font-weight: 800;
 }
-
-.tagline {
-    text-align: center;
-    margin-top: 8px;
-    margin-bottom: 28px;
-    color: #888;
-    font-size: 13px;
+.auth-box h1 {
+  font-size: 29px;
+  margin-bottom: 5px;
 }
-
-.authTabs {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 20px;
-    padding: 5px;
-    border-radius: 14px;
-    background: #0b0f0c;
+.subtitle {
+  color: #777777;
+  margin-bottom: 28px;
 }
-
-.authTabs button {
-    flex: 1;
-    padding: 12px;
-    border-radius: 10px;
-    background: transparent;
-    color: #777;
-    font-weight: 700;
+.auth-form {
+  width: 100%;
 }
-
-.authTabs button.active {
-    background: #20ff68;
-    color: #000;
+.auth-form h2 {
+  margin-bottom: 18px;
+  font-size: 22px;
 }
-
-.inputGroup {
-    margin-bottom: 14px;
+.auth-form input {
+  width: 100%;
+  height: 52px;
+  margin-bottom: 13px;
+  padding: 0 16px;
+  border: 1px solid #dddddd;
+  border-radius: 13px;
+  outline: none;
+  background: #fafafa;
+  color: #111111;
 }
-
-.inputGroup input {
-    width: 100%;
+.auth-form input:focus {
+  border-color: #111111;
+  background: #ffffff;
+}
+.auth-form > button:not(.link-btn) {
+  width: 100%;
+  height: 52px;
+  margin-top: 5px;
+  border-radius: 13px;
+  background: #111111;
+  color: #ffffff;
+  font-weight: 700;
+}
+.auth-form p {
+  margin-top: 18px;
+  color: #777777;
+  font-size: 14px;
+}
+.link-btn {
+  background: transparent;
+  color: #111111;
+  font-weight: 700;
+  text-decoration: underline;
+}
+.message {
+  min-height: 22px;
+  margin-top: 15px;
+  font-size: 14px;
+}
+/* ================= TOP BAR ================= */
+#liveApp {
+  background: #f7f7f7;
+}
+.top-bar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  min-height: 62px;
+  padding: 0 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #ffffff;
+  border-bottom: 1px solid #e7e7e7;
+}
+.brand {
+  font-size: 20px;
+}
+.top-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.online-status {
+  color: #168a36;
+  font-size: 13px;
+  font-weight: 700;
+}
+.icon-btn {
+  padding: 9px 13px;
+  border: 1px solid #dddddd;
+  border-radius: 10px;
+  background: #ffffff;
+}
+/* ================= LIVE ROOM ================= */
+.live-room {
+  width: 100%;
+  max-width: 760px;
+  margin: 0 auto;
+  padding-bottom: 30px;
+}
+.live-header {
+  min-height: 58px;
+  padding: 0 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #ffffff;
+  border-bottom: 1px solid #e8e8e8;
+}
+.live-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+}
+.live-badge {
+  padding: 6px 9px;
+  border-radius: 8px;
+  background: #111111;
+  color: #ffffff;
+  font-size: 12px;
+}
+.viewer-count {
+  font-size: 14px;
+  font-weight: 700;
+}
+/* ================= HOST ================= */
+.host-card {
+  margin: 14px;
+  padding: 13px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid #e5e5e5;
+  border-radius: 15px;
+  background: #ffffff;
+}
+.host-avatar {
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #111111;
+  color: #ffffff;
+  font-weight: 800;
+}
+.host-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.host-info span {
+  color: #777777;
+  font-size: 12px;
+}
+.host-label {
+  padding: 6px 8px;
+  border-radius: 7px;
+  background: #f0f0f0;
+  font-size: 11px;
+  font-weight: 800;
+}
+/* ================= ROOM CONTENT ================= */
+.room-content {
+  min-height: 170px;
+  margin: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #e3e3e3;
+  border-radius: 18px;
+  background: #ffffff;
+}
+.room-message {
+  padding: 25px;
+  text-align: center;
+}
+.room-icon {
+  margin-bottom: 10px;
+  font-size: 42px;
+}
+.room-message h2 {
+  font-size: 20px;
+  margin-bottom: 7px;
+}
+.room-message p {
+  color: #777777;
+  font-size: 14px;
+}
+/* ================= CHAT ================= */
+.chat-section {
+  margin: 14px;
+  overflow: hidden;
+  border: 1px solid #e1e1e1;
+  border-radius: 18px;
+  background: #ffffff;
+}
+.chat-header {
+  min-height: 48px;
+  padding: 0 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #eeeeee;
+}
+.chat-header span {
+  color: #777777;
+  font-size: 12px;
+}
+.chat-messages {
+  height: 310px;
+  padding: 14px;
+  overflow-y: auto;
+  background: #fcfcfc;
+}
+.system-message {
+  margin-bottom: 10px;
+  color: #888888;
+  text-align: center;
+  font-size: 12px;
+}
+.chat-message {
+  max-width: 88%;
+  margin-bottom: 10px;
+  padding: 9px 11px;
+  border-radius: 13px;
+  background: #eeeeee;
+}
+.chat-message.mine {
+  margin-left: auto;
+  background: #111111;
+  color: #ffffff;
+}
+.chat-username {
+  margin-bottom: 3px;
+  font-size: 11px;
+  font-weight: 800;
+  opacity: 0.7;
+}
+.chat-text {
+  font-size: 14px;
+  line-height: 1.35;
+}
+/* ================= EMOJI ================= */
+.emoji-panel {
+  padding: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  border-top: 1px solid #eeeeee;
+  background: #ffffff;
+}
+.emoji-panel button {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: #f2f2f2;
+  font-size: 21px;
+}
+.emoji-panel button:active {
+  transform: scale(0.9);
+}
+.quick-reactions {
+  padding: 8px 12px;
+  display: flex;
+  gap: 8px;
+  border-top: 1px solid #eeeeee;
+  overflow-x: auto;
+}
+.quick-reactions button {
+  min-width: 42px;
+  height: 38px;
+  border-radius: 20px;
+  background: #f1f1f1;
+  font-size: 20px;
+}
+/* ================= CHAT INPUT ================= */
+.chat-input-area {
+  min-height: 58px;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  border-top: 1px solid #eeeeee;
+  background: #ffffff;
+}
+.emoji-btn {
+  width: 43px;
+  height: 43px;
+  flex-shrink: 0;
+  border-radius: 12px;
+  background: #f1f1f1;
+  font-size: 22px;
+}
+.chat-input-area input {
+  min-width: 0;
+  flex: 1;
+  height: 43px;
+  padding: 0 12px;
+  border: 1px solid #dddddd;
+  border-radius: 12px;
+  outline: none;
+  background: #ffffff;
+}
+.chat-input-area input:focus {
+  border-color: #111111;
+}
+.send-btn {
+  height: 43px;
+  padding: 0 15px;
+  border-radius: 12px;
+  background: #111111;
+  color: #ffffff;
+  font-weight: 700;
+}
+/* ================= VIEWERS ================= */
+.viewers-section {
+  margin: 14px;
+  padding: 15px;
+  border: 1px solid #e2e2e2;
+  border-radius: 17px;
+  background: #ffffff;
+}
+.section-title {
+  margin-bottom: 13px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.section-title span {
+  min-width: 25px;
+  padding: 4px 7px;
+  border-radius: 10px;
+  background: #eeeeee;
+  text-align: center;
+  font-size: 12px;
+}
+.viewer-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.viewer-item {
+  min-height: 48px;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  border-radius: 11px;
+  background: #f8f8f8;
+}
+.viewer-avatar {
+  width: 35px;
+  height: 35px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #dddddd;
+  font-weight: 700;
+}
+.viewer-name {
+  flex: 1;
+  font-size: 14px;
+}
+/* ================= HOST CONTROLS ================= */
+.host-controls {
+  margin: 14px;
+  padding: 15px;
+  border: 1px solid #e2e2e2;
+  border-radius: 17px;
+  background: #ffffff;
+}
+.host-controls h3 {
+  margin-bottom: 12px;
+  font-size: 16px;
+}
+.control-buttons {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 9px;
+}
+.control-buttons button {
+  min-height: 45px;
+  border-radius: 11px;
+  background: #eeeeee;
+  color: #111111;
+  font-weight: 700;
+}
+.control-buttons .danger-btn {
+  background: #111111;
+  color: #ffffff;
+}
+/* ================= USER ACTIONS ================= */
+.user-actions {
+  margin: 14px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 9px;
+}
+.user-actions button {
+  min-height: 48px;
+  border-radius: 12px;
+  background: #111111;
+  color: #ffffff;
+  font-weight: 700;
+}
+.user-actions button:last-child {
+  background: #eeeeee;
+  color: #111111;
+}
+/* ================= TOAST ================= */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 25px;
+  z-index: 100;
+  max-width: calc(100% - 30px);
+  padding: 12px 17px;
+  transform: translateX(-50%);
+  border-radius: 12px;
+  background: #111111;
+  color: #ffffff;
+  font-size: 14px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.18);
+}
+/* ================= MOBILE ================= */
+@media (max-width: 600px) {
+  #authScreen {
     padding: 15px;
-    border: 1px solid #222;
-    border-radius: 13px;
-    background: #080b09;
-    color: #fff;
-}
-
-.inputGroup input:focus {
-    border-color: #20ff68;
-    box-shadow:
-        0 0 12px rgba(32, 255, 104, 0.12);
-}
-
-.inputGroup input::placeholder {
-    color: #666;
-}
-
-.mainBtn {
-    width: 100%;
-    padding: 15px;
-    border-radius: 13px;
-    background: #20ff68;
-    color: #000;
-    font-weight: 900;
-    transition: 0.2s;
-}
-
-.mainBtn:active {
-    transform: scale(0.97);
-}
-
-.authMessage {
-    min-height: 22px;
-    margin-top: 15px;
-    text-align: center;
-    font-size: 13px;
-}
-
-
-/* =========================================================
-   APP
-========================================================= */
-
-#appScreen {
-    display: none;
-    width: 100%;
-    min-height: 100vh;
-    min-height: 100dvh;
-    background: #000;
-}
-
-
-/* =========================================================
-   TOP BAR
-========================================================= */
-
-.topBar {
-    position: fixed;
-    z-index: 100;
-    top: 0;
-    left: 0;
-    right: 0;
-
-    height: 58px;
-
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-
-    padding:
-        env(safe-area-inset-top)
-        15px
-        0
-        15px;
-
-    background: rgba(0, 0, 0, 0.82);
-    backdrop-filter: blur(14px);
-    border-bottom: 1px solid #111;
-}
-
-.topLogo {
-    color: #20ff68;
-    font-size: 21px;
-    font-weight: 900;
-}
-
-.liveTopBtn {
-    padding: 8px 13px;
-    border-radius: 20px;
-    background: #1b0a0d;
-    color: #ff3158;
-    border: 1px solid #4d111d;
-    font-weight: 800;
-}
-
-
-/* =========================================================
-   CONTENT
-========================================================= */
-
-.content {
-    width: 100%;
-    min-height: 100vh;
-    min-height: 100dvh;
-}
-
-.page {
-    display: none;
-    width: 100%;
-    min-height: 100vh;
-    min-height: 100dvh;
-    padding-top: 58px;
-    padding-bottom: 78px;
-}
-
-.page.active {
-    display: block;
-}
-
-
-/* =========================================================
-   SHORT VIDEO FEED
-========================================================= */
-
-.videoFeed {
-    width: 100%;
-    height: calc(100vh - 58px - 70px);
-    height: calc(100dvh - 58px - 70px);
-
-    overflow-y: auto;
-    scroll-snap-type: y mandatory;
-
-    scrollbar-width: none;
-}
-
-.videoFeed::-webkit-scrollbar {
-    display: none;
-}
-
-.videoCard {
-    position: relative;
-
-    width: 100%;
-    height: 100%;
-
-    min-height: calc(100vh - 58px - 70px);
-    min-height: calc(100dvh - 58px - 70px);
-
-    background: #050505;
-
-    scroll-snap-align: start;
-    scroll-snap-stop: always;
-
-    overflow: hidden;
-}
-
-.videoCard > video {
-    width: 100%;
-    height: 100%;
-    display: block;
-
-    object-fit: cover;
-    background: #050505;
-}
-
-.videoOverlay {
-    position: absolute;
-    inset: 0;
-
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-
-    padding:
-        20px
-        15px
-        25px
-        15px;
-
-    background:
-        linear-gradient(
-            transparent 50%,
-            rgba(0,0,0,0.82)
-        );
-    pointer-events: none;
-}
-
-.videoInfo {
-    max-width: 72%;
-    pointer-events: auto;
-}
-
-.username {
-    margin-bottom: 9px;
-    font-size: 16px;
-    font-weight: 900;
-}
-
-.caption {
-    color: #ddd;
-    font-size: 14px;
-    line-height: 1.45;
-}
-
-.videoActions {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 3px;
-
-    pointer-events: auto;
-}
-
-.actionBtn {
-    width: 48px;
-    height: 48px;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    border-radius: 50%;
-    background: rgba(0, 0, 0, 0.48);
-    color: #fff;
-
-    font-size: 24px;
-}
-
-.actionBtn:active {
-    transform: scale(0.88);
-}
-
-.actionCount {
-    margin-bottom: 8px;
-    color: #fff;
-    font-size: 11px;
-    font-weight: 700;
-}
-
-.loadingBox {
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #777;
-}
-
-
-/* =========================================================
-   BOTTOM NAV
-========================================================= */
-
-.bottomNav {
-    position: fixed;
-    z-index: 200;
-
-    left: 0;
-    right: 0;
-    bottom: 0;
-
-    height: 70px;
-    padding-bottom: env(safe-area-inset-bottom);
-
-    display: flex;
-    align-items: center;
-    justify-content: space-around;
-
-    background: rgba(5, 5, 5, 0.94);
-    backdrop-filter: blur(15px);
-
-    border-top: 1px solid #151515;
-}
-
-.navBtn {
-    min-width: 65px;
-
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-
-    background: transparent;
-    color: #666;
-
-    font-size: 10px;
-    font-weight: 700;
-}
-
-.navBtn span {
-    font-size: 21px;
-}
-
-.navBtn.active {
-    color: #20ff68;
-}
-
-
-/* =========================================================
-   PAGE HEADER
-========================================================= */
-
-.pageHeader {
-    padding: 22px 18px 15px;
-}
-
-.pageHeader h2 {
-    font-size: 24px;
-}
-
-
-/* =========================================================
-   LIVE PAGE
-========================================================= */
-
-.startLiveBox {
-    margin: 0 15px 20px;
+  }
+  .auth-box {
     padding: 25px 18px;
-
-    text-align: center;
-
-    border: 1px solid #1c351f;
-    border-radius: 20px;
-
-    background:
-        linear-gradient(
-            145deg,
-            #09130c,
-            #050805
-        );
-}
-
-.liveIcon {
-    font-size: 45px;
-    margin-bottom: 10px;
-}
-
-.startLiveBox h3 {
-    font-size: 22px;
-    margin-bottom: 8px;
-}
-
-.startLiveBox p {
-    margin-bottom: 18px;
-    color: #777;
-    font-size: 13px;
-}
-
-.startLiveBtn {
-    padding: 13px 24px;
-    border-radius: 25px;
-    background: #ff3158;
-    color: #fff;
-    font-weight: 900;
-}
-
-.liveGrid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
-    padding: 0 15px;
-}
-
-.liveCard {
-    position: relative;
-    min-height: 190px;
-
-    overflow: hidden;
-
-    border: 1px solid #222;
-    border-radius: 16px;
-
-    background: #090909;
-}
-
-.liveThumb {
-    height: 135px;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    background:
-        radial-gradient(
-            circle,
-            #3b0a13,
-            #090909 70%
-        );
-
-    font-size: 40px;
-}
-
-.liveBadge {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-
-    padding: 5px 9px;
-    border-radius: 7px;
-
-    background: #ff3158;
-    color: #fff;
-
-    font-size: 10px;
-    font-weight: 900;
-}
-
-.liveName {
-    padding: 11px;
-    font-size: 13px;
-    font-weight: 800;
-}
-
-
-/* =========================================================
-   UPLOAD
-========================================================= */
-
-.uploadBox {
-    width: 100%;
-    max-width: 550px;
-    margin: auto;
-    padding: 15px;
-}
-
-.uploadText {
-    margin: 0 18px 20px;
-    color: #777;
-    font-size: 13px;
-}
-
-.uploadBtn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    min-height: 150px;
-
-    border: 2px dashed #214a2c;
-    border-radius: 20px;
-
-    background: #080d09;
-    color: #20ff68;
-
-    font-weight: 800;
-}
-
-.selectedVideo {
-    margin: 14px 0;
-    padding: 12px;
-
-    border-radius: 10px;
-
-    background: #0b0b0b;
-    color: #888;
-
-    font-size: 12px;
-    word-break: break-word;
-}
-
-#uploadPreview {
-    width: 100%;
-    max-height: 420px;
-
-    margin-bottom: 15px;
-
-    border-radius: 15px;
-    background: #050505;
-}
-
-
-/* =========================================================
-   PROFILE
-========================================================= */
-
-.profileBox {
-    max-width: 550px;
-    margin: auto;
-    padding: 40px 20px;
-    text-align: center;
-}
-
-.avatar {
-    width: 92px;
-    height: 92px;
-
-    margin: 15px auto;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    border-radius: 50%;
-
-    background: #20ff68;
-    color: #000;
-
-    font-size: 38px;
-    font-weight: 900;
-
-    box-shadow:
-        0 0 30px rgba(32,255,104,0.2);
-}
-
-.profileName {
-    font-size: 23px;
-    font-weight: 900;
-}
-
-.profileUsername {
-    margin-top: 5px;
-    color: #777;
-    font-size: 13px;
-}
-
-.profileBio {
-    margin: 12px auto;
-    max-width: 350px;
-    color: #aaa;
-    font-size: 13px;
-}
-
-.profileStats {
-    display: flex;
-    justify-content: center;
-    gap: 45px;
-    margin: 30px 0;
-}
-
-.stat {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-}
-
-.stat strong {
-    font-size: 20px;
-}
-
-.stat span {
-    color: #777;
-    font-size: 11px;
-}
-
-.logoutBtn {
-    padding: 12px 30px;
-    border: 1px solid #45111c;
-    border-radius: 25px;
-
-    background: #16080c;
-    color: #ff3158;
-
-    font-weight: 800;
-}
-
-
-/* =========================================================
-   LIVE STUDIO
-========================================================= */
-
-#liveStudio {
-    position: fixed;
-    z-index: 1000;
-
-    inset: 0;
-
-    background: #000;
-}
-
-#livePreview {
-    width: 100%;
-    height: 100%;
-
-    object-fit: cover;
-    background: #000;
-}
-
-.liveStudioTop {
-    position: absolute;
-    top: 20px;
-    left: 15px;
-    right: 15px;
-
-    z-index: 5;
-}
-
-.liveStudioTop input {
-    width: 100%;
-
-    padding: 13px 15px;
-
-    border: 1px solid rgba(255,255,255,0.2);
-    border-radius: 12px;
-
-    background: rgba(0,0,0,0.55);
-    color: #fff;
-}
-
-.liveStudioTop input::placeholder {
-    color: #aaa;
-}
-
-.liveStudioControls {
-    position: absolute;
-    left: 15px;
-    right: 15px;
-    bottom: 30px;
-
-    z-index: 5;
-
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.goLiveBtn,
-.endLiveBtn {
-    flex: 1;
-    padding: 15px;
-    border-radius: 30px;
-    font-weight: 900;
-}
-
-.goLiveBtn {
-    background: #ff3158;
-    color: #fff;
-}
-
-.endLiveBtn {
-    background: #fff;
-    color: #000;
-}
-
-.closeLiveBtn {
-    width: 48px;
-    height: 48px;
-
-    border-radius: 50%;
-
-    background: rgba(0,0,0,0.65);
-    color: #fff;
-
+    border-radius: 19px;
+    box-shadow: none;
+  }
+  .auth-box h1 {
+    font-size: 26px;
+  }
+  .top-bar {
+    padding: 0 13px;
+  }
+  .brand {
     font-size: 18px;
+  }
+  .online-status {
+    display: none;
+  }
+  .live-room {
+    padding-bottom: 20px;
+  }
+  .room-content {
+    min-height: 145px;
+  }
+  .chat-messages {
+    height: 280px;
+  }
+  .control-buttons {
+    grid-template-columns: 1fr 1fr;
+  }
+  .user-actions {
+    grid-template-columns: 1fr;
+  }
+  .send-btn {
+    padding: 0 12px;
+  }
 }
-
-
-/* =========================================================
-   SCROLLBARS
-========================================================= */
-
-::-webkit-scrollbar {
-    width: 4px;
-    height: 4px;
-}
-
-::-webkit-scrollbar-track {
-    background: #000;
-}
-
-::-webkit-scrollbar-thumb {
-    background: #222;
-    border-radius: 10px;
-}
-
-
-/* =========================================================
-   TABLET / DESKTOP
-========================================================= */
-
-@media (min-width: 700px) {
-
-    .videoFeed {
-        max-width: 480px;
-        margin: auto;
-        border-left: 1px solid #111;
-        border-right: 1px solid #111;
-    }
-
-    .topBar {
-        padding-left: max(
-            15px,
-            calc((100vw - 480px) / 2)
-        );
-
-        padding-right: max(
-            15px,
-            calc((100vw - 480px) / 2)
-        );
-    }
-
-    .bottomNav {
-        left: 50%;
-        right: auto;
-        width: 480px;
-        transform: translateX(-50%);
-    }
-
-    .liveGrid {
-        max-width: 700px;
-        margin: auto;
-    }
-
-}
-
-
-/* =========================================================
-   SMALL PHONES
-========================================================= */
-
+/* ================= SMALL PHONES ================= */
 @media (max-width: 360px) {
-
-    .logo {
-        font-size: 29px;
-    }
-
-    .authBox {
-        padding: 24px 17px;
-    }
-
-    .profileStats {
-        gap: 25px;
-    }
-
-    .navBtn {
-        min-width: 55px;
-    }
-
-}
-
-
-/* =========================================================
-   REDUCED MOTION
-========================================================= */
-
-@media (prefers-reduced-motion: reduce) {
-
-    * {
-        scroll-behavior: auto !important;
-        transition: none !important;
-        animation: none !important;
-    }
-
+  .auth-box {
+    padding: 22px 14px;
+  }
+  .top-bar {
+    padding: 0 10px;
+  }
+  .live-header {
+    padding: 0 12px;
+  }
+  .host-card,
+  .room-content,
+  .chat-section,
+  .viewers-section,
+  .host-controls,
+  .user-actions {
+    margin-left: 10px;
+    margin-right: 10px;
+  }
+  .chat-input-area {
+    gap: 5px;
+  }
+  .emoji-btn {
+    width: 39px;
+  }
+  .send-btn {
+    padding: 0 10px;
+    font-size: 13px;
+  }
 }
