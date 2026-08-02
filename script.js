@@ -1,2101 +1,686 @@
 /* =========================================================
    RAHUL LIVE
-   script.js
-========================================================= */
-
-const API_BASE =
-    "https://rahulsocialhub-db.09rcrg.workers.dev";
-
-
-/* =========================================================
-   GLOBAL STATE
-========================================================= */
-
-let currentUser =
-    JSON.parse(
-        localStorage.getItem("rahulLiveUser") || "null"
-    );
-
-let currentLiveId = null;
-
-let liveStream = null;
-
-
-/* =========================================================
-   DOM
-========================================================= */
-
-const authScreen =
-    document.getElementById("authScreen");
-
-const appScreen =
-    document.getElementById("appScreen");
-
-const loginTab =
-    document.getElementById("loginTab");
-
-const registerTab =
-    document.getElementById("registerTab");
-
-const loginForm =
-    document.getElementById("loginForm");
-
-const registerForm =
-    document.getElementById("registerForm");
-
-const authMessage =
-    document.getElementById("authMessage");
-
-const videoFeed =
-    document.getElementById("videoFeed");
-
-const liveGrid =
-    document.getElementById("liveGrid");
-
-const uploadMessage =
-    document.getElementById("uploadMessage");
-
-const videoFile =
-    document.getElementById("videoFile");
-
-const uploadPreview =
-    document.getElementById("uploadPreview");
-
-const selectedVideo =
-    document.getElementById("selectedVideo");
-
-
-/* =========================================================
-   START APP
-========================================================= */
-
-document.addEventListener(
-    "DOMContentLoaded",
-    () => {
-
-        setupAuth();
-
-        setupNavigation();
-
-        setupUpload();
-
-        setupLive();
-
-        setupProfile();
-
-        if (currentUser) {
-
-            showApp();
-
-        } else {
-
-            showAuth();
-
-        }
-
-    }
-);
-
-
-/* =========================================================
-   AUTH UI
-========================================================= */
-
-function setupAuth() {
-
-    loginTab?.addEventListener(
-        "click",
-        () => {
-
-            loginTab.classList.add("active");
-
-            registerTab.classList.remove("active");
-
-            loginForm.style.display = "block";
-
-            registerForm.style.display = "none";
-
-            setAuthMessage("");
-
-        }
-    );
-
-
-    registerTab?.addEventListener(
-        "click",
-        () => {
-
-            registerTab.classList.add("active");
-
-            loginTab.classList.remove("active");
-
-            registerForm.style.display = "block";
-
-            loginForm.style.display = "none";
-
-            setAuthMessage("");
-
-        }
-    );
-
-
-    loginForm?.addEventListener(
-        "submit",
-        loginUser
-    );
-
-
-    registerForm?.addEventListener(
-        "submit",
-        registerUser
-    );
-
+   Frontend Controller
+   ========================================================= */
+"use strict";
+/* =========================
+   STATE
+========================= */
+const state = {
+  loggedIn: false,
+  username: "",
+  email: "",
+  isHost: false,
+  joinedLive: false,
+  mutedUsers: new Set(),
+  blockedUsers: new Set(),
+  kickedUsers: new Set(),
+  viewers: [],
+  messages: []
+};
+/* =========================
+   ELEMENTS
+========================= */
+const authScreen = document.getElementById("authScreen");
+const liveApp = document.getElementById("liveApp");
+const loginForm = document.getElementById("loginForm");
+const registerForm = document.getElementById("registerForm");
+const loginUsername = document.getElementById("loginUsername");
+const loginPassword = document.getElementById("loginPassword");
+const registerUsername = document.getElementById("registerUsername");
+const registerEmail = document.getElementById("registerEmail");
+const registerPassword = document.getElementById("registerPassword");
+const loginBtn = document.getElementById("loginBtn");
+const registerBtn = document.getElementById("registerBtn");
+const showRegisterBtn = document.getElementById("showRegisterBtn");
+const showLoginBtn = document.getElementById("showLoginBtn");
+const authMessage = document.getElementById("authMessage");
+const logoutBtn = document.getElementById("logoutBtn");
+const hostName = document.getElementById("hostName");
+const hostAvatar = document.getElementById("hostAvatar");
+const viewerCount = document.getElementById("viewerCount");
+const viewerTotal = document.getElementById("viewerTotal");
+const chatUserCount = document.getElementById("chatUserCount");
+const viewerList = document.getElementById("viewerList");
+const chatMessages = document.getElementById("chatMessages");
+const emojiBtn = document.getElementById("emojiBtn");
+const emojiPanel = document.getElementById("emojiPanel");
+const chatInput = document.getElementById("chatInput");
+const sendChatBtn = document.getElementById("sendChatBtn");
+const joinLiveBtn = document.getElementById("joinLiveBtn");
+const leaveLiveBtn = document.getElementById("leaveLiveBtn");
+const hostControls = document.getElementById("hostControls");
+const muteBtn = document.getElementById("muteBtn");
+const kickBtn = document.getElementById("kickBtn");
+const blockBtn = document.getElementById("blockBtn");
+const endLiveBtn = document.getElementById("endLiveBtn");
+const toast = document.getElementById("toast");
+/* =========================
+   HELPERS
+========================= */
+function showMessage(message, type = "normal") {
+  if (!authMessage) return;
+  authMessage.textContent = message;
+  if (type === "error") {
+    authMessage.style.color = "#d00000";
+  } else if (type === "success") {
+    authMessage.style.color = "#168a36";
+  } else {
+    authMessage.style.color = "#777777";
+  }
 }
-
-
-/* =========================================================
+function showToast(message) {
+  if (!toast) return;
+  toast.textContent = message;
+  toast.classList.remove("hidden");
+  clearTimeout(showToast.timer);
+  showToast.timer = setTimeout(() => {
+    toast.classList.add("hidden");
+  }, 2500);
+}
+function getInitial(name) {
+  if (!name) return "?";
+  return name.trim().charAt(0).toUpperCase();
+}
+function cleanText(value) {
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+function saveSession() {
+  localStorage.setItem(
+    "rahulLiveSession",
+    JSON.stringify({
+      username: state.username,
+      email: state.email,
+      isHost: state.isHost
+    })
+  );
+}
+function removeSession() {
+  localStorage.removeItem("rahulLiveSession");
+}
+/* =========================
+   AUTH SCREEN
+========================= */
+function showLogin() {
+  loginForm.classList.remove("hidden");
+  registerForm.classList.add("hidden");
+  showMessage("");
+}
+function showRegister() {
+  loginForm.classList.add("hidden");
+  registerForm.classList.remove("hidden");
+  showMessage("");
+}
+/* =========================
    REGISTER
-========================================================= */
-
-async function registerUser(event) {
-
-    event.preventDefault();
-
-    const username =
-        document
-            .getElementById("registerUsername")
-            .value
-            .trim();
-
-    const email =
-        document
-            .getElementById("registerEmail")
-            .value
-            .trim();
-
-    const password =
-        document
-            .getElementById("registerPassword")
-            .value;
-
-
-    if (
-        !username ||
-        !email ||
-        !password
-    ) {
-
-        setAuthMessage(
-            "सभी fields भरें।",
-            true
-        );
-
-        return;
-
-    }
-
-
-    if (password.length < 6) {
-
-        setAuthMessage(
-            "Password कम से कम 6 characters का होना चाहिए।",
-            true
-        );
-
-        return;
-
-    }
-
-
-    setAuthMessage(
-        "Account बनाया जा रहा है..."
-    );
-
-
-    try {
-
-        const response =
-            await fetch(
-                `${API_BASE}/api/register`,
-                {
-                    method: "POST",
-
-                    headers: {
-                        "Content-Type":
-                            "application/json"
-                    },
-
-                    body: JSON.stringify({
-                        username,
-                        email,
-                        password
-                    })
-                }
-            );
-
-
-        const data =
-            await response.json();
-
-
-        if (!response.ok || !data.success) {
-
-            throw new Error(
-                data.error ||
-                "Registration failed."
-            );
-
-        }
-
-
-        setAuthMessage(
-            "✅ Account बन गया। अब Login करें।"
-        );
-
-
-        loginTab.click();
-
-
-        document
-            .getElementById("loginUsername")
-            .value = username;
-
-
-        document
-            .getElementById("loginPassword")
-            .value = password;
-
-
-    } catch (error) {
-
-        setAuthMessage(
-            error.message,
-            true
-        );
-
-    }
-
+========================= */
+function registerUser() {
+  const username = registerUsername.value.trim();
+  const email = registerEmail.value.trim();
+  const password = registerPassword.value;
+  if (!username || !email || !password) {
+    showMessage("सभी जानकारी भरें।", "error");
+    return;
+  }
+  if (username.length < 3) {
+    showMessage("Username कम से कम 3 अक्षर का होना चाहिए।", "error");
+    return;
+  }
+  if (password.length < 6) {
+    showMessage("Password कम से कम 6 अक्षर का होना चाहिए।", "error");
+    return;
+  }
+  const users = JSON.parse(
+    localStorage.getItem("rahulLiveUsers") || "[]"
+  );
+  const alreadyExists = users.some(
+    user =>
+      user.username.toLowerCase() === username.toLowerCase() ||
+      user.email.toLowerCase() === email.toLowerCase()
+  );
+  if (alreadyExists) {
+    showMessage("Username या Email पहले से मौजूद है।", "error");
+    return;
+  }
+  users.push({
+    username,
+    email,
+    password
+  });
+  localStorage.setItem(
+    "rahulLiveUsers",
+    JSON.stringify(users)
+  );
+  registerPassword.value = "";
+  showLogin();
+  loginUsername.value = username;
+  showMessage(
+    "Registration सफल हुआ। अब Login करें।",
+    "success"
+  );
 }
-
-
-/* =========================================================
+/* =========================
    LOGIN
-========================================================= */
-
-async function loginUser(event) {
-
-    event.preventDefault();
-
-
-    const username =
-        document
-            .getElementById("loginUsername")
-            .value
-            .trim();
-
-    const password =
-        document
-            .getElementById("loginPassword")
-            .value;
-
-
-    if (
-        !username ||
-        !password
-    ) {
-
-        setAuthMessage(
-            "Username/Email और Password भरें।",
-            true
-        );
-
-        return;
-
-    }
-
-
-    setAuthMessage(
-        "Login हो रहा है..."
+========================= */
+function loginUser() {
+  const username = loginUsername.value.trim();
+  const password = loginPassword.value;
+  if (!username || !password) {
+    showMessage("Username और Password भरें।", "error");
+    return;
+  }
+  const users = JSON.parse(
+    localStorage.getItem("rahulLiveUsers") || "[]"
+  );
+  const user = users.find(
+    item =>
+      item.username.toLowerCase() === username.toLowerCase() &&
+      item.password === password
+  );
+  if (!user) {
+    showMessage(
+      "Username या Password गलत है।",
+      "error"
     );
-
-
-    try {
-
-        const response =
-            await fetch(
-                `${API_BASE}/api/login`,
-                {
-                    method: "POST",
-
-                    headers: {
-                        "Content-Type":
-                            "application/json"
-                    },
-
-                    body: JSON.stringify({
-                        username,
-                        password
-                    })
-                }
-            );
-
-
-        const data =
-            await response.json();
-
-
-        if (!response.ok || !data.success) {
-
-            throw new Error(
-                data.error ||
-                "Login failed."
-            );
-
-        }
-
-
-        currentUser =
-            data.user;
-
-
-        localStorage.setItem(
-            "rahulLiveUser",
-            JSON.stringify(currentUser)
-        );
-
-
-        setAuthMessage("");
-
-
-        showApp();
-
-
-    } catch (error) {
-
-        setAuthMessage(
-            error.message,
-            true
-        );
-
-    }
-
+    return;
+  }
+  state.loggedIn = true;
+  state.username = user.username;
+  state.email = user.email;
+  /*
+    Demo में username "host" या "admin" को Host बनाया गया है।
+    बाद में Worker/D1 से actual role आएगा।
+  */
+  state.isHost =
+    user.username.toLowerCase() === "host" ||
+    user.username.toLowerCase() === "admin";
+  saveSession();
+  loginPassword.value = "";
+  openLiveApp();
 }
-
-
-/* =========================================================
-   SHOW AUTH
-========================================================= */
-
-function showAuth() {
-
-    authScreen.style.display =
-        "flex";
-
-    appScreen.style.display =
-        "none";
-
+/* =========================
+   OPEN APP
+========================= */
+function openLiveApp() {
+  authScreen.classList.add("hidden");
+  liveApp.classList.remove("hidden");
+  hostName.textContent = state.username;
+  hostAvatar.textContent = getInitial(state.username);
+  if (state.isHost) {
+    hostControls.classList.remove("hidden");
+  } else {
+    hostControls.classList.add("hidden");
+  }
+  renderViewers();
+  showToast(
+    `Welcome ${state.username} 👋`
+  );
 }
-
-
-/* =========================================================
-   SHOW APP
-========================================================= */
-
-function showApp() {
-
-    authScreen.style.display =
-        "none";
-
-    appScreen.style.display =
-        "block";
-
-
-    updateProfileUI();
-
-    loadVideos();
-
-    loadLiveStreams();
-
-}
-
-
-/* =========================================================
-   AUTH MESSAGE
-========================================================= */
-
-function setAuthMessage(
-    message,
-    error = false
-) {
-
-    authMessage.textContent =
-        message;
-
-    authMessage.style.color =
-        error
-            ? "#ff3158"
-            : "#20ff68";
-
-}
-
-
-/* =========================================================
-   NAVIGATION
-========================================================= */
-
-function setupNavigation() {
-
-    const navButtons =
-        document.querySelectorAll(
-            ".navBtn"
-        );
-
-
-    navButtons.forEach(
-        button => {
-
-            button.addEventListener(
-                "click",
-                () => {
-
-                    const pageId =
-                        button.dataset.page;
-
-
-                    document
-                        .querySelectorAll(".page")
-                        .forEach(
-                            page => {
-
-                                page.classList.remove(
-                                    "active"
-                                );
-
-                            }
-                        );
-
-
-                    document
-                        .querySelectorAll(".navBtn")
-                        .forEach(
-                            nav => {
-
-                                nav.classList.remove(
-                                    "active"
-                                );
-
-                            }
-                        );
-
-
-                    const page =
-                        document.getElementById(
-                            pageId
-                        );
-
-
-                    page?.classList.add(
-                        "active"
-                    );
-
-
-                    button.classList.add(
-                        "active"
-                    );
-
-
-                    if (
-                        pageId === "homePage"
-                    ) {
-
-                        loadVideos();
-
-                    }
-
-
-                    if (
-                        pageId === "livePage"
-                    ) {
-
-                        loadLiveStreams();
-
-                    }
-
-
-                    if (
-                        pageId === "profilePage"
-                    ) {
-
-                        updateProfileUI();
-
-                    }
-
-                }
-            );
-
-        }
-    );
-
-
-    document
-        .getElementById("topLiveBtn")
-        ?.addEventListener(
-            "click",
-            () => {
-
-                openLiveStudio();
-
-            }
-        );
-
-}
-
-
-/* =========================================================
-   LOAD VIDEOS
-========================================================= */
-
-async function loadVideos() {
-
-    if (!videoFeed) return;
-
-
-    videoFeed.innerHTML = `
-        <div style="
-            height:100%;
-            display:flex;
-            align-items:center;
-            justify-content:center;
-            color:#777;
-        ">
-            Videos loading...
-        </div>
-    `;
-
-
-    try {
-
-        const response =
-            await fetch(
-                `${API_BASE}/api/videos`
-            );
-
-
-        const data =
-            await response.json();
-
-
-        if (
-            !response.ok ||
-            !data.success
-        ) {
-
-            throw new Error(
-                data.error ||
-                "Videos could not be loaded."
-            );
-
-        }
-
-
-        const videos =
-            data.videos || [];
-
-
-        if (!videos.length) {
-
-            videoFeed.innerHTML = `
-                <div style="
-                    height:100%;
-                    display:flex;
-                    flex-direction:column;
-                    align-items:center;
-                    justify-content:center;
-                    gap:10px;
-                    color:#777;
-                    text-align:center;
-                    padding:25px;
-                ">
-                    <div style="font-size:45px;">
-                        🎬
-                    </div>
-
-                    <div>
-                        अभी कोई Short Video नहीं है।
-                    </div>
-
-                    <div style="
-                        font-size:12px;
-                        color:#555;
-                    ">
-                        पहला video Upload करें।
-                    </div>
-                </div>
-            `;
-
-            return;
-
-        }
-
-
-        videoFeed.innerHTML =
-            "";
-
-
-        videos.forEach(
-            video => {
-
-                videoFeed.appendChild(
-                    createVideoCard(video)
-                );
-
-            }
-        );
-
-
-        setupVideoAutoPlay();
-
-
-    } catch (error) {
-
-        videoFeed.innerHTML = `
-            <div style="
-                height:100%;
-                display:flex;
-                align-items:center;
-                justify-content:center;
-                color:#ff3158;
-                padding:25px;
-                text-align:center;
-            ">
-                ${escapeHTML(error.message)}
-            </div>
-        `;
-
-    }
-
-}
-
-
-/* =========================================================
-   CREATE VIDEO CARD
-========================================================= */
-
-function createVideoCard(video) {
-
-    const card =
-        document.createElement("article");
-
-
-    card.className =
-        "videoCard";
-
-
-    const videoUrl =
-        safeUrl(video.video_url);
-
-
-    const username =
-        escapeHTML(
-            video.username ||
-            "User"
-        );
-
-
-    const caption =
-        escapeHTML(
-            video.caption ||
-            ""
-        );
-
-
-    card.innerHTML = `
-
-        <video
-            src="${videoUrl}"
-            playsinline
-            loop
-            preload="metadata"
-        ></video>
-
-
-        <div class="videoOverlay">
-
-            <div class="videoInfo">
-
-                <div class="username">
-                    @${username}
-                </div>
-
-                <div class="caption">
-                    ${caption}
-                </div>
-
-            </div>
-
-
-            <div class="videoActions">
-
-                <button
-                    class="actionBtn likeBtn"
-                    type="button"
-                    data-id="${video.id}"
-                >
-                    ❤️
-                </button>
-
-                <div class="actionCount">
-                    ${formatNumber(video.likes_count)}
-                </div>
-
-
-                <button
-                    class="actionBtn commentBtn"
-                    type="button"
-                    data-id="${video.id}"
-                >
-                    💬
-                </button>
-
-                <div class="actionCount">
-                    ${formatNumber(video.comments_count)}
-                </div>
-
-
-                <button
-                    class="actionBtn shareBtn"
-                    type="button"
-                    data-id="${video.id}"
-                >
-                    ↗️
-                </button>
-
-                <div class="actionCount">
-                    ${formatNumber(video.views_count)}
-                </div>
-
-            </div>
-
-        </div>
-
-    `;
-
-
-    const videoElement =
-        card.querySelector("video");
-
-
-    card
-        .querySelector(".likeBtn")
-        ?.addEventListener(
-            "click",
-            () => likeVideo(video.id)
-        );
-
-
-    card
-        .querySelector(".commentBtn")
-        ?.addEventListener(
-            "click",
-            () => commentOnVideo(video.id)
-        );
-
-
-    card
-        .querySelector(".shareBtn")
-        ?.addEventListener(
-            "click",
-            () => shareVideo(video)
-        );
-
-
-    videoElement?.addEventListener(
-        "play",
-        () => {
-
-            recordVideoView(
-                video.id
-            );
-
-        },
-        {
-            once: true
-        }
-    );
-
-
-    return card;
-
-}
-
-
-/* =========================================================
-   AUTO PLAY SHORT VIDEOS
-========================================================= */
-
-function setupVideoAutoPlay() {
-
-    const cards =
-        document.querySelectorAll(
-            ".videoCard"
-        );
-
-
-    const observer =
-        new IntersectionObserver(
-            entries => {
-
-                entries.forEach(
-                    entry => {
-
-                        const video =
-                            entry
-                                .target
-                                .querySelector(
-                                    "video"
-                                );
-
-
-                        if (!video) return;
-
-
-                        if (
-                            entry.isIntersecting
-                        ) {
-
-                            video.play()
-                                .catch(
-                                    () => {}
-                                );
-
-                        } else {
-
-                            video.pause();
-
-                        }
-
-                    }
-                );
-
-            },
-            {
-                threshold: 0.65
-            }
-        );
-
-
-    cards.forEach(
-        card => {
-
-            observer.observe(card);
-
-        }
-    );
-
-}
-
-
-/* =========================================================
-   LIKE VIDEO
-========================================================= */
-
-async function likeVideo(videoId) {
-
-    if (!currentUser) {
-
-        alert("पहले Login करें।");
-
-        return;
-
-    }
-
-
-    try {
-
-        const response =
-            await fetch(
-                `${API_BASE}/api/videos/like`,
-                {
-                    method: "POST",
-
-                    headers: {
-                        "Content-Type":
-                            "application/json"
-                    },
-
-                    body: JSON.stringify({
-                        video_id:
-                            Number(videoId),
-
-                        user_id:
-                            Number(
-                                currentUser.id
-                            )
-                    })
-                }
-            );
-
-
-        const data =
-            await response.json();
-
-
-        if (
-            !response.ok ||
-            !data.success
-        ) {
-
-            throw new Error(
-                data.error ||
-                "Like failed."
-            );
-
-        }
-
-
-        loadVideos();
-
-
-    } catch (error) {
-
-        alert(error.message);
-
-    }
-
-}
-
-
-/* =========================================================
-   COMMENT VIDEO
-========================================================= */
-
-async function commentOnVideo(
-    videoId
-) {
-
-    if (!currentUser) {
-
-        alert("पहले Login करें।");
-
-        return;
-
-    }
-
-
-    const comment =
-        prompt(
-            "Comment लिखें:"
-        );
-
-
-    if (!comment) return;
-
-
-    try {
-
-        const response =
-            await fetch(
-                `${API_BASE}/api/videos/comment`,
-                {
-                    method: "POST",
-
-                    headers: {
-                        "Content-Type":
-                            "application/json"
-                    },
-
-                    body: JSON.stringify({
-                        video_id:
-                            Number(videoId),
-
-                        user_id:
-                            Number(
-                                currentUser.id
-                            ),
-
-                        comment:
-                            comment.trim()
-                    })
-                }
-            );
-
-
-        const data =
-            await response.json();
-
-
-        if (
-            !response.ok ||
-            !data.success
-        ) {
-
-            throw new Error(
-                data.error ||
-                "Comment failed."
-            );
-
-        }
-
-
-        alert("Comment added ✅");
-
-        loadVideos();
-
-
-    } catch (error) {
-
-        alert(error.message);
-
-    }
-
-}
-
-
-/* =========================================================
-   SHARE VIDEO
-========================================================= */
-
-async function shareVideo(video) {
-
-    const shareUrl =
-        `${window.location.origin}/?video=${video.id}`;
-
-
-    if (
-        navigator.share
-    ) {
-
-        try {
-
-            await navigator.share({
-                title:
-                    "Rahul Live Video",
-
-                text:
-                    video.caption ||
-                    "Watch this Short Video",
-
-                url:
-                    shareUrl
-            });
-
-        } catch {
-
-            // User cancelled share.
-
-        }
-
-        return;
-
-    }
-
-
-    try {
-
-        await navigator.clipboard.writeText(
-            shareUrl
-        );
-
-        alert(
-            "Video link copied ✅"
-        );
-
-    } catch {
-
-        alert(
-            shareUrl
-        );
-
-    }
-
-}
-
-
-/* =========================================================
-   VIDEO VIEW
-========================================================= */
-
-async function recordVideoView(
-    videoId
-) {
-
-    try {
-
-        await fetch(
-            `${API_BASE}/api/videos/view`,
-            {
-                method: "POST",
-
-                headers: {
-                    "Content-Type":
-                        "application/json"
-                },
-
-                body: JSON.stringify({
-                    video_id:
-                        Number(videoId),
-
-                    user_id:
-                        currentUser
-                            ? Number(
-                                currentUser.id
-                            )
-                            : null
-                })
-            }
-        );
-
-    } catch {
-
-        // View tracking failure should
-        // not stop video playback.
-
-    }
-
-}
-
-
-/* =========================================================
-   UPLOAD UI
-========================================================= */
-
-function setupUpload() {
-
-    videoFile?.addEventListener(
-        "change",
-        () => {
-
-            const file =
-                videoFile.files?.[0];
-
-
-            if (!file) {
-
-                selectedVideo.textContent =
-                    "No video selected";
-
-                uploadPreview.style.display =
-                    "none";
-
-                return;
-
-            }
-
-
-            if (
-                !file.type.startsWith(
-                    "video/"
-                )
-            ) {
-
-                selectedVideo.textContent =
-                    "Please select a video file.";
-
-                return;
-
-            }
-
-
-            selectedVideo.textContent =
-                file.name;
-
-
-            const objectUrl =
-                URL.createObjectURL(
-                    file
-                );
-
-
-            uploadPreview.src =
-                objectUrl;
-
-
-            uploadPreview.style.display =
-                "block";
-
-        }
-    );
-
-
-    document
-        .getElementById(
-            "uploadVideoBtn"
-        )
-        ?.addEventListener(
-            "click",
-            uploadVideo
-        );
-
-}
-
-
-/* =========================================================
-   UPLOAD VIDEO
-========================================================= */
-
-async function uploadVideo() {
-
-    if (!currentUser) {
-
-        alert("पहले Login करें।");
-
-        return;
-
-    }
-
-
-    const file =
-        videoFile?.files?.[0];
-
-
-    if (!file) {
-
-        setUploadMessage(
-            "पहले video select करें।",
-            true
-        );
-
-        return;
-
-    }
-
-
-    /*
-       IMPORTANT:
-       D1 database में बड़ी video files store नहीं करनी चाहिए.
-       अभी frontend selected video को verify करता है.
-       Actual permanent video storage endpoint अगले
-       storage implementation में connect किया जाएगा.
-    */
-
-
-    setUploadMessage(
-        "Video selected है। Permanent upload storage अभी connect होना बाकी है।",
-        true
-    );
-
-}
-
-
-/* =========================================================
-   UPLOAD MESSAGE
-========================================================= */
-
-function setUploadMessage(
-    message,
-    error = false
-) {
-
-    if (!uploadMessage) return;
-
-
-    uploadMessage.textContent =
-        message;
-
-
-    uploadMessage.style.color =
-        error
-            ? "#ff3158"
-            : "#20ff68";
-
-}
-
-
-/* =========================================================
-   LIVE SETUP
-========================================================= */
-
-function setupLive() {
-
-    document
-        .getElementById(
-            "startLiveBtn"
-        )
-        ?.addEventListener(
-            "click",
-            openLiveStudio
-        );
-
-
-    document
-        .getElementById(
-            "goLiveConfirmBtn"
-        )
-        ?.addEventListener(
-            "click",
-            startLive
-        );
-
-
-    document
-        .getElementById(
-            "endLiveBtn"
-        )
-        ?.addEventListener(
-            "click",
-            endLive
-        );
-
-
-    document
-        .getElementById(
-            "closeLiveStudio"
-        )
-        ?.addEventListener(
-            "click",
-            closeLiveStudio
-        );
-
-}
-
-
-/* =========================================================
-   OPEN LIVE STUDIO
-========================================================= */
-
-async function openLiveStudio() {
-
-    if (!currentUser) {
-
-        alert("पहले Login करें।");
-
-        return;
-
-    }
-
-
-    const studio =
-        document.getElementById(
-            "liveStudio"
-        );
-
-
-    studio.style.display =
-        "block";
-
-
-    try {
-
-        liveStream =
-            await navigator.mediaDevices.getUserMedia(
-                {
-                    video: true,
-                    audio: true
-                }
-            );
-
-
-        const preview =
-            document.getElementById(
-                "livePreview"
-            );
-
-
-        preview.srcObject =
-            liveStream;
-
-
-    } catch (error) {
-
-        studio.style.display =
-            "none";
-
-
-        alert(
-            "Camera और microphone की permission दें।"
-        );
-
-    }
-
-}
-
-
-/* =========================================================
-   START LIVE
-========================================================= */
-
-async function startLive() {
-
-    if (!currentUser) {
-
-        alert("पहले Login करें।");
-
-        return;
-
-    }
-
-
-    const titleInput =
-        document.getElementById(
-            "liveTitle"
-        );
-
-
-    const title =
-        titleInput.value.trim() ||
-        "Rahul Live";
-
-
-    try {
-
-        const response =
-            await fetch(
-                `${API_BASE}/api/live/start`,
-                {
-                    method: "POST",
-
-                    headers: {
-                        "Content-Type":
-                            "application/json"
-                    },
-
-                    body: JSON.stringify({
-                        user_id:
-                            Number(
-                                currentUser.id
-                            ),
-
-                        title
-                    })
-                }
-            );
-
-
-        const data =
-            await response.json();
-
-
-        if (
-            !response.ok ||
-            !data.success
-        ) {
-
-            throw new Error(
-                data.error ||
-                "LIVE start failed."
-            );
-
-        }
-
-
-        currentLiveId =
-            data.live_id;
-
-
-        document
-            .getElementById(
-                "goLiveConfirmBtn"
-            )
-            .style.display =
-                "none";
-
-
-        document
-            .getElementById(
-                "endLiveBtn"
-            )
-            .style.display =
-                "block";
-
-
-        alert(
-            "🔴 LIVE session शुरू हो गई।"
-        );
-
-
-        loadLiveStreams();
-
-
-    } catch (error) {
-
-        alert(error.message);
-
-    }
-
-}
-
-
-/* =========================================================
-   END LIVE
-========================================================= */
-
-async function endLive() {
-
-    if (!currentLiveId) {
-
-        closeLiveStudio();
-
-        return;
-
-    }
-
-
-    try {
-
-        const response =
-            await fetch(
-                `${API_BASE}/api/live/end`,
-                {
-                    method: "POST",
-
-                    headers: {
-                        "Content-Type":
-                            "application/json"
-                    },
-
-                    body: JSON.stringify({
-                        live_id:
-                            Number(
-                                currentLiveId
-                            )
-                    })
-                }
-            );
-
-
-        const data =
-            await response.json();
-
-
-        if (
-            !response.ok ||
-            !data.success
-        ) {
-
-            throw new Error(
-                data.error ||
-                "Could not end LIVE."
-            );
-
-        }
-
-
-        currentLiveId =
-            null;
-
-
-        document
-            .getElementById(
-                "goLiveConfirmBtn"
-            )
-            .style.display =
-                "block";
-
-
-        document
-            .getElementById(
-                "endLiveBtn"
-            )
-            .style.display =
-                "none";
-
-
-        closeLiveCamera();
-
-
-        alert(
-            "LIVE ended."
-        );
-
-
-        loadLiveStreams();
-
-
-    } catch (error) {
-
-        alert(error.message);
-
-    }
-
-}
-
-
-/* =========================================================
-   CLOSE LIVE STUDIO
-========================================================= */
-
-function closeLiveStudio() {
-
-    if (currentLiveId) {
-
-        alert(
-            "पहले LIVE End करें।"
-        );
-
-        return;
-
-    }
-
-
-    closeLiveCamera();
-
-
-    const studio =
-        document.getElementById(
-            "liveStudio"
-        );
-
-
-    studio.style.display =
-        "none";
-
-}
-
-
-/* =========================================================
-   CLOSE CAMERA
-========================================================= */
-
-function closeLiveCamera() {
-
-    if (!liveStream) return;
-
-
-    liveStream
-        .getTracks()
-        .forEach(
-            track => track.stop()
-        );
-
-
-    liveStream =
-        null;
-
-
-    const preview =
-        document.getElementById(
-            "livePreview"
-        );
-
-
-    if (preview) {
-
-        preview.srcObject =
-            null;
-
-    }
-
-}
-
-
-/* =========================================================
-   LOAD LIVE STREAMS
-========================================================= */
-
-async function loadLiveStreams() {
-
-    if (!liveGrid) return;
-
-
-    liveGrid.innerHTML = `
-        <div style="
-            grid-column:1/-1;
-            text-align:center;
-            color:#777;
-            padding:25px;
-        ">
-            LIVE loading...
-        </div>
-    `;
-
-
-    try {
-
-        const response =
-            await fetch(
-                `${API_BASE}/api/live`
-            );
-
-
-        const data =
-            await response.json();
-
-
-        if (
-            !response.ok ||
-            !data.success
-        ) {
-
-            throw new Error(
-                data.error ||
-                "LIVE could not be loaded."
-            );
-
-        }
-
-
-        const streams =
-            data.live_streams || [];
-
-
-        if (!streams.length) {
-
-            liveGrid.innerHTML = `
-                <div style="
-                    grid-column:1/-1;
-                    text-align:center;
-                    color:#777;
-                    padding:30px;
-                ">
-                    अभी कोई LIVE नहीं है।
-                </div>
-            `;
-
-            return;
-
-        }
-
-
-        liveGrid.innerHTML =
-            "";
-
-
-        streams.forEach(
-            stream => {
-
-                const card =
-                    document.createElement(
-                        "div"
-                    );
-
-
-                card.className =
-                    "liveCard";
-
-
-                card.innerHTML = `
-
-                    <div class="liveThumb">
-                        🔴
-                    </div>
-
-                    <div class="liveBadge">
-                        LIVE
-                    </div>
-
-                    <div class="liveName">
-
-                        ${escapeHTML(
-                            stream.title ||
-                            "Rahul Live"
-                        )}
-
-                        <br>
-
-                        <span style="
-                            color:#777;
-                            font-size:11px;
-                        ">
-                            @${escapeHTML(
-                                stream.username ||
-                                "User"
-                            )}
-                        </span>
-
-                    </div>
-
-                `;
-
-
-                liveGrid.appendChild(
-                    card
-                );
-
-            }
-        );
-
-
-    } catch (error) {
-
-        liveGrid.innerHTML = `
-            <div style="
-                grid-column:1/-1;
-                text-align:center;
-                color:#ff3158;
-                padding:25px;
-            ">
-                ${escapeHTML(error.message)}
-            </div>
-        `;
-
-    }
-
-}
-
-
-/* =========================================================
-   PROFILE
-========================================================= */
-
-function setupProfile() {
-
-    document
-        .getElementById(
-            "logoutBtn"
-        )
-        ?.addEventListener(
-            "click",
-            logoutUser
-        );
-
-}
-
-
-/* =========================================================
-   UPDATE PROFILE
-========================================================= */
-
-function updateProfileUI() {
-
-    if (!currentUser) return;
-
-
-    const username =
-        currentUser.username ||
-        "User";
-
-
-    const profileName =
-        document.getElementById(
-            "profileName"
-        );
-
-
-    const profileUsername =
-        document.getElementById(
-            "profileUsername"
-        );
-
-
-    const profileAvatar =
-        document.getElementById(
-            "profileAvatar"
-        );
-
-
-    const profileBio =
-        document.getElementById(
-            "profileBio"
-        );
-
-
-    const profileVideos =
-        document.getElementById(
-            "profileVideos"
-        );
-
-
-    const profileFollowers =
-        document.getElementById(
-            "profileFollowers"
-        );
-
-
-    const profileFollowing =
-        document.getElementById(
-            "profileFollowing"
-        );
-
-
-    if (profileName) {
-
-        profileName.textContent =
-            username;
-
-    }
-
-
-    if (profileUsername) {
-
-        profileUsername.textContent =
-            `@${username}`;
-
-    }
-
-
-    if (profileAvatar) {
-
-        profileAvatar.textContent =
-            username
-                .charAt(0)
-                .toUpperCase();
-
-    }
-
-
-    if (profileBio) {
-
-        profileBio.textContent =
-            currentUser.bio ||
-            "";
-
-    }
-
-
-    if (profileVideos) {
-
-        profileVideos.textContent =
-            formatNumber(
-                currentUser.videos_count || 0
-            );
-
-    }
-
-
-    if (profileFollowers) {
-
-        profileFollowers.textContent =
-            formatNumber(
-                currentUser.followers_count || 0
-            );
-
-    }
-
-
-    if (profileFollowing) {
-
-        profileFollowing.textContent =
-            formatNumber(
-                currentUser.following_count || 0
-            );
-
-    }
-
-}
-
-
-/* =========================================================
+/* =========================
    LOGOUT
-========================================================= */
-
+========================= */
 function logoutUser() {
-
-    if (
-        currentLiveId
-    ) {
-
-        alert(
-            "पहले अपना LIVE End करें।"
-        );
-
-        return;
-
+  state.loggedIn = false;
+  state.joinedLive = false;
+  state.isHost = false;
+  state.viewers = [];
+  state.messages = [];
+  removeSession();
+  liveApp.classList.add("hidden");
+  authScreen.classList.remove("hidden");
+  showLogin();
+  showToast("Logout हो गया।");
+}
+/* =========================
+   LIVE JOIN
+========================= */
+function joinLive() {
+  if (!state.loggedIn) {
+    showToast("पहले Login करें।");
+    return;
+  }
+  if (state.joinedLive) {
+    showToast("आप पहले से LIVE में हैं।");
+    return;
+  }
+  state.joinedLive = true;
+  const exists = state.viewers.some(
+    viewer =>
+      viewer.username.toLowerCase() ===
+      state.username.toLowerCase()
+  );
+  if (!exists) {
+    state.viewers.push({
+      username: state.username,
+      muted: false,
+      blocked: false
+    });
+  }
+  renderViewers();
+  addSystemMessage(
+    `${state.username} LIVE में join हुए 👋`
+  );
+  showToast("आप LIVE में join हो गए।");
+}
+/* =========================
+   LIVE LEAVE
+========================= */
+function leaveLive() {
+  if (!state.joinedLive) {
+    showToast("आप LIVE में नहीं हैं।");
+    return;
+  }
+  state.joinedLive = false;
+  state.viewers = state.viewers.filter(
+    viewer =>
+      viewer.username !== state.username
+  );
+  renderViewers();
+  addSystemMessage(
+    `${state.username} LIVE से चले गए।`
+  );
+  showToast("आप LIVE से बाहर आ गए।");
+}
+/* =========================
+   VIEWERS
+========================= */
+function renderViewers() {
+  viewerList.innerHTML = "";
+  state.viewers.forEach(viewer => {
+    const item = document.createElement("div");
+    item.className = "viewer-item";
+    const avatar = document.createElement("div");
+    avatar.className = "viewer-avatar";
+    avatar.textContent = getInitial(viewer.username);
+    const name = document.createElement("div");
+    name.className = "viewer-name";
+    name.textContent = viewer.username;
+    if (viewer.username === state.username) {
+      name.textContent += " (You)";
     }
-
-
-    localStorage.removeItem(
-        "rahulLiveUser"
+    if (viewer.muted) {
+      name.textContent += " 🔇";
+    }
+    if (viewer.blocked) {
+      name.textContent += " 🚫";
+    }
+    item.appendChild(avatar);
+    item.appendChild(name);
+    viewerList.appendChild(item);
+  });
+  const count = state.viewers.length;
+  viewerCount.textContent = count;
+  viewerTotal.textContent = count;
+  chatUserCount.textContent =
+    `${count} viewer${count === 1 ? "" : "s"}`;
+}
+/* =========================
+   CHAT
+========================= */
+function sendMessage() {
+  if (!state.loggedIn) {
+    showToast("पहले Login करें।");
+    return;
+  }
+  if (!state.joinedLive) {
+    showToast("पहले LIVE में Join करें।");
+    return;
+  }
+  const text = chatInput.value.trim();
+  if (!text) return;
+  if (state.blockedUsers.has(state.username)) {
+    showToast("आप इस LIVE में blocked हैं।");
+    return;
+  }
+  if (state.mutedUsers.has(state.username)) {
+    showToast("आपको Host ने mute किया है।");
+    return;
+  }
+  addChatMessage(
+    state.username,
+    text,
+    true
+  );
+  chatInput.value = "";
+}
+function addChatMessage(
+  username,
+  text,
+  mine = false
+) {
+  const message = document.createElement("div");
+  message.className =
+    `chat-message${mine ? " mine" : ""}`;
+  const usernameElement =
+    document.createElement("div");
+  usernameElement.className =
+    "chat-username";
+  usernameElement.textContent =
+    username;
+  const textElement =
+    document.createElement("div");
+  textElement.className =
+    "chat-text";
+  textElement.textContent =
+    text;
+  message.appendChild(usernameElement);
+  message.appendChild(textElement);
+  chatMessages.appendChild(message);
+  chatMessages.scrollTop =
+    chatMessages.scrollHeight;
+  state.messages.push({
+    username,
+    text
+  });
+}
+function addSystemMessage(text) {
+  const message =
+    document.createElement("div");
+  message.className =
+    "system-message";
+  message.textContent =
+    text;
+  chatMessages.appendChild(message);
+  chatMessages.scrollTop =
+    chatMessages.scrollHeight;
+}
+/* =========================
+   EMOJI
+========================= */
+function toggleEmojiPanel() {
+  emojiPanel.classList.toggle("hidden");
+}
+function insertEmoji(emoji) {
+  if (!chatInput) return;
+  chatInput.value += emoji;
+  chatInput.focus();
+}
+function sendReaction(emoji) {
+  if (!state.loggedIn) {
+    showToast("पहले Login करें।");
+    return;
+  }
+  if (!state.joinedLive) {
+    showToast("पहले LIVE में Join करें।");
+    return;
+  }
+  if (state.mutedUsers.has(state.username)) {
+    showToast("आप muted हैं।");
+    return;
+  }
+  addChatMessage(
+    state.username,
+    emoji,
+    true
+  );
+  showToast(`Reaction ${emoji}`);
+}
+/* =========================
+   HOST USER SELECTION
+========================= */
+function getTargetViewer() {
+  const available =
+    state.viewers.filter(
+      viewer =>
+        viewer.username !== state.username &&
+        !state.kickedUsers.has(viewer.username)
     );
-
-
-    currentUser =
-        null;
-
-
-    showAuth();
-
-
-    loginForm?.reset();
-
-    registerForm?.reset();
-
+  if (!available.length) {
+    showToast("कोई दूसरा viewer मौजूद नहीं है।");
+    return null;
+  }
+  /*
+    अभी frontend version में पहला available viewer
+    target होगा।
+    बाद में viewer selection UI और API जोड़ेंगे।
+  */
+  return available[0];
 }
-
-
-/* =========================================================
-   SAFE URL
-========================================================= */
-
-function safeUrl(url) {
-
-    if (!url) return "";
-
-
-    try {
-
-        const parsed =
-            new URL(
-                url,
-                window.location.origin
-            );
-
-
-        if (
-            parsed.protocol === "http:" ||
-            parsed.protocol === "https:"
-        ) {
-
-            return parsed.href;
-
-        }
-
-
-        return "";
-
-
-    } catch {
-
-        return "";
-
+/* =========================
+   MUTE
+========================= */
+function muteViewer() {
+  if (!state.isHost) {
+    showToast("सिर्फ Host यह action कर सकता है।");
+    return;
+  }
+  const viewer =
+    getTargetViewer();
+  if (!viewer) return;
+  viewer.muted = true;
+  state.mutedUsers.add(
+    viewer.username
+  );
+  renderViewers();
+  addSystemMessage(
+    `${viewer.username} को Host ने mute किया 🔇`
+  );
+  showToast(
+    `${viewer.username} muted`
+  );
+}
+/* =========================
+   KICK
+========================= */
+function kickViewer() {
+  if (!state.isHost) {
+    showToast("सिर्फ Host यह action कर सकता है।");
+    return;
+  }
+  const viewer =
+    getTargetViewer();
+  if (!viewer) return;
+  state.kickedUsers.add(
+    viewer.username
+  );
+  state.viewers =
+    state.viewers.filter(
+      item =>
+        item.username !== viewer.username
+    );
+  renderViewers();
+  addSystemMessage(
+    `${viewer.username} को LIVE से kick किया गया 👢`
+  );
+  showToast(
+    `${viewer.username} kicked`
+  );
+}
+/* =========================
+   BLOCK
+========================= */
+function blockViewer() {
+  if (!state.isHost) {
+    showToast("सिर्फ Host यह action कर सकता है।");
+    return;
+  }
+  const viewer =
+    getTargetViewer();
+  if (!viewer) return;
+  state.blockedUsers.add(
+    viewer.username
+  );
+  state.viewers =
+    state.viewers.filter(
+      item =>
+        item.username !== viewer.username
+    );
+  renderViewers();
+  addSystemMessage(
+    `${viewer.username} को Host ने block किया 🚫`
+  );
+  showToast(
+    `${viewer.username} blocked`
+  );
+}
+/* =========================
+   END LIVE
+========================= */
+function endLive() {
+  if (!state.isHost) {
+    showToast("सिर्फ Host LIVE समाप्त कर सकता है।");
+    return;
+  }
+  const confirmed =
+    window.confirm(
+      "क्या आप LIVE समाप्त करना चाहते हैं?"
+    );
+  if (!confirmed) return;
+  state.joinedLive = false;
+  state.viewers = [];
+  renderViewers();
+  addSystemMessage(
+    "🛑 Host ने LIVE समाप्त कर दिया।"
+  );
+  showToast(
+    "LIVE समाप्त हो गया।"
+  );
+}
+/* =========================
+   QUICK REACTIONS
+========================= */
+function setupReactions() {
+  const buttons =
+    document.querySelectorAll(
+      "[data-reaction]"
+    );
+  buttons.forEach(button => {
+    button.addEventListener(
+      "click",
+      () => {
+        const emoji =
+          button.getAttribute(
+            "data-reaction"
+          );
+        sendReaction(emoji);
+      }
+    );
+  });
+}
+/* =========================
+   EMOJI BUTTONS
+========================= */
+function setupEmojiButtons() {
+  const buttons =
+    document.querySelectorAll(
+      "[data-emoji]"
+    );
+  buttons.forEach(button => {
+    button.addEventListener(
+      "click",
+      () => {
+        const emoji =
+          button.getAttribute(
+            "data-emoji"
+          );
+        insertEmoji(emoji);
+      }
+    );
+  });
+}
+/* =========================
+   KEYBOARD
+========================= */
+function setupKeyboard() {
+  chatInput.addEventListener(
+    "keydown",
+    event => {
+      if (
+        event.key === "Enter" &&
+        !event.shiftKey
+      ) {
+        event.preventDefault();
+        sendMessage();
+      }
     }
-
+  );
 }
-
-
-/* =========================================================
-   HTML ESCAPE
-========================================================= */
-
-function escapeHTML(value) {
-
-    return String(value)
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
-
+/* =========================
+   RESTORE SESSION
+========================= */
+function restoreSession() {
+  const saved =
+    localStorage.getItem(
+      "rahulLiveSession"
+    );
+  if (!saved) return;
+  try {
+    const session =
+      JSON.parse(saved);
+    if (!session.username) return;
+    state.loggedIn = true;
+    state.username = session.username;
+    state.email = session.email || "";
+    state.isHost = Boolean(session.isHost);
+    openLiveApp();
+  } catch (error) {
+    removeSession();
+  }
 }
-
-
-/* =========================================================
-   NUMBER FORMAT
-========================================================= */
-
-function formatNumber(value) {
-
-    const number =
-        Number(value || 0);
-
-
-    if (
-        number >= 1000000
-    ) {
-
-        return (
-            number / 1000000
-        )
-            .toFixed(1)
-            .replace(".0", "") +
-            "M";
-
-    }
-
-
-    if (
-        number >= 1000
-    ) {
-
-        return (
-            number / 1000
-        )
-            .toFixed(1)
-            .replace(".0", "") +
-            "K";
-
-    }
-
-
-    return String(number);
-
-}
+/* =========================
+   EVENT LISTENERS
+========================= */
+showRegisterBtn.addEventListener(
+  "click",
+  showRegister
+);
+showLoginBtn.addEventListener(
+  "click",
+  showLogin
+);
+registerBtn.addEventListener(
+  "click",
+  registerUser
+);
+loginBtn.addEventListener(
+  "click",
+  loginUser
+);
+logoutBtn.addEventListener(
+  "click",
+  logoutUser
+);
+joinLiveBtn.addEventListener(
+  "click",
+  joinLive
+);
+leaveLiveBtn.addEventListener(
+  "click",
+  leaveLive
+);
+emojiBtn.addEventListener(
+  "click",
+  toggleEmojiPanel
+);
+sendChatBtn.addEventListener(
+  "click",
+  sendMessage
+);
+muteBtn.addEventListener(
+  "click",
+  muteViewer
+);
+kickBtn.addEventListener(
+  "click",
+  kickViewer
+);
+blockBtn.addEventListener(
+  "click",
+  blockViewer
+);
+endLiveBtn.addEventListener(
+  "click",
+  endLive
+);
+/* =========================
+   INITIALIZE
+========================= */
+setupEmojiButtons();
+setupReactions();
+setupKeyboard();
+restoreSession();
