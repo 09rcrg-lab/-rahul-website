@@ -1,24 +1,27 @@
 {
   "name": "Rahul Live",
   "short_name": "Rahul Live",
-  "description": "Short Videos and Live Streaming App",
-  "start_url": "./",
+  "description": "Chat-only LIVE room with live chat, viewers and host controls.",
+  "start_url": "/",
+  "scope": "/",
   "display": "standalone",
-  "background_color": "#000000",
-  "theme_color": "#000000",
   "orientation": "portrait",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
   "lang": "hi-IN",
-
+  "dir": "ltr",
   "icons": [
     {
-      "src": "icon-192.png",
+      "src": "/icon-192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
-      "src": "icon-512.png",
+      "src": "/icon-512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }
