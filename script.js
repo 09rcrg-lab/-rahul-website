@@ -1,1208 +1,1303 @@
-"use strict";
 /* =========================================================
-   RAHUL LIVE
-   Cloudflare Worker + D1 Connected Frontend
+   RAHUL LIVE — COMPLETE SCRIPT
    ========================================================= */
-const API_BASE =
-  "https://rahulsocialhub-db.09rcrg.workers.dev";
-let state = {
-  token: localStorage.getItem("rahulLiveToken") || "",
-  user: null,
-  roomId: null,
-  isHost: false,
-  joined: false,
-  muted: false,
-  blocked: false,
-  pollTimer: null
-};
-/* =========================================================
-   ELEMENTS
-   ========================================================= */
-const authScreen = document.getElementById("authScreen");
-const liveApp = document.getElementById("liveApp");
-const loginForm = document.getElementById("loginForm");
-const registerForm = document.getElementById("registerForm");
-const loginUsername = document.getElementById("loginUsername");
-const loginPassword = document.getElementById("loginPassword");
-const registerUsername = document.getElementById("registerUsername");
-const registerEmail = document.getElementById("registerEmail");
-const registerPassword = document.getElementById("registerPassword");
-const loginBtn = document.getElementById("loginBtn");
-const registerBtn = document.getElementById("registerBtn");
-const showRegisterBtn =
-  document.getElementById("showRegisterBtn");
-const showLoginBtn =
-  document.getElementById("showLoginBtn");
-const authMessage =
-  document.getElementById("authMessage");
-const logoutBtn =
-  document.getElementById("logoutBtn");
-const onlineStatus =
-  document.getElementById("onlineStatus");
-const liveTitle =
-  document.getElementById("liveTitle");
-const viewerCount =
-  document.getElementById("viewerCount");
-const viewerTotal =
-  document.getElementById("viewerTotal");
-const chatUserCount =
-  document.getElementById("chatUserCount");
-const hostName =
-  document.getElementById("hostName");
-const hostAvatar =
-  document.getElementById("hostAvatar");
-const chatMessages =
-  document.getElementById("chatMessages");
-const viewerList =
-  document.getElementById("viewerList");
-const emojiBtn =
-  document.getElementById("emojiBtn");
-const emojiPanel =
-  document.getElementById("emojiPanel");
-const chatInput =
-  document.getElementById("chatInput");
-const sendChatBtn =
-  document.getElementById("sendChatBtn");
-const joinLiveBtn =
-  document.getElementById("joinLiveBtn");
-const leaveLiveBtn =
-  document.getElementById("leaveLiveBtn");
-const hostControls =
-  document.getElementById("hostControls");
-const muteBtn =
-  document.getElementById("muteBtn");
-const kickBtn =
-  document.getElementById("kickBtn");
-const blockBtn =
-  document.getElementById("blockBtn");
-const endLiveBtn =
-  document.getElementById("endLiveBtn");
-const toast =
-  document.getElementById("toast");
-/* =========================================================
-   HELPERS
-   ========================================================= */
-function showToast(message) {
-  if (!toast) return;
-  toast.textContent = message;
-  toast.classList.remove("hidden");
-  clearTimeout(window.rahulToastTimer);
-  window.rahulToastTimer =
-    setTimeout(() => {
-      toast.classList.add("hidden");
-    }, 3000);
+
+const API_BASE = "https://rahulsocialhub-db.09rcrg.workers.dev";
+
+let currentUser = null;
+let currentRoom = null;
+let roomPollTimer = null;
+let chatPollTimer = null;
+let viewerPollTimer = null;
+
+
+/* ================= HELPERS ================= */
+
+const $ = (id) => document.getElementById(id);
+
+function show(id){
+  $(id)?.classList.remove("hidden");
 }
-function showAuthMessage(message, type = "") {
-  if (!authMessage) return;
-  authMessage.textContent = message;
-  if (type === "error") {
-    authMessage.style.color = "#d00000";
-  } else if (type === "success") {
-    authMessage.style.color = "#168a36";
-  } else {
-    authMessage.style.color = "";
-  }
+
+function hide(id){
+  $(id)?.classList.add("hidden");
 }
-function initialLetter(name) {
-  if (!name) return "R";
-  return name
-    .trim()
-    .charAt(0)
-    .toUpperCase();
+
+function toast(message){
+  const el = $("toast");
+  if(!el) return;
+
+  el.textContent = message;
+  el.classList.remove("hidden");
+
+  clearTimeout(window.toastTimer);
+
+  window.toastTimer = setTimeout(() => {
+    el.classList.add("hidden");
+  }, 2500);
 }
-function setOnline(online) {
-  if (!onlineStatus) return;
-  if (online) {
-    onlineStatus.textContent = "● Online";
-  } else {
-    onlineStatus.textContent = "● Offline";
-  }
-}
-function authHeaders() {
-  const headers = {
-    "Content-Type": "application/json"
-  };
-  if (state.token) {
-    headers.Authorization =
-      `Bearer ${state.token}`;
-  }
-  return headers;
-}
-/* =========================================================
-   API REQUEST
-   ========================================================= */
-async function api(path, options = {}) {
-  const config = {
-    method: options.method || "GET",
-    headers: {
-      ...authHeaders(),
+
+async function api(path, options = {}){
+  const response = await fetch(API_BASE + path, {
+    headers:{
+      "Content-Type":"application/json",
       ...(options.headers || {})
-    }
-  };
-  if (options.body !== undefined) {
-    config.body =
-      typeof options.body === "string"
-        ? options.body
-        : JSON.stringify(options.body);
+    },
+    ...options
+  });
+
+  let data;
+
+  try{
+    data = await response.json();
+  }catch{
+    data = {
+      success:false,
+      message:"Server response समझ नहीं आया"
+    };
   }
-  try {
-    const response =
-      await fetch(
-        API_BASE + path,
-        config
-      );
-    let data = {};
-    try {
-      data = await response.json();
-    } catch {
-      data = {};
-    }
-    if (!response.ok) {
-      const error =
-        data.error ||
-        data.message ||
-        `Request failed (${response.status})`;
-      throw new Error(error);
-    }
-    return data;
-  } catch (error) {
-    setOnline(false);
-    throw error;
+
+  if(!response.ok && data.success !== true){
+    throw new Error(data.message || "Request failed");
   }
+
+  return data;
 }
-/* =========================================================
-   AUTH SCREEN
-   ========================================================= */
-function showLogin() {
-  loginForm.classList.remove("hidden");
-  registerForm.classList.add("hidden");
-  showAuthMessage("");
-}
-function showRegister() {
-  loginForm.classList.add("hidden");
-  registerForm.classList.remove("hidden");
-  showAuthMessage("");
-}
-/* =========================================================
-   REGISTER
-   ========================================================= */
-async function registerUser() {
-  const username =
-    registerUsername.value.trim();
-  const email =
-    registerEmail.value.trim();
-  const password =
-    registerPassword.value;
-  if (!username || !email || !password) {
-    showAuthMessage(
-      "सभी जानकारी भरें।",
-      "error"
-    );
-    return;
-  }
-  if (username.length < 3) {
-    showAuthMessage(
-      "Username कम से कम 3 अक्षर का होना चाहिए।",
-      "error"
-    );
-    return;
-  }
-  if (password.length < 6) {
-    showAuthMessage(
-      "Password कम से कम 6 अक्षर का होना चाहिए।",
-      "error"
-    );
-    return;
-  }
-  registerBtn.disabled = true;
-  registerBtn.textContent = "Registering...";
-  try {
-    const data =
-      await api(
-        "/api/register",
-        {
-          method: "POST",
-          body: {
-            username,
-            email,
-            password
-          }
-        }
-      );
-    showAuthMessage(
-      data.message ||
-      "Registration सफल हुआ। अब Login करें।",
-      "success"
-    );
-    registerPassword.value = "";
-    loginUsername.value = username;
-    setTimeout(() => {
-      showLogin();
-    }, 700);
-  } catch (error) {
-    showAuthMessage(
-      error.message,
-      "error"
-    );
-  } finally {
-    registerBtn.disabled = false;
-    registerBtn.textContent = "Register";
-  }
-}
-/* =========================================================
-   LOGIN
-   ========================================================= */
-async function loginUser() {
-  const username =
-    loginUsername.value.trim();
-  const password =
-    loginPassword.value;
-  if (!username || !password) {
-    showAuthMessage(
-      "Username और Password भरें।",
-      "error"
-    );
-    return;
-  }
-  loginBtn.disabled = true;
-  loginBtn.textContent = "Login...";
-  try {
-    const data =
-      await api(
-        "/api/login",
-        {
-          method: "POST",
-          body: {
-            username,
-            password
-          }
-        }
-      );
-    if (!data.token) {
-      throw new Error(
-        "Login token नहीं मिला।"
-      );
-    }
-    state.token =
-      data.token;
-    state.user =
-      data.user;
-    state.isHost =
-      data.user.role === "host" ||
-      data.user.role === "admin";
-    localStorage.setItem(
-      "rahulLiveToken",
-      state.token
-    );
-    showLiveApp();
-    showToast(
-      `Welcome ${data.user.username} 👋`
-    );
-    await loadLiveRooms();
-  } catch (error) {
-    showAuthMessage(
-      error.message,
-      "error"
-    );
-  } finally {
-    loginBtn.disabled = false;
-    loginBtn.textContent = "Login";
-  }
-}
-/* =========================================================
-   SESSION RESTORE
-   ========================================================= */
-async function restoreSession() {
-  if (!state.token) {
-    showLogin();
-    return;
-  }
-  try {
-    const data =
-      await api("/api/me");
-    state.user =
-      data.user;
-    state.isHost =
-      data.user.role === "host" ||
-      data.user.role === "admin";
-    showLiveApp();
-    await loadLiveRooms();
-  } catch {
-    clearSession();
-    showLogin();
-  }
-}
-/* =========================================================
-   SHOW LIVE APP
-   ========================================================= */
-function showLiveApp() {
-  authScreen.classList.add("hidden");
-  liveApp.classList.remove("hidden");
-  setOnline(true);
-  if (state.user) {
-    hostName.textContent =
-      state.user.username;
-    hostAvatar.textContent =
-      initialLetter(
-        state.user.username
-      );
-  }
-  updateHostControls();
-  updateButtons();
-}
-/* =========================================================
-   CLEAR SESSION
-   ========================================================= */
-function clearSession() {
-  state.token = "";
-  state.user = null;
-  state.roomId = null;
-  state.joined = false;
-  state.isHost = false;
-  state.muted = false;
-  state.blocked = false;
-  localStorage.removeItem(
-    "rahulLiveToken"
+
+
+/* ================= AUTH ================= */
+
+function saveUser(user){
+  currentUser = user;
+  localStorage.setItem(
+    "rahul_live_user",
+    JSON.stringify(user)
   );
-  stopPolling();
 }
-/* =========================================================
-   LOGOUT
-   ========================================================= */
-async function logoutUser() {
-  if (state.joined && state.roomId) {
-    try {
-      await api(
-        "/api/live/leave",
-        {
-          method: "POST",
-          body: {
-            roomId: state.roomId
-          }
-        }
-      );
-    } catch {}
+
+function loadUser(){
+  try{
+    const saved = localStorage.getItem("rahul_live_user");
+
+    if(saved){
+      currentUser = JSON.parse(saved);
+      return true;
+    }
+  }catch{}
+
+  return false;
+}
+
+function clearUser(){
+  currentUser = null;
+  localStorage.removeItem("rahul_live_user");
+}
+
+function showMainApp(){
+  hide("authScreen");
+  show("mainApp");
+
+  $("profileUsername").textContent =
+    currentUser?.username || "User";
+
+  $("profileEmail").textContent =
+    currentUser?.email || "";
+
+  const letter =
+    (currentUser?.username || "R")
+      .charAt(0)
+      .toUpperCase();
+
+  $("profileAvatar").textContent = letter;
+
+  loadLiveRooms();
+}
+
+function showAuth(){
+  show("authScreen");
+  hide("mainApp");
+  hide("liveRoomScreen");
+  show("homeScreen");
+  hide("profileScreen");
+}
+
+
+/* ================= LOGIN / REGISTER ================= */
+
+async function registerUser(){
+
+  const username =
+    $("registerUsername").value.trim();
+
+  const email =
+    $("registerEmail").value.trim();
+
+  const password =
+    $("registerPassword").value;
+
+  if(!username || !email || !password){
+    $("authMessage").textContent =
+      "सभी details भरें";
+    return;
   }
-  clearSession();
-  liveApp.classList.add("hidden");
-  authScreen.classList.remove("hidden");
-  loginPassword.value = "";
-  showLogin();
-  showToast("Logout हो गया।");
+
+  if(password.length < 6){
+    $("authMessage").textContent =
+      "Password कम से कम 6 characters का होना चाहिए";
+    return;
+  }
+
+  $("registerBtn").disabled = true;
+  $("registerBtn").textContent = "Registering...";
+
+  try{
+
+    const data = await api("/api/register",{
+      method:"POST",
+      body:JSON.stringify({
+        username,
+        email,
+        password
+      })
+    });
+
+    if(data.success){
+
+      $("authMessage").textContent =
+        data.message || "Registration successful";
+
+      $("registerUsername").value = "";
+      $("registerEmail").value = "";
+      $("registerPassword").value = "";
+
+      toast("Account बन गया ✅");
+
+      setTimeout(() => {
+        showLogin();
+      },700);
+
+    }else{
+
+      $("authMessage").textContent =
+        data.message || "Registration failed";
+    }
+
+  }catch(error){
+
+    $("authMessage").textContent =
+      error.message || "Registration failed";
+
+  }finally{
+
+    $("registerBtn").disabled = false;
+    $("registerBtn").textContent = "Register";
+  }
 }
-/* =========================================================
-   LOAD LIVE ROOMS
-   ========================================================= */
-async function loadLiveRooms() {
-  try {
+
+
+async function loginUser(){
+
+  const username =
+    $("loginUsername").value.trim();
+
+  const password =
+    $("loginPassword").value;
+
+  if(!username || !password){
+    $("authMessage").textContent =
+      "Username और password भरें";
+    return;
+  }
+
+  $("loginBtn").disabled = true;
+  $("loginBtn").textContent = "Login...";
+
+  try{
+
+    const data = await api("/api/login",{
+      method:"POST",
+      body:JSON.stringify({
+        username,
+        password
+      })
+    });
+
+    if(data.success){
+
+      const user =
+        data.user || data.data || {
+          username,
+          email:data.email || ""
+        };
+
+      saveUser(user);
+
+      $("authMessage").textContent = "";
+
+      toast("Login successful ✅");
+
+      showMainApp();
+
+    }else{
+
+      $("authMessage").textContent =
+        data.message || "Login failed";
+    }
+
+  }catch(error){
+
+    $("authMessage").textContent =
+      error.message || "Login failed";
+
+  }finally{
+
+    $("loginBtn").disabled = false;
+    $("loginBtn").textContent = "Login";
+  }
+}
+
+
+function showRegister(){
+
+  hide("loginForm");
+  show("registerForm");
+
+  $("authMessage").textContent = "";
+}
+
+
+function showLogin(){
+
+  show("loginForm");
+  hide("registerForm");
+
+  $("authMessage").textContent = "";
+}
+
+
+/* ================= LIVE ROOMS ================= */
+
+async function loadLiveRooms(){
+
+  const grid = $("liveRoomsGrid");
+  const empty = $("emptyRooms");
+
+  if(!grid) return;
+
+  try{
+
+    const data =
+      await api("/api/live/rooms");
+
+    const rooms =
+      data.rooms ||
+      data.data ||
+      [];
+
+    grid.innerHTML = "";
+
+    if(!rooms.length){
+
+      show("emptyRooms");
+      return;
+    }
+
+    hide("emptyRooms");
+
+    rooms.forEach(room => {
+
+      grid.appendChild(
+        createRoomCard(room)
+      );
+
+    });
+
+  }catch(error){
+
+    /*
+      अगर अभी Worker में rooms endpoint
+      उपलब्ध नहीं है तो Home खाली रहेगा।
+    */
+
+    grid.innerHTML = "";
+
+    show("emptyRooms");
+  }
+}
+
+
+function createRoomCard(room){
+
+  const card =
+    document.createElement("div");
+
+  card.className = "live-card";
+
+  const host =
+    room.host_username ||
+    room.username ||
+    room.hostName ||
+    "Host";
+
+  const viewers =
+    room.viewer_count ||
+    room.viewers ||
+    0;
+
+  const title =
+    room.title ||
+    "Chat LIVE";
+
+  const letter =
+    host.charAt(0).toUpperCase();
+
+  card.innerHTML = `
+
+    <div class="live-card-cover">
+
+      <div class="live-badge-card">
+        🔴 LIVE
+      </div>
+
+      <div class="live-card-viewers">
+        👥 ${viewers}
+      </div>
+
+      <div class="live-card-avatar">
+        ${escapeHtml(letter)}
+      </div>
+
+    </div>
+
+    <div class="live-card-info">
+
+      <strong>
+        ${escapeHtml(host)}
+      </strong>
+
+      <span>
+        ${escapeHtml(title)}
+      </span>
+
+      <span>
+        👥 ${viewers} viewers
+      </span>
+
+    </div>
+
+  `;
+
+  card.addEventListener("click",() => {
+    joinRoom(room);
+  });
+
+  return card;
+}
+
+
+/* ================= START LIVE ================= */
+
+async function startLive(){
+
+  if(!currentUser){
+    toast("पहले Login करें");
+    return;
+  }
+
+  try{
+
+    const data =
+      await api("/api/live/create",{
+        method:"POST",
+        body:JSON.stringify({
+          host_id:currentUser.id,
+          title:"Chat LIVE",
+          status:"live"
+        })
+      });
+
+    if(data.success){
+
+      const room =
+        data.room ||
+        data.data ||
+        data;
+
+      toast("LIVE शुरू हो गया 🔴");
+
+      await joinRoom(room);
+
+    }else{
+
+      toast(
+        data.message ||
+        "LIVE शुरू नहीं हुआ"
+      );
+    }
+
+  }catch(error){
+
+    toast(
+      error.message ||
+      "LIVE शुरू करने में समस्या"
+    );
+  }
+}
+
+
+/* ================= JOIN ROOM ================= */
+
+async function joinRoom(room){
+
+  currentRoom = room;
+
+  hide("homeScreen");
+  hide("profileScreen");
+  show("liveRoomScreen");
+
+  const host =
+    room.host_username ||
+    room.username ||
+    room.hostName ||
+    "Host";
+
+  $("roomTitle").textContent =
+    room.title || "Chat LIVE";
+
+  $("roomHostName").textContent =
+    host;
+
+  $("roomHostAvatar").textContent =
+    host.charAt(0).toUpperCase();
+
+  await joinViewer();
+
+  loadRoomData();
+
+  startRoomPolling();
+
+  toast("LIVE में Join हो गए 🔴");
+}
+
+
+/* ================= VIEWER JOIN ================= */
+
+async function joinViewer(){
+
+  if(!currentRoom || !currentUser)
+    return;
+
+  const roomId =
+    currentRoom.id ||
+    currentRoom.live_room_id;
+
+  if(!roomId) return;
+
+  try{
+
+    await api("/api/live/join",{
+      method:"POST",
+      body:JSON.stringify({
+        live_room_id:roomId,
+        user_id:currentUser.id
+      })
+    });
+
+  }catch(error){
+    console.log("Join viewer:",error);
+  }
+}
+
+
+/* ================= ROOM DATA ================= */
+
+async function loadRoomData(){
+
+  if(!currentRoom) return;
+
+  const roomId =
+    currentRoom.id ||
+    currentRoom.live_room_id;
+
+  if(!roomId) return;
+
+  try{
+
     const data =
       await api(
-        "/api/live/rooms"
+        `/api/live/room/${encodeURIComponent(roomId)}`
       );
-    setOnline(true);
-    if (
-      data.rooms &&
-      data.rooms.length > 0
-    ) {
-      const room =
-        data.rooms[0];
-      state.roomId =
-        Number(room.id);
-      liveTitle.textContent =
-        room.title ||
-        "Chat LIVE Room";
-      hostName.textContent =
-        room.host_name ||
-        "Host";
-      hostAvatar.textContent =
-        initialLetter(
-          room.host_name ||
-          "Host"
-        );
-      viewerCount.textContent =
-        room.viewer_count || 0;
-      updateButtons();
-      return room;
+
+    const room =
+      data.room ||
+      data.data ||
+      data;
+
+    const count =
+      room.viewer_count ||
+      room.viewers ||
+      0;
+
+    $("roomViewerCount").textContent = count;
+    $("roomViewerCount2").textContent = count;
+    $("chatViewerCount").textContent =
+      `${count} viewers`;
+    $("viewerTotal").textContent = count;
+
+    const hostId =
+      room.host_id ||
+      currentRoom.host_id;
+
+    if(
+      currentUser &&
+      String(hostId) === String(currentUser.id)
+    ){
+      show("hostControls");
+    }else{
+      hide("hostControls");
     }
-    state.roomId = null;
-    viewerCount.textContent = "0";
-    liveTitle.textContent =
-      "Chat LIVE Room";
-    hostName.textContent =
-      "No LIVE";
-    hostAvatar.textContent =
-      "H";
-    updateButtons();
-    return null;
-  } catch (error) {
-    showToast(
-      "LIVE rooms load नहीं हो सके।"
-    );
-    return null;
+
+    await loadMessages();
+    await loadViewers();
+
+  }catch(error){
+
+    console.log("Room:",error);
   }
 }
-/* =========================================================
-   JOIN / START LIVE
-   ========================================================= */
-async function joinLive() {
-  if (!state.user) {
-    showToast(
-      "पहले Login करें।"
-    );
+
+
+/* ================= CHAT ================= */
+
+async function loadMessages(){
+
+  if(!currentRoom) return;
+
+  const roomId =
+    currentRoom.id ||
+    currentRoom.live_room_id;
+
+  if(!roomId) return;
+
+  try{
+
+    const data =
+      await api(
+        `/api/live/messages/${encodeURIComponent(roomId)}`
+      );
+
+    const messages =
+      data.messages ||
+      data.data ||
+      [];
+
+    renderMessages(messages);
+
+  }catch(error){
+
+    console.log("Messages:",error);
+  }
+}
+
+
+function renderMessages(messages){
+
+  const box = $("chatMessages");
+
+  if(!box) return;
+
+  box.innerHTML = "";
+
+  if(!messages.length){
+
+    box.innerHTML = `
+      <div class="system-message">
+        LIVE room में आपका स्वागत है 👋
+      </div>
+    `;
+
     return;
   }
-  if (state.joined) {
-    showToast(
-      "आप पहले से LIVE में हैं।"
-    );
-    return;
-  }
-  joinLiveBtn.disabled = true;
-  joinLiveBtn.textContent =
-    "Connecting...";
-  try {
-    let room =
-      await loadLiveRooms();
-    /*
-      अगर कोई LIVE नहीं है,
-      तो पहला user नया LIVE शुरू करेगा।
-    */
-    if (!room) {
-      const startData =
-        await api(
-          "/api/live/start",
-          {
-            method: "POST",
-            body: {
-              title:
-                "Chat LIVE Room"
-            }
-          }
-        );
-      state.roomId =
-        Number(startData.roomId);
-      state.isHost = true;
-      liveTitle.textContent =
-        startData.title ||
-        "Chat LIVE Room";
-      hostName.textContent =
-        state.user.username;
-      hostAvatar.textContent =
-        initialLetter(
-          state.user.username
-        );
-      updateHostControls();
-    } else {
-      state.roomId =
-        Number(room.id);
-      /*
-        अगर room का host current user है,
-        तो current user Host है।
-      */
-      if (
-        Number(room.host_id) ===
-        Number(state.user.id)
-      ) {
-        state.isHost = true;
-      }
-    }
-    await api(
-      "/api/live/join",
-      {
-        method: "POST",
-        body: {
-          roomId: state.roomId
-        }
-      }
-    );
-    state.joined = true;
-    state.muted = false;
-    state.blocked = false;
-    addSystemMessage(
-      `${state.user.username} LIVE में join हुए 👋`
-    );
-    updateButtons();
-    updateHostControls();
-    showToast(
-      state.isHost
-        ? "आप LIVE Host हैं 🔴"
-        : "आप LIVE में join हो गए 🔴"
-    );
-    await refreshLive();
-    startPolling();
-  } catch (error) {
-    showToast(
-      error.message
-    );
-  } finally {
-    joinLiveBtn.disabled = false;
-    updateButtons();
-  }
-}
-/* =========================================================
-   LEAVE LIVE
-   ========================================================= */
-async function leaveLive() {
-  if (!state.roomId) {
-    showToast(
-      "आप किसी LIVE में नहीं हैं।"
-    );
-    return;
-  }
-  try {
-    await api(
-      "/api/live/leave",
-      {
-        method: "POST",
-        body: {
-          roomId: state.roomId
-        }
-      }
-    );
-    addSystemMessage(
-      `${state.user.username} LIVE से चले गए।`
-    );
-  } catch (error) {
-    showToast(
-      error.message
-    );
-  } finally {
-    state.joined = false;
-    state.roomId = null;
-    state.isHost = false;
-    state.muted = false;
-    state.blocked = false;
-    stopPolling();
-    viewerList.innerHTML = "";
-    viewerCount.textContent = "0";
-    viewerTotal.textContent = "0";
-    chatUserCount.textContent = "0 viewers";
-    updateButtons();
-    updateHostControls();
-    showToast(
-      "आप LIVE से बाहर आ गए।"
-    );
-  }
-}
-/* =========================================================
-   REFRESH LIVE
-   ========================================================= */
-async function refreshLive() {
-  if (!state.roomId) return;
-  try {
-    await Promise.all([
-      loadViewers(),
-      loadMessages()
-    ]);
-    setOnline(true);
-  } catch (error) {
-    setOnline(false);
-  }
-}
-/* =========================================================
-   POLLING
-   ========================================================= */
-function startPolling() {
-  stopPolling();
-  state.pollTimer =
-    setInterval(
-      refreshLive,
-      3000
-    );
-}
-function stopPolling() {
-  if (state.pollTimer) {
-    clearInterval(
-      state.pollTimer
-    );
-    state.pollTimer = null;
-  }
-}
-/* =========================================================
-   VIEWERS
-   ========================================================= */
-async function loadViewers() {
-  if (!state.roomId) return;
-  const data =
-    await api(
-      `/api/live/viewers?roomId=${encodeURIComponent(
-        state.roomId
-      )}`
-    );
-  const viewers =
-    data.viewers || [];
-  viewerList.innerHTML = "";
-  viewers.forEach(viewer => {
+
+  messages.forEach(message => {
+
     const item =
       document.createElement("div");
+
+    const username =
+      message.username ||
+      message.sender_username ||
+      "User";
+
+    const text =
+      message.message ||
+      message.content ||
+      "";
+
+    item.className =
+      "chat-message" +
+      (
+        currentUser &&
+        String(
+          message.user_id ||
+          message.sender_id
+        ) === String(currentUser.id)
+          ? " mine"
+          : ""
+      );
+
+    item.innerHTML = `
+
+      <div class="chat-username">
+        ${escapeHtml(username)}
+      </div>
+
+      <div class="chat-text">
+        ${escapeHtml(text)}
+      </div>
+
+    `;
+
+    box.appendChild(item);
+  });
+
+  box.scrollTop = box.scrollHeight;
+}
+
+
+async function sendChat(){
+
+  const input =
+    $("chatInput");
+
+  const message =
+    input.value.trim();
+
+  if(!message) return;
+
+  if(!currentRoom || !currentUser){
+    toast("LIVE में Join करें");
+    return;
+  }
+
+  const roomId =
+    currentRoom.id ||
+    currentRoom.live_room_id;
+
+  if(!roomId) return;
+
+  input.disabled = true;
+
+  try{
+
+    const data =
+      await api("/api/live/message",{
+        method:"POST",
+        body:JSON.stringify({
+          live_room_id:roomId,
+          user_id:currentUser.id,
+          message
+        })
+      });
+
+    if(data.success){
+
+      input.value = "";
+
+      await loadMessages();
+
+    }else{
+
+      toast(
+        data.message ||
+        "Message नहीं भेजा गया"
+      );
+    }
+
+  }catch(error){
+
+    toast(
+      error.message ||
+      "Chat error"
+    );
+
+  }finally{
+
+    input.disabled = false;
+    input.focus();
+  }
+}
+
+
+/* ================= VIEWERS ================= */
+
+async function loadViewers(){
+
+  if(!currentRoom) return;
+
+  const roomId =
+    currentRoom.id ||
+    currentRoom.live_room_id;
+
+  if(!roomId) return;
+
+  try{
+
+    const data =
+      await api(
+        `/api/live/viewers/${encodeURIComponent(roomId)}`
+      );
+
+    const viewers =
+      data.viewers ||
+      data.data ||
+      [];
+
+    renderViewers(viewers);
+
+  }catch(error){
+
+    console.log("Viewers:",error);
+  }
+}
+
+
+function renderViewers(viewers){
+
+  const list =
+    $("viewerList");
+
+  if(!list) return;
+
+  list.innerHTML = "";
+
+  viewers.forEach(viewer => {
+
+    const username =
+      viewer.username ||
+      viewer.name ||
+      "User";
+
+    const item =
+      document.createElement("div");
+
     item.className =
       "viewer-item";
-    const avatar =
-      document.createElement("div");
-    avatar.className =
-      "viewer-avatar";
-    avatar.textContent =
-      initialLetter(
-        viewer.username
-      );
-    const name =
-      document.createElement("div");
-    name.className =
-      "viewer-name";
-    name.textContent =
-      viewer.username;
-    if (
-      Number(viewer.id) ===
-      Number(state.user?.id)
-    ) {
-      name.textContent +=
-        " (You)";
-    }
-    item.appendChild(avatar);
-    item.appendChild(name);
-    viewerList.appendChild(item);
-  });
-  const count =
-    viewers.length;
-  viewerCount.textContent =
-    count;
-  viewerTotal.textContent =
-    count;
-  chatUserCount.textContent =
-    `${count} viewer${count === 1 ? "" : "s"}`;
-}
-/* =========================================================
-   CHAT
-   ========================================================= */
-async function loadMessages() {
-  if (!state.roomId) return;
-  const data =
-    await api(
-      `/api/live/messages?roomId=${encodeURIComponent(
-        state.roomId
-      )}&limit=100`
-    );
-  const messages =
-    data.messages || [];
-  chatMessages.innerHTML = "";
-  if (!messages.length) {
-    addSystemMessage(
-      "LIVE room में आपका स्वागत है 👋"
-    );
-    return;
-  }
-  messages.forEach(message => {
-    if (
-      message.message_type ===
-      "system"
-    ) {
-      addSystemMessage(
-        message.message
-      );
-      return;
-    }
-    addChatMessage(
-      message.username,
-      message.message,
-      Number(message.user_id) ===
-      Number(state.user?.id)
-    );
-  });
-  chatMessages.scrollTop =
-    chatMessages.scrollHeight;
-}
-async function sendMessage() {
-  if (!state.joined) {
-    showToast(
-      "पहले LIVE में Join करें।"
-    );
-    return;
-  }
-  if (state.muted) {
-    showToast(
-      "आपको Host ने mute किया है।"
-    );
-    return;
-  }
-  if (state.blocked) {
-    showToast(
-      "आप blocked हैं।"
-    );
-    return;
-  }
-  const text =
-    chatInput.value.trim();
-  if (!text) return;
-  if (text.length > 500) {
-    showToast(
-      "Message बहुत लंबा है।"
-    );
-    return;
-  }
-  sendChatBtn.disabled = true;
-  try {
-    await api(
-      "/api/live/message",
-      {
-        method: "POST",
-        body: {
-          roomId:
-            state.roomId,
-          message:
-            text,
-          messageType:
-            "text"
-        }
-      }
-    );
-    chatInput.value = "";
-    await loadMessages();
-  } catch (error) {
-    showToast(
-      error.message
-    );
-    /*
-      Worker से mute/block response मिलने पर
-      local state भी update कर देते हैं।
-    */
-    if (
-      error.message
-        .toLowerCase()
-        .includes("mute")
-    ) {
-      state.muted = true;
-    }
-    if (
-      error.message
-        .toLowerCase()
-        .includes("block")
-    ) {
-      state.blocked = true;
-    }
-  } finally {
-    sendChatBtn.disabled = false;
-  }
-}
-/* =========================================================
-   CHAT UI
-   ========================================================= */
-function addChatMessage(
-  username,
-  text,
-  mine = false
-) {
-  const message =
-    document.createElement("div");
-  message.className =
-    `chat-message${mine ? " mine" : ""}`;
-  const usernameElement =
-    document.createElement("div");
-  usernameElement.className =
-    "chat-username";
-  usernameElement.textContent =
-    username;
-  const textElement =
-    document.createElement("div");
-  textElement.className =
-    "chat-text";
-  textElement.textContent =
-    text;
-  message.appendChild(
-    usernameElement
-  );
-  message.appendChild(
-    textElement
-  );
-  chatMessages.appendChild(
-    message
-  );
-}
-function addSystemMessage(text) {
-  const message =
-    document.createElement("div");
-  message.className =
-    "system-message";
-  message.textContent =
-    text;
-  chatMessages.appendChild(
-    message
-  );
-}
-/* =========================================================
-   EMOJI
-   ========================================================= */
-function toggleEmojiPanel() {
-  emojiPanel.classList.toggle(
-    "hidden"
-  );
-}
-function insertEmoji(emoji) {
-  chatInput.value += emoji;
-  chatInput.focus();
-}
-async function sendReaction(emoji) {
-  if (!state.joined) {
-    showToast(
-      "पहले LIVE में Join करें।"
-    );
-    return;
-  }
-  if (state.muted) {
-    showToast(
-      "आप muted हैं।"
-    );
-    return;
-  }
-  try {
-    await api(
-      "/api/live/message",
-      {
-        method: "POST",
-        body: {
-          roomId:
-            state.roomId,
-          message:
-            emoji,
-          messageType:
-            "reaction"
-        }
-      }
-    );
-    await loadMessages();
-  } catch (error) {
-    showToast(
-      error.message
-    );
-  }
-}
-/* =========================================================
-   HOST CONTROLS
-   ========================================================= */
-function updateHostControls() {
-  if (!hostControls) return;
-  if (
-    state.isHost &&
-    state.joined
-  ) {
-    hostControls.classList.remove(
-      "hidden"
-    );
-  } else {
-    hostControls.classList.add(
-      "hidden"
-    );
-  }
-}
-function getTargetViewer() {
-  const items =
-    viewerList.querySelectorAll(
-      ".viewer-item"
-    );
-  /*
-    API से actual viewer ID चाहिए।
-    इसलिए viewer list को दोबारा API से
-    पढ़ेंगे।
-  */
-  return api(
-    `/api/live/viewers?roomId=${encodeURIComponent(
-      state.roomId
-    )}`
-  )
-  .then(data => {
-    const viewers =
-      data.viewers || [];
-    return viewers.find(
-      viewer =>
-        Number(viewer.id) !==
-        Number(state.user?.id)
-    ) || null;
+
+    item.innerHTML = `
+
+      <div class="viewer-avatar">
+        ${escapeHtml(
+          username.charAt(0).toUpperCase()
+        )}
+      </div>
+
+      <div class="viewer-name">
+        ${escapeHtml(username)}
+      </div>
+
+    `;
+
+    list.appendChild(item);
   });
 }
-/* =========================================================
-   MODERATION
-   ========================================================= */
-async function moderate(action) {
-  if (!state.isHost) {
-    showToast(
-      "सिर्फ Host यह action कर सकता है।"
-    );
-    return;
+
+
+/* ================= EMOJI ================= */
+
+function insertEmoji(emoji){
+
+  const input =
+    $("chatInput");
+
+  input.value += emoji;
+
+  input.focus();
+
+  hide("emojiPanel");
+}
+
+
+function sendReaction(emoji){
+
+  createFloatingReaction(emoji);
+
+  if(
+    currentRoom &&
+    currentUser
+  ){
+    sendReactionToServer(emoji);
   }
-  if (!state.roomId) {
-    showToast(
-      "LIVE room नहीं मिला।"
-    );
-    return;
+}
+
+
+function createFloatingReaction(emoji){
+
+  const container =
+    $("floatingReactions");
+
+  if(!container) return;
+
+  const reaction =
+    document.createElement("div");
+
+  reaction.className =
+    "floating-reaction";
+
+  reaction.textContent = emoji;
+
+  reaction.style.right =
+    `${Math.random()*70}px`;
+
+  container.appendChild(reaction);
+
+  setTimeout(() => {
+    reaction.remove();
+  },1800);
+}
+
+
+async function sendReactionToServer(emoji){
+
+  const roomId =
+    currentRoom?.id ||
+    currentRoom?.live_room_id;
+
+  if(!roomId) return;
+
+  try{
+
+    await api("/api/live/reaction",{
+      method:"POST",
+      body:JSON.stringify({
+        live_room_id:roomId,
+        user_id:currentUser.id,
+        reaction:emoji
+      })
+    });
+
+  }catch(error){
+
+    console.log("Reaction:",error);
   }
-  try {
-    const target =
-      await getTargetViewer();
-    if (!target) {
-      showToast(
-        "कोई दूसरा viewer मौजूद नहीं है।"
-      );
-      return;
-    }
-    await api(
-      "/api/live/moderate",
-      {
-        method: "POST",
-        body: {
-          roomId:
-            state.roomId,
-          targetUserId:
-            target.id,
+}
+
+
+/* ================= HOST CONTROLS ================= */
+
+async function moderationAction(action){
+
+  if(!currentRoom || !currentUser)
+    return;
+
+  const roomId =
+    currentRoom.id ||
+    currentRoom.live_room_id;
+
+  const target =
+    prompt(
+      "जिस viewer पर action करना है उसका User ID डालें:"
+    );
+
+  if(!target) return;
+
+  try{
+
+    const data =
+      await api("/api/live/moderate",{
+        method:"POST",
+        body:JSON.stringify({
+          live_room_id:roomId,
+          host_id:currentUser.id,
+          target_user_id:target,
           action
-        }
-      }
+        })
+      });
+
+    toast(
+      data.message ||
+      `${action} किया गया`
     );
-    if (action === "kick") {
-      addSystemMessage(
-        `${target.username} को LIVE से kick किया गया 👢`
-      );
-    } else if (action === "block") {
-      addSystemMessage(
-        `${target.username} को block किया गया 🚫`
-      );
-    } else if (action === "mute") {
-      addSystemMessage(
-        `${target.username} को mute किया गया 🔇`
+
+    await loadViewers();
+
+  }catch(error){
+
+    toast(
+      error.message ||
+      "Moderation failed"
+    );
+  }
+}
+
+
+async function endLive(){
+
+  if(!currentRoom || !currentUser)
+    return;
+
+  const ok =
+    confirm("क्या आप LIVE End करना चाहते हैं?");
+
+  if(!ok) return;
+
+  const roomId =
+    currentRoom.id ||
+    currentRoom.live_room_id;
+
+  try{
+
+    const data =
+      await api("/api/live/end",{
+        method:"POST",
+        body:JSON.stringify({
+          live_room_id:roomId,
+          host_id:currentUser.id
+        })
+      });
+
+    if(data.success){
+
+      toast("LIVE End हो गया");
+
+      stopRoomPolling();
+
+      currentRoom = null;
+
+      show("homeScreen");
+      hide("liveRoomScreen");
+
+      await loadLiveRooms();
+
+    }else{
+
+      toast(
+        data.message ||
+        "LIVE End नहीं हुआ"
       );
     }
-    await refreshLive();
-    showToast(
-      `${target.username}: ${action}`
-    );
-  } catch (error) {
-    showToast(
-      error.message
+
+  }catch(error){
+
+    toast(
+      error.message ||
+      "End LIVE error"
     );
   }
 }
-async function muteViewer() {
-  await moderate("mute");
-}
-async function kickViewer() {
-  await moderate("kick");
-}
-async function blockViewer() {
-  await moderate("block");
-}
-/* =========================================================
-   END LIVE
-   ========================================================= */
-async function endLive() {
-  if (!state.isHost) {
-    showToast(
-      "सिर्फ Host LIVE समाप्त कर सकता है।"
-    );
-    return;
+
+
+/* ================= LEAVE LIVE ================= */
+
+async function leaveLive(){
+
+  if(currentRoom && currentUser){
+
+    const roomId =
+      currentRoom.id ||
+      currentRoom.live_room_id;
+
+    try{
+
+      await api("/api/live/leave",{
+        method:"POST",
+        body:JSON.stringify({
+          live_room_id:roomId,
+          user_id:currentUser.id
+        })
+      });
+
+    }catch(error){
+
+      console.log("Leave:",error);
+    }
   }
-  if (!state.roomId) {
-    showToast(
-      "LIVE room नहीं मिला।"
+
+  stopRoomPolling();
+
+  currentRoom = null;
+
+  hide("liveRoomScreen");
+  show("homeScreen");
+
+  await loadLiveRooms();
+
+  toast("LIVE छोड़ दिया");
+}
+
+
+/* ================= POLLING ================= */
+
+function startRoomPolling(){
+
+  stopRoomPolling();
+
+  roomPollTimer =
+    setInterval(
+      loadRoomData,
+      4000
     );
-    return;
+
+  chatPollTimer =
+    setInterval(
+      loadMessages,
+      2500
+    );
+
+  viewerPollTimer =
+    setInterval(
+      loadViewers,
+      4000
+    );
+}
+
+
+function stopRoomPolling(){
+
+  clearInterval(roomPollTimer);
+  clearInterval(chatPollTimer);
+  clearInterval(viewerPollTimer);
+
+  roomPollTimer = null;
+  chatPollTimer = null;
+  viewerPollTimer = null;
+}
+
+
+/* ================= NAVIGATION ================= */
+
+function showHome(){
+
+  hide("profileScreen");
+  hide("liveRoomScreen");
+  show("homeScreen");
+
+  $("homeNavBtn")
+    ?.classList.add("nav-active");
+
+  $("profileNavBtn")
+    ?.classList.remove("nav-active");
+
+  loadLiveRooms();
+}
+
+
+function showProfile(){
+
+  hide("homeScreen");
+  hide("liveRoomScreen");
+  show("profileScreen");
+
+  $("profileNavBtn")
+    ?.classList.add("nav-active");
+
+  $("homeNavBtn")
+    ?.classList.remove("nav-active");
+}
+
+
+/* ================= LOGOUT ================= */
+
+function logout(){
+
+  if(currentRoom){
+    leaveLive();
   }
-  const confirmed =
-    window.confirm(
-      "क्या आप LIVE समाप्त करना चाहते हैं?"
+
+  clearUser();
+
+  showAuth();
+
+  $("loginUsername").value = "";
+  $("loginPassword").value = "";
+
+  toast("Logout हो गया");
+}
+
+
+/* ================= SECURITY ================= */
+
+function escapeHtml(value){
+
+  return String(value ?? "")
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#039;");
+}
+
+
+/* ================= EVENTS ================= */
+
+document.addEventListener("DOMContentLoaded",() => {
+
+  $("loginBtn")
+    ?.addEventListener(
+      "click",
+      loginUser
     );
-  if (!confirmed) return;
-  try {
-    await api(
-      "/api/live/end",
-      {
-        method: "POST",
-        body: {
-          roomId:
-            state.roomId
-        }
+
+  $("registerBtn")
+    ?.addEventListener(
+      "click",
+      registerUser
+    );
+
+  $("showRegisterBtn")
+    ?.addEventListener(
+      "click",
+      showRegister
+    );
+
+  $("showLoginBtn")
+    ?.addEventListener(
+      "click",
+      showLogin
+    );
+
+  $("logoutBtn")
+    ?.addEventListener(
+      "click",
+      logout
+    );
+
+  $("startLiveBtn")
+    ?.addEventListener(
+      "click",
+      startLive
+    );
+
+  $("refreshRoomsBtn")
+    ?.addEventListener(
+      "click",
+      loadLiveRooms
+    );
+
+  $("backHomeBtn")
+    ?.addEventListener(
+      "click",
+      leaveLive
+    );
+
+  $("leaveLiveBtn")
+    ?.addEventListener(
+      "click",
+      leaveLive
+    );
+
+  $("sendChatBtn")
+    ?.addEventListener(
+      "click",
+      sendChat
+    );
+
+  $("emojiBtn")
+    ?.addEventListener(
+      "click",
+      () => {
+        $("emojiPanel")
+          ?.classList.toggle("hidden");
       }
     );
-    addSystemMessage(
-      "🛑 Host ने LIVE समाप्त कर दिया।"
-    );
-    state.joined = false;
-    state.roomId = null;
-    state.isHost = false;
-    stopPolling();
-    viewerList.innerHTML = "";
-    viewerCount.textContent = "0";
-    viewerTotal.textContent = "0";
-    chatUserCount.textContent = "0 viewers";
-    updateButtons();
-    updateHostControls();
-    showToast(
-      "LIVE समाप्त हो गया।"
-    );
-  } catch (error) {
-    showToast(
-      error.message
-    );
-  }
-}
-/* =========================================================
-   BUTTON STATES
-   ========================================================= */
-function updateButtons() {
-  if (state.joined) {
-    joinLiveBtn.disabled = true;
-    joinLiveBtn.textContent =
-      "🔴 LIVE में Joined";
-    leaveLiveBtn.disabled = false;
-  } else {
-    joinLiveBtn.disabled = false;
-    joinLiveBtn.textContent =
-      "🔴 Join LIVE";
-    leaveLiveBtn.disabled = true;
-  }
-}
-/* =========================================================
-   EMOJI BUTTONS
-   ========================================================= */
-function setupEmojiButtons() {
+
   document
-    .querySelectorAll(
-      "[data-emoji]"
-    )
+    .querySelectorAll("[data-emoji]")
     .forEach(button => {
+
       button.addEventListener(
         "click",
         () => {
           insertEmoji(
-            button.getAttribute(
-              "data-emoji"
-            )
+            button.dataset.emoji
           );
         }
       );
+
     });
-}
-/* =========================================================
-   QUICK REACTIONS
-   ========================================================= */
-function setupReactionButtons() {
+
   document
-    .querySelectorAll(
-      "[data-reaction]"
-    )
+    .querySelectorAll("[data-reaction]")
     .forEach(button => {
+
       button.addEventListener(
         "click",
         () => {
+
           sendReaction(
-            button.getAttribute(
-              "data-reaction"
-            )
+            button.dataset.reaction
           );
+
         }
       );
+
     });
-}
-/* =========================================================
-   KEYBOARD
-   ========================================================= */
-function setupKeyboard() {
-  chatInput.addEventListener(
-    "keydown",
-    event => {
-      if (
-        event.key === "Enter" &&
-        !event.shiftKey
-      ) {
-        event.preventDefault();
-        sendMessage();
+
+
+  $("chatInput")
+    ?.addEventListener(
+      "keydown",
+      event => {
+
+        if(event.key === "Enter"){
+          event.preventDefault();
+          sendChat();
+        }
+
       }
-    }
-  );
-}
-/* =========================================================
-   EVENTS
-   ========================================================= */
-showRegisterBtn.addEventListener(
-  "click",
-  showRegister
-);
-showLoginBtn.addEventListener(
-  "click",
-  showLogin
-);
-registerBtn.addEventListener(
-  "click",
-  registerUser
-);
-loginBtn.addEventListener(
-  "click",
-  loginUser
-);
-logoutBtn.addEventListener(
-  "click",
-  logoutUser
-);
-joinLiveBtn.addEventListener(
-  "click",
-  joinLive
-);
-leaveLiveBtn.addEventListener(
-  "click",
-  leaveLive
-);
-emojiBtn.addEventListener(
-  "click",
-  toggleEmojiPanel
-);
-sendChatBtn.addEventListener(
-  "click",
-  sendMessage
-);
-muteBtn.addEventListener(
-  "click",
-  muteViewer
-);
-kickBtn.addEventListener(
-  "click",
-  kickViewer
-);
-blockBtn.addEventListener(
-  "click",
-  blockViewer
-);
-endLiveBtn.addEventListener(
-  "click",
-  endLive
-);
-/* =========================================================
-   CLOSE EMOJI PANEL OUTSIDE
-   ========================================================= */
-document.addEventListener(
-  "click",
-  event => {
-    if (
-      emojiPanel.classList.contains(
-        "hidden"
-      )
-    ) {
-      return;
-    }
-    if (
-      event.target === emojiBtn ||
-      emojiPanel.contains(
-        event.target
-      )
-    ) {
-      return;
-    }
-    emojiPanel.classList.add(
-      "hidden"
     );
+
+
+  $("muteBtn")
+    ?.addEventListener(
+      "click",
+      () => moderationAction("mute")
+    );
+
+  $("kickBtn")
+    ?.addEventListener(
+      "click",
+      () => moderationAction("kick")
+    );
+
+  $("blockBtn")
+    ?.addEventListener(
+      "click",
+      () => moderationAction("block")
+    );
+
+  $("endLiveBtn")
+    ?.addEventListener(
+      "click",
+      endLive
+    );
+
+
+  $("homeNavBtn")
+    ?.addEventListener(
+      "click",
+      showHome
+    );
+
+  $("liveNavBtn")
+    ?.addEventListener(
+      "click",
+      loadLiveRooms
+    );
+
+  $("profileNavBtn")
+    ?.addEventListener(
+      "click",
+      showProfile
+    );
+
+
+  /* Restore login */
+
+  if(loadUser()){
+    showMainApp();
+  }else{
+    showAuth();
   }
-);
-/* =========================================================
-   START
-   ========================================================= */
-setupEmojiButtons();
-setupReactionButtons();
-setupKeyboard();
-updateButtons();
-restoreSession();
+
+});
