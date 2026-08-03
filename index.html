@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
 
@@ -13,16 +13,6 @@
     content="#050505"
   >
 
-  <meta
-    name="description"
-    content="Rahul Live Community - Live Voice Rooms, Friends, Chat and Personal Help"
-  >
-
-  <link
-    rel="manifest"
-    href="manifest.json"
-  >
-
   <title>Rahul Live Community</title>
 
   <link
@@ -33,517 +23,284 @@
 
 <body>
 
-  <!-- ==================================================
-       LOGIN
-  =================================================== -->
+<!-- =====================================================
+     LOADING
+===================================================== -->
 
-  <section
-    id="loginPage"
-    class="page auth-page"
-  >
+<div
+  id="loadingOverlay"
+  class="loading-overlay hidden"
+>
+  <div class="loader"></div>
+  <div>Loading...</div>
+</div>
 
-    <div class="auth-card">
 
-      <div class="logo">
+<!-- =====================================================
+     LOGIN PAGE
+===================================================== -->
+
+<section
+  id="loginPage"
+  class="page auth-page"
+>
+
+  <div class="auth-card">
+
+    <div class="logo">
+      Rahul Live
+    </div>
+
+    <h1>
+      Welcome Back
+    </h1>
+
+    <p>
+      अपने account में login करें
+    </p>
+
+
+    <form id="loginForm">
+
+      <input
+        id="loginEmail"
+        type="email"
+        placeholder="Email"
+        autocomplete="email"
+        required
+      >
+
+      <input
+        id="loginPassword"
+        type="password"
+        placeholder="Password"
+        autocomplete="current-password"
+        required
+      >
+
+      <button
+        type="submit"
+        class="primary-btn"
+      >
+        Login
+      </button>
+
+    </form>
+
+
+    <button
+      type="button"
+      class="link-btn"
+      onclick="showPage('register')"
+    >
+      नया account बनाएं
+    </button>
+
+  </div>
+
+</section>
+
+
+<!-- =====================================================
+     REGISTER PAGE
+===================================================== -->
+
+<section
+  id="registerPage"
+  class="page auth-page hidden"
+>
+
+  <div class="auth-card">
+
+    <div class="logo">
+      Rahul Live
+    </div>
+
+    <h1>
+      Create Account
+    </h1>
+
+    <p>
+      Rahul Live Community में जुड़ें
+    </p>
+
+
+    <form id="registerForm">
+
+      <input
+        id="registerName"
+        type="text"
+        placeholder="Your Name"
+        autocomplete="name"
+        required
+      >
+
+      <input
+        id="registerEmail"
+        type="email"
+        placeholder="Email"
+        autocomplete="email"
+        required
+      >
+
+      <input
+        id="registerPassword"
+        type="password"
+        placeholder="Password"
+        autocomplete="new-password"
+        required
+      >
+
+      <button
+        type="submit"
+        class="primary-btn"
+      >
+        Register
+      </button>
+
+    </form>
+
+
+    <button
+      type="button"
+      class="link-btn"
+      onclick="showPage('login')"
+    >
+      पहले से account है? Login
+    </button>
+
+  </div>
+
+</section>
+
+
+<!-- =====================================================
+     HOME PAGE
+===================================================== -->
+
+<section
+  id="homePage"
+  class="page hidden"
+>
+
+  <header class="topbar">
+
+    <div>
+      <div class="brand">
         Rahul Live
       </div>
 
-      <h1>
-        Welcome Back
-      </h1>
-
-      <p>
-        Rahul Live Community में Login करें
-      </p>
-
-      <form id="loginForm">
-
-        <input
-          id="loginEmail"
-          type="email"
-          placeholder="Email"
-          autocomplete="email"
-          required
-        >
-
-        <input
-          id="loginPassword"
-          type="password"
-          placeholder="Password"
-          autocomplete="current-password"
-          required
-        >
-
-        <button
-          type="submit"
-          class="primary-btn"
-        >
-          Login
-        </button>
-
-      </form>
-
-      <button
-        type="button"
-        class="link-btn"
-        onclick="showPage('register')"
-      >
-        नया Account बनाएं
-      </button>
-
+      <div class="brand-subtitle">
+        Live Community
+      </div>
     </div>
 
-  </section>
+
+    <button
+      type="button"
+      class="logout-btn"
+      onclick="logoutUser()"
+    >
+      Logout
+    </button>
+
+  </header>
 
 
-  <!-- ==================================================
-       REGISTER
-  =================================================== -->
+  <main class="home-container">
 
-  <section
-    id="registerPage"
-    class="page auth-page hidden"
-  >
 
-    <div class="auth-card">
+    <!-- PROFILE -->
 
-      <div class="logo">
-        Rahul Live
+    <div class="profile-mini">
+
+      <div
+        class="profile-avatar"
+        data-user-avatar
+      >
+        👤
       </div>
 
-      <h1>
-        Create Account
-      </h1>
-
-      <p>
-        अपनी Live Community शुरू करें
-      </p>
-
-      <form id="registerForm">
-
-        <input
-          id="registerName"
-          type="text"
-          placeholder="आपका नाम"
-          autocomplete="name"
-          required
-        >
-
-        <input
-          id="registerEmail"
-          type="email"
-          placeholder="Email"
-          autocomplete="email"
-          required
-        >
-
-        <input
-          id="registerPassword"
-          type="password"
-          placeholder="Password"
-          autocomplete="new-password"
-          required
-        >
-
-        <button
-          type="submit"
-          class="primary-btn"
-        >
-          Register
-        </button>
-
-      </form>
-
-      <button
-        type="button"
-        class="link-btn"
-        onclick="showPage('login')"
-      >
-        पहले से Account है? Login
-      </button>
-
-    </div>
-
-  </section>
-
-
-  <!-- ==================================================
-       HOME
-  =================================================== -->
-
-  <section
-    id="homePage"
-    class="page hidden"
-  >
-
-    <header class="topbar">
 
       <div>
 
-        <div class="brand">
-          Rahul Live
-        </div>
-
-        <div class="brand-subtitle">
-          Live Community
-        </div>
-
-      </div>
-
-      <button
-        type="button"
-        class="logout-btn"
-        onclick="logoutUser()"
-      >
-        Logout
-      </button>
-
-    </header>
-
-
-    <main class="home-container">
-
-      <!-- USER -->
-
-      <div class="profile-mini">
-
-        <div
-          class="profile-avatar"
-          data-user-avatar
+        <strong
+          data-user-name
         >
-          👤
-        </div>
-
-        <div>
-
-          <strong data-user-name>
-            User
-          </strong>
-
-          <small data-user-username>
-          </small>
-
-        </div>
-
-        <div class="coins">
-
-          🪙
-          <span data-user-coins>
-            0
-          </span>
-
-        </div>
-
-      </div>
-
-
-      <!-- CREATE ROOM -->
-
-      <div class="section-card">
-
-        <h2>
-          अपना Live Room बनाएं
-        </h2>
-
-        <p>
-          अपना अलग room बनाकर अपने friends के साथ बात करें।
-        </p>
-
-        <form id="createRoomForm">
-
-          <input
-            id="roomName"
-            type="text"
-            placeholder="Room का नाम"
-            maxlength="80"
-            required
-          >
-
-          <textarea
-            id="roomDescription"
-            placeholder="Room के बारे में"
-            maxlength="300"
-          ></textarea>
-
-          <select id="roomType">
-
-            <option value="public">
-              Public Room
-            </option>
-
-            <option value="private">
-              Private Room
-            </option>
-
-          </select>
-
-          <button
-            type="submit"
-            class="primary-btn"
-          >
-            + Create Room
-          </button>
-
-        </form>
-
-      </div>
-
-
-      <!-- ROOMS -->
-
-      <div class="section-card">
-
-        <div class="section-heading">
-
-          <h2>
-            Live Rooms
-          </h2>
-
-          <button
-            type="button"
-            onclick="loadRooms()"
-            class="small-btn"
-          >
-            Refresh
-          </button>
-
-        </div>
-
-        <div
-          id="roomsList"
-          class="rooms-list"
-        >
-
-          <div class="empty-state">
-            Rooms loading...
-          </div>
-
-        </div>
-
-      </div>
-
-
-      <!-- PERSONAL HELP -->
-
-      <div class="section-card help-card">
-
-        <h2>
-          🆘 Personal Help
-        </h2>
-
-        <p>
-          किसी भी समस्या के लिए यहाँ अपनी समस्या भेज सकते हैं।
-        </p>
-
-        <button
-          type="button"
-          class="primary-btn"
-          onclick="showPage('support')"
-        >
-          Personal Help खोलें
-        </button>
-
-      </div>
-
-    </main>
-
-  </section>
-
-
-  <!-- ==================================================
-       ROOM
-  =================================================== -->
-
-  <section
-    id="roomPage"
-    class="page room-page hidden"
-  >
-
-    <header class="room-header">
-
-      <button
-        type="button"
-        class="back-btn"
-        onclick="leaveRoom()"
-      >
-        ←
-      </button>
-
-      <div class="room-header-info">
-
-        <strong data-room-name>
-          Live Room
+          User
         </strong>
 
-        <small>
-          Live conversation
-        </small>
+        <small
+          data-user-username
+        ></small>
 
       </div>
 
-      <button
-        type="button"
-        class="help-icon-btn"
-        onclick="showPage('support')"
-      >
-        🆘
-      </button>
 
-    </header>
+      <div class="coins">
 
-
-    <!-- ROOM INFO -->
-
-    <div class="room-info">
-
-      <div>
-
-        <div class="live-badge">
-          ● LIVE
-        </div>
-
-        <h2 data-room-name>
-          Live Room
-        </h2>
-
-        <p data-room-description>
-          You are included in this room.
-        </p>
-
-      </div>
-
-    </div>
-
-
-    <!-- ==================================================
-         8 VOICE SEATS
-    =================================================== -->
-
-    <div class="voice-section">
-
-      <div class="section-title-row">
-
-        <h3>
-          Voice Seats
-        </h3>
-
-        <span>
-          8 Seats
+        🪙
+        <span data-user-coins>
+          0
         </span>
 
       </div>
 
-      <div
-        id="voiceSeats"
-        class="voice-seats"
-        data-seats
-      >
-
-        <!-- JavaScript will create all 8 seats -->
-
-      </div>
-
     </div>
 
 
-    <!-- ==================================================
-         ROOM CHAT
-    =================================================== -->
+    <!-- CREATE ROOM -->
 
-    <div class="chat-section">
+    <div class="section-card">
 
-      <div class="chat-header">
+      <h2>
+        Create Live Room
+      </h2>
 
-        <div>
+      <p>
+        अपनी Live Room बनाकर लोगों से बात करें।
+      </p>
 
-          <strong>
-            Room Chat
-          </strong>
-
-          <small>
-            Live
-          </small>
-
-        </div>
-
-      </div>
-
-
-      <div
-        id="roomMessages"
-        class="room-messages"
-        data-room-messages
-      >
-
-        <div class="empty-chat">
-          Chat शुरू करें...
-        </div>
-
-      </div>
-
-
-      <!-- REACTIONS -->
-
-      <div class="reaction-bar">
-
-        <button
-          type="button"
-          onclick="sendReaction('❤️')"
-        >
-          ❤️
-        </button>
-
-        <button
-          type="button"
-          onclick="sendReaction('😂')"
-        >
-          😂
-        </button>
-
-        <button
-          type="button"
-          onclick="sendReaction('🔥')"
-        >
-          🔥
-        </button>
-
-        <button
-          type="button"
-          onclick="sendReaction('👏')"
-        >
-          👏
-        </button>
-
-        <button
-          type="button"
-          onclick="sendReaction('😍')"
-        >
-          😍
-        </button>
-
-      </div>
-
-
-      <!-- MESSAGE INPUT -->
 
       <form
-        id="roomChatForm"
-        class="chat-input-row"
+        id="createRoomForm"
       >
 
         <input
-          id="roomMessage"
+          id="roomName"
           type="text"
-          placeholder="Write message..."
-          maxlength="1000"
-          autocomplete="off"
+          placeholder="Room Name"
+          maxlength="80"
+          required
         >
+
+
+        <input
+          id="roomDescription"
+          type="text"
+          placeholder="Room Description"
+          maxlength="150"
+        >
+
+
+        <select id="roomType">
+
+          <option value="public">
+            Public Room
+          </option>
+
+          <option value="private">
+            Private Room
+          </option>
+
+        </select>
+
 
         <button
           type="submit"
-          class="send-btn"
+          class="primary-btn"
         >
-          Send
+          + Create Live Room
         </button>
 
       </form>
@@ -551,596 +308,819 @@
     </div>
 
 
-    <!-- ==================================================
-         ROOM CONTROLS
-    =================================================== -->
+    <!-- ROOMS -->
 
-    <div class="room-controls">
+    <div class="section-card">
 
-      <button
-        type="button"
-        onclick="toggleMic()"
-        id="micButton"
-        class="control-btn"
-      >
-        🎙️
-        <span>Mic</span>
-      </button>
+      <div class="section-heading">
 
-
-      <button
-        type="button"
-        onclick="openMusicPanel()"
-        class="control-btn"
-      >
-        🎵
-        <span>Music</span>
-      </button>
-
-
-      <button
-        type="button"
-        onclick="openGiftPanel()"
-        class="control-btn"
-      >
-        🎁
-        <span>Gift</span>
-      </button>
-
-
-      <button
-        type="button"
-        onclick="openInvitePanel()"
-        class="control-btn"
-      >
-        👥
-        <span>Invite</span>
-      </button>
-
-
-      <button
-        type="button"
-        onclick="leaveRoom()"
-        class="control-btn leave-control"
-      >
-        🚪
-        <span>Leave</span>
-      </button>
-
-    </div>
-
-
-    <!-- ==================================================
-         MUSIC PANEL
-    =================================================== -->
-
-    <div
-      id="musicPanel"
-      class="bottom-panel hidden"
-    >
-
-      <div class="panel-header">
-
-        <strong>
-          🎵 Music
-        </strong>
+        <h2>
+          Live Rooms
+        </h2>
 
         <button
           type="button"
-          onclick="closePanels()"
+          class="small-btn"
+          onclick="loadRooms()"
         >
-          ✕
+          Refresh
         </button>
 
       </div>
+
 
       <div
-        id="musicList"
-        class="panel-list"
-        data-music-list
+        id="roomsList"
+        class="rooms-list"
       >
-      </div>
 
-    </div>
-
-
-    <!-- ==================================================
-         GIFT PANEL
-    =================================================== -->
-
-    <div
-      id="giftPanel"
-      class="bottom-panel hidden"
-    >
-
-      <div class="panel-header">
-
-        <strong>
-          🎁 Gifts
-        </strong>
-
-        <button
-          type="button"
-          onclick="closePanels()"
-        >
-          ✕
-        </button>
-
-      </div>
-
-      <div
-        id="giftList"
-        class="gift-grid"
-        data-gift-list
-      >
-      </div>
-
-    </div>
-
-
-    <!-- ==================================================
-         INVITE PANEL
-    =================================================== -->
-
-    <div
-      id="invitePanel"
-      class="bottom-panel hidden"
-    >
-
-      <div class="panel-header">
-
-        <strong>
-          👥 Invite Friends
-        </strong>
-
-        <button
-          type="button"
-          onclick="closePanels()"
-        >
-          ✕
-        </button>
-
-      </div>
-
-      <div class="invite-empty">
-
-        Friends list आने पर यहाँ से friend को room में invite किया जा सकेगा।
-
-      </div>
-
-    </div>
-
-  </section>
-
-
-  <!-- ==================================================
-       PERSONAL HELP
-  =================================================== -->
-
-  <section
-    id="supportPage"
-    class="page hidden"
-  >
-
-    <header class="topbar">
-
-      <button
-        type="button"
-        class="back-btn"
-        onclick="goBackFromSupport()"
-      >
-        ←
-      </button>
-
-      <div class="brand">
-        Personal Help
-      </div>
-
-    </header>
-
-
-    <main class="support-container">
-
-      <div class="support-card">
-
-        <div class="support-icon">
-          🆘
+        <div class="empty-state">
+          Rooms loading...
         </div>
 
-        <h1>
-          Personal Help
-        </h1>
+      </div>
 
-        <p>
-          अगर आपको किसी feature या room में समस्या आ रही है,
-          यहाँ अपनी समस्या भेजें।
-        </p>
+    </div>
 
 
-        <form id="supportForm">
+    <!-- SUPPORT -->
 
-          <input
-            id="supportSubject"
-            type="text"
-            placeholder="Problem का विषय"
-            maxlength="120"
-            required
-          >
+    <div class="section-card help-card">
 
-          <textarea
-            id="supportMessage"
-            placeholder="अपनी समस्या यहाँ लिखें..."
-            maxlength="2000"
-            required
-          ></textarea>
+      <h2>
+        Need Help?
+      </h2>
 
-          <button
-            type="submit"
-            class="primary-btn"
-          >
-            Help Request भेजें
-          </button>
+      <p>
+        किसी समस्या के लिए Support Team से संपर्क करें।
+      </p>
 
-        </form>
+      <button
+        type="button"
+        class="primary-btn"
+        onclick="showPage('support')"
+      >
+        Open Support
+      </button>
+
+    </div>
+
+  </main>
+
+</section>
+
+
+<!-- =====================================================
+     SUPPORT PAGE
+===================================================== -->
+
+<section
+  id="supportPage"
+  class="page hidden"
+>
+
+  <header class="topbar">
+
+    <div>
+      <div class="brand">
+        Rahul Live
+      </div>
+
+      <div class="brand-subtitle">
+        Support
+      </div>
+    </div>
+
+
+    <button
+      type="button"
+      class="logout-btn"
+      onclick="goBackFromSupport()"
+    >
+      Back
+    </button>
+
+  </header>
+
+
+  <main class="support-container">
+
+    <div class="support-card">
+
+      <div class="support-icon">
+        🛟
+      </div>
+
+      <h1>
+        Support
+      </h1>
+
+      <p>
+        अपनी समस्या लिखकर Support Team को भेजें।
+      </p>
+
+
+      <form
+        id="supportForm"
+      >
+
+        <input
+          id="supportSubject"
+          type="text"
+          placeholder="Subject"
+          maxlength="100"
+          required
+        >
+
+
+        <textarea
+          id="supportMessage"
+          placeholder="अपनी समस्या लिखें..."
+          maxlength="2000"
+          required
+        ></textarea>
+
+
+        <button
+          type="submit"
+          class="primary-btn"
+        >
+          Send Support Request
+        </button>
+
+      </form>
+
+    </div>
+
+  </main>
+
+</section>
+
+
+<!-- =====================================================
+     LIVE ROOM PAGE
+===================================================== -->
+
+<section
+  id="roomPage"
+  class="page room-page hidden"
+>
+
+
+  <!-- ROOM HEADER -->
+
+  <header class="room-header">
+
+    <button
+      type="button"
+      class="back-btn"
+      onclick="leaveRoom()"
+      aria-label="Back"
+    >
+      ←
+    </button>
+
+
+    <div class="room-header-info">
+
+      <strong
+        data-room-name
+      >
+        Live Room
+      </strong>
+
+      <small>
+        Rahul Live Community
+      </small>
+
+    </div>
+
+
+    <button
+      type="button"
+      class="help-icon-btn"
+      onclick="showPage('support')"
+    >
+      ?
+    </button>
+
+  </header>
+
+
+  <!-- ROOM INFORMATION -->
+
+  <div class="room-info">
+
+    <div class="live-badge">
+      LIVE
+    </div>
+
+    <h2
+      data-room-name
+    >
+      Live Room
+    </h2>
+
+    <p
+      data-room-description
+    >
+      You are included in this room.
+    </p>
+
+  </div>
+
+
+  <!-- ===================================================
+       VOICE SEATS
+  ==================================================== -->
+
+  <section class="voice-section">
+
+    <div class="section-title-row">
+
+      <h3>
+        🎙️ Voice Seats
+      </h3>
+
+      <span>
+        8 Seats
+      </span>
+
+    </div>
+
+
+    <div
+      id="voiceSeats"
+      class="voice-seats"
+    >
+
+      <!-- Seat 1 -->
+
+      <div class="voice-seat">
+
+        <button
+          type="button"
+          class="empty-seat-btn"
+          onclick="joinSeat(1)"
+        >
+          +
+        </button>
+
+        <div class="voice-seat-avatar">
+          👤
+        </div>
+
+        <div class="voice-seat-name">
+          Empty
+        </div>
+
+        <div class="voice-seat-number">
+          Seat 1
+        </div>
 
       </div>
 
-    </main>
+
+      <!-- Seat 2 -->
+
+      <div class="voice-seat">
+
+        <button
+          type="button"
+          class="empty-seat-btn"
+          onclick="joinSeat(2)"
+        >
+          +
+        </button>
+
+        <div class="voice-seat-avatar">
+          👤
+        </div>
+
+        <div class="voice-seat-name">
+          Empty
+        </div>
+
+        <div class="voice-seat-number">
+          Seat 2
+        </div>
+
+      </div>
+
+
+      <!-- Seat 3 -->
+
+      <div class="voice-seat">
+
+        <button
+          type="button"
+          class="empty-seat-btn"
+          onclick="joinSeat(3)"
+        >
+          +
+        </button>
+
+        <div class="voice-seat-avatar">
+          👤
+        </div>
+
+        <div class="voice-seat-name">
+          Empty
+        </div>
+
+        <div class="voice-seat-number">
+          Seat 3
+        </div>
+
+      </div>
+
+
+      <!-- Seat 4 -->
+
+      <div class="voice-seat">
+
+        <button
+          type="button"
+          class="empty-seat-btn"
+          onclick="joinSeat(4)"
+        >
+          +
+        </button>
+
+        <div class="voice-seat-avatar">
+          👤
+        </div>
+
+        <div class="voice-seat-name">
+          Empty
+        </div>
+
+        <div class="voice-seat-number">
+          Seat 4
+        </div>
+
+      </div>
+
+
+      <!-- Seat 5 -->
+
+      <div class="voice-seat">
+
+        <button
+          type="button"
+          class="empty-seat-btn"
+          onclick="joinSeat(5)"
+        >
+          +
+        </button>
+
+        <div class="voice-seat-avatar">
+          👤
+        </div>
+
+        <div class="voice-seat-name">
+          Empty
+        </div>
+
+        <div class="voice-seat-number">
+          Seat 5
+        </div>
+
+      </div>
+
+
+      <!-- Seat 6 -->
+
+      <div class="voice-seat">
+
+        <button
+          type="button"
+          class="empty-seat-btn"
+          onclick="joinSeat(6)"
+        >
+          +
+        </button>
+
+        <div class="voice-seat-avatar">
+          👤
+        </div>
+
+        <div class="voice-seat-name">
+          Empty
+        </div>
+
+        <div class="voice-seat-number">
+          Seat 6
+        </div>
+
+      </div>
+
+
+      <!-- Seat 7 -->
+
+      <div class="voice-seat">
+
+        <button
+          type="button"
+          class="empty-seat-btn"
+          onclick="joinSeat(7)"
+        >
+          +
+        </button>
+
+        <div class="voice-seat-avatar">
+          👤
+        </div>
+
+        <div class="voice-seat-name">
+          Empty
+        </div>
+
+        <div class="voice-seat-number">
+          Seat 7
+        </div>
+
+      </div>
+
+
+      <!-- Seat 8 -->
+
+      <div class="voice-seat">
+
+        <button
+          type="button"
+          class="empty-seat-btn"
+          onclick="joinSeat(8)"
+        >
+          +
+        </button>
+
+        <div class="voice-seat-avatar">
+          👤
+        </div>
+
+        <div class="voice-seat-name">
+          Empty
+        </div>
+
+        <div class="voice-seat-number">
+          Seat 8
+        </div>
+
+      </div>
+
+    </div>
 
   </section>
 
 
-  <!-- ==================================================
-       APP LOADING
-  =================================================== -->
+  <!-- ===================================================
+       CHAT
+  ==================================================== -->
+
+  <section class="chat-section">
+
+    <div class="chat-header">
+
+      <strong>
+        💬 Room Chat Live
+      </strong>
+
+      <small>
+        Live
+      </small>
+
+    </div>
+
+
+    <div
+      id="roomMessages"
+      class="room-messages"
+    >
+
+      <div class="empty-chat">
+        Chat शुरू करें...
+      </div>
+
+    </div>
+
+
+    <!-- REACTIONS -->
+
+    <div class="reaction-bar">
+
+      <button
+        type="button"
+        onclick="sendReaction('❤️')"
+      >
+        ❤️
+      </button>
+
+      <button
+        type="button"
+        onclick="sendReaction('🔥')"
+      >
+        🔥
+      </button>
+
+      <button
+        type="button"
+        onclick="sendReaction('😂')"
+      >
+        😂
+      </button>
+
+      <button
+        type="button"
+        onclick="sendReaction('😍')"
+      >
+        😍
+      </button>
+
+      <button
+        type="button"
+        onclick="sendReaction('👏')"
+      >
+        👏
+      </button>
+
+      <button
+        type="button"
+        onclick="sendReaction('👍')"
+      >
+        👍
+      </button>
+
+    </div>
+
+
+    <!-- CHAT INPUT -->
+
+    <form
+      id="roomChatForm"
+      class="chat-input-row"
+    >
+
+      <input
+        id="roomMessage"
+        type="text"
+        placeholder="Write message..."
+        maxlength="500"
+        autocomplete="off"
+      >
+
+      <button
+        type="submit"
+        class="send-btn"
+      >
+        Send
+      </button>
+
+    </form>
+
+  </section>
+
+
+  <!-- ===================================================
+       ROOM CONTROLS
+  ==================================================== -->
+
+  <nav class="room-controls">
+
+
+    <!-- MIC -->
+
+    <button
+      id="micButton"
+      type="button"
+      class="control-btn"
+      onclick="toggleMic()"
+    >
+
+      🎙️
+
+      <span>
+        Mic
+      </span>
+
+    </button>
+
+
+    <!-- MUSIC -->
+
+    <button
+      type="button"
+      class="control-btn"
+      onclick="openMusicPanel()"
+    >
+
+      🎵
+
+      <span>
+        Music
+      </span>
+
+    </button>
+
+
+    <!-- INVITE -->
+
+    <button
+      type="button"
+      class="control-btn"
+      onclick="openInvitePanel()"
+    >
+
+      👥
+
+      <span>
+        Invite
+      </span>
+
+    </button>
+
+
+    <!-- GIFT -->
+
+    <button
+      type="button"
+      class="control-btn"
+      onclick="openGiftPanel()"
+    >
+
+      🎁
+
+      <span>
+        Gift
+      </span>
+
+    </button>
+
+
+    <!-- LEAVE SEAT -->
+
+    <button
+      type="button"
+      class="control-btn"
+      onclick="leaveMySeat()"
+    >
+
+      🪑
+
+      <span>
+        Leave Seat
+      </span>
+
+    </button>
+
+
+    <!-- LEAVE ROOM -->
+
+    <button
+      type="button"
+      class="control-btn leave-control"
+      onclick="leaveRoom()"
+    >
+
+      🚪
+
+      <span>
+        Leave
+      </span>
+
+    </button>
+
+  </nav>
+
+
+  <!-- ===================================================
+       MUSIC PANEL
+  ==================================================== -->
 
   <div
-    id="loadingOverlay"
-    class="loading-overlay hidden"
+    id="musicPanel"
+    class="bottom-panel hidden"
   >
 
-    <div class="loader"></div>
+    <div class="panel-header">
 
-    <div>
-      Loading...
+      <strong>
+        🎵 Room Music
+      </strong>
+
+      <button
+        type="button"
+        onclick="closePanels()"
+      >
+        ✕
+      </button>
+
+    </div>
+
+
+    <div
+      id="musicList"
+      class="panel-list"
+    >
+
+      <div class="empty-state">
+        Music loading...
+      </div>
+
     </div>
 
   </div>
 
 
-  <!-- ==================================================
-       SCRIPTS
-  =================================================== -->
+  <!-- ===================================================
+       GIFT PANEL
+  ==================================================== -->
 
-  <script>
+  <div
+    id="giftPanel"
+    class="bottom-panel hidden"
+  >
 
-    let previousPage = "home";
+    <div class="panel-header">
 
+      <strong>
+        🎁 Send Gift
+      </strong>
 
-    function hideAllPages() {
+      <button
+        type="button"
+        onclick="closePanels()"
+      >
+        ✕
+      </button>
 
-      document
-        .querySelectorAll(".page")
-        .forEach(
-          page => {
-            page.classList.add("hidden");
-          }
-        );
-    }
+    </div>
 
 
-    function showPage(page) {
+    <div
+      id="giftList"
+      class="gift-grid"
+    >
 
-      if (
-        page !== "support"
-      ) {
-        previousPage =
-          page;
-      }
+      <div class="empty-state">
+        Gifts loading...
+      </div>
 
-      hideAllPages();
+    </div>
 
+  </div>
 
-      const element =
-        document.getElementById(
-          page + "Page"
-        );
 
+  <!-- ===================================================
+       INVITE PANEL
+  ==================================================== -->
 
-      if (element) {
+  <div
+    id="invitePanel"
+    class="bottom-panel hidden"
+  >
 
-        element.classList.remove(
-          "hidden"
-        );
-      }
+    <div class="panel-header">
 
+      <strong>
+        👥 Invite
+      </strong>
 
-      if (
-        page === "home" &&
-        typeof loadRooms === "function"
-      ) {
+      <button
+        type="button"
+        onclick="closePanels()"
+      >
+        ✕
+      </button>
 
-        loadRooms();
-      }
+    </div>
 
 
-      if (
-        page === "room"
-      ) {
+    <div class="invite-empty">
 
-        closePanels();
-      }
+      अपने दोस्तों को इस Live Room में
+      invite करें।
 
+      <br><br>
 
-      if (
-        page === "support"
-      ) {
+      Room link को share करने के लिए
+      browser का Share option इस्तेमाल करें।
 
-        const input =
-          document.getElementById(
-            "supportSubject"
-          );
+    </div>
 
-        if (input) {
-          input.focus();
-        }
-      }
-    }
+  </div>
 
+</section>
 
-    function goBackFromSupport() {
 
-      if (
-        previousPage === "room" &&
-        typeof state !== "undefined" &&
-        state.roomId
-      ) {
+<!-- =====================================================
+     SCRIPT
+===================================================== -->
 
-        showPage("room");
-
-      } else {
-
-        showPage("home");
-      }
-    }
-
-
-    function toggleMic() {
-
-      if (
-        typeof state === "undefined"
-      ) {
-        return;
-      }
-
-
-      if (!state.seat) {
-
-        alert(
-          "पहले खाली voice seat पर + दबाकर seat join करें।"
-        );
-
-        return;
-      }
-
-
-      const button =
-        document.getElementById(
-          "micButton"
-        );
-
-
-      const currentlyOn =
-        button?.dataset.micOn === "true";
-
-
-      const newState =
-        !currentlyOn;
-
-
-      if (
-        typeof setMicState ===
-        "function"
-      ) {
-
-        setMicState(
-          newState
-        );
-      }
-
-
-      if (button) {
-
-        button.dataset.micOn =
-          String(newState);
-
-        button.innerHTML =
-          newState
-            ? "🔊<span>Mic ON</span>"
-            : "🎙️<span>Mic</span>";
-      }
-    }
-
-
-    function closePanels() {
-
-      [
-        "musicPanel",
-        "giftPanel",
-        "invitePanel"
-      ]
-      .forEach(
-        id => {
-
-          const element =
-            document.getElementById(id);
-
-          if (element) {
-
-            element.classList.add(
-              "hidden"
-            );
-          }
-        }
-      );
-    }
-
-
-    function openMusicPanel() {
-
-      closePanels();
-
-
-      const panel =
-        document.getElementById(
-          "musicPanel"
-        );
-
-
-      if (panel) {
-
-        panel.classList.remove(
-          "hidden"
-        );
-      }
-
-
-      if (
-        typeof loadMusic ===
-        "function"
-      ) {
-
-        loadMusic();
-      }
-    }
-
-
-    function openGiftPanel() {
-
-      closePanels();
-
-
-      const panel =
-        document.getElementById(
-          "giftPanel"
-        );
-
-
-      if (panel) {
-
-        panel.classList.remove(
-          "hidden"
-        );
-      }
-
-
-      if (
-        typeof loadGifts ===
-        "function"
-      ) {
-
-        loadGifts();
-      }
-    }
-
-
-    function openInvitePanel() {
-
-      closePanels();
-
-
-      const panel =
-        document.getElementById(
-          "invitePanel"
-        );
-
-
-      if (panel) {
-
-        panel.classList.remove(
-          "hidden"
-        );
-      }
-    }
-
-
-    window.showPage =
-      showPage;
-
-    window.goBackFromSupport =
-      goBackFromSupport;
-
-    window.toggleMic =
-      toggleMic;
-
-    window.openMusicPanel =
-      openMusicPanel;
-
-    window.openGiftPanel =
-      openGiftPanel;
-
-    window.openInvitePanel =
-      openInvitePanel;
-
-    window.closePanels =
-      closePanels;
-
-
-    document.addEventListener(
-      "DOMContentLoaded",
-      () => {
-
-        /*
-          Initial page.
-          script.js login session check करेगा.
-        */
-
-        const token =
-          localStorage.getItem(
-            "rahul_live_token"
-          );
-
-
-        if (token) {
-
-          showPage(
-            "home"
-          );
-
-        } else {
-
-          showPage(
-            "login"
-          );
-        }
-
-
-        /*
-          PWA service worker
-        */
-
-        if (
-          "serviceWorker" in navigator
-        ) {
-
-          navigator.serviceWorker
-            .register(
-              "sw.js"
-            )
-            .catch(
-              () => {}
-            );
-        }
-
-      }
-    );
-
-  </script>
-
-
-  <script
-    src="script.js"
-  ></script>
+<script
+  src="script.js"
+  defer
+></script>
 
 </body>
 </html>
