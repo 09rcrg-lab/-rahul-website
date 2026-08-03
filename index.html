@@ -3,15 +3,23 @@
 <head>
 
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+>
+
+<meta name="theme-color" content="#0b0b0b">
+
+<meta
+    name="description"
+    content="Rahul Live - Live Voice Rooms and Chat"
+>
 
 <title>Rahul Live</title>
 
-<meta name="theme-color" content="#111111">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black">
-
 <link rel="manifest" href="manifest.json">
+
 <link rel="stylesheet" href="style.css">
 
 </head>
@@ -20,38 +28,2237 @@
 
 <div id="app">
 
-    <!-- Splash -->
-    <section id="splashScreen"></section>
+    <!-- ========================= -->
+    <!-- SPLASH SCREEN             -->
+    <!-- ========================= -->
 
-    <!-- Login -->
-    <section id="loginScreen" class="screen hidden"></section>
+    <section id="splashScreen" class="screen">
 
-    <!-- Register -->
-    <section id="registerScreen" class="screen hidden"></section>
+        <div class="splash-content">
 
-    <!-- Home -->
-    <section id="homeScreen" class="screen hidden"></section>
+            <div class="app-logo">
+                RL
+            </div>
 
-    <!-- Live Room -->
-    <section id="liveRoomScreen" class="screen hidden"></section>
+            <h1>Rahul Live</h1>
 
-    <!-- Personal Chat -->
-    <section id="chatScreen" class="screen hidden"></section>
+            <p>Live • Chat • Connect</p>
 
-    <!-- Wallet -->
-    <section id="walletScreen" class="screen hidden"></section>
+            <div class="loading-spinner"></div>
 
-    <!-- Profile -->
-    <section id="profileScreen" class="screen hidden"></section>
+        </div>
 
-    <!-- Settings -->
-    <section id="settingsScreen" class="screen hidden"></section>
+    </section>
 
-    <!-- Admin -->
-    <section id="adminScreen" class="screen hidden"></section>
+
+    <!-- ========================= -->
+    <!-- AUTH SCREEN               -->
+    <!-- ========================= -->
+
+    <section id="authScreen" class="screen hidden">
+
+        <div class="auth-container">
+
+            <div class="auth-header">
+
+                <div class="app-logo small">
+                    RL
+                </div>
+
+                <h1>Rahul Live</h1>
+
+                <p>Connect with people around you</p>
+
+            </div>
+
+
+            <!-- LOGIN -->
+
+            <div id="loginForm" class="auth-form">
+
+                <h2>Welcome Back</h2>
+
+                <p class="form-subtitle">
+                    Login to continue
+                </p>
+
+
+                <div class="input-group">
+
+                    <label for="loginUsername">
+                        Username / Email / Phone
+                    </label>
+
+                    <input
+                        id="loginUsername"
+                        type="text"
+                        autocomplete="username"
+                        placeholder="Enter username"
+                    >
+
+                </div>
+
+
+                <div class="input-group">
+
+                    <label for="loginPassword">
+                        Password
+                    </label>
+
+                    <input
+                        id="loginPassword"
+                        type="password"
+                        autocomplete="current-password"
+                        placeholder="Enter password"
+                    >
+
+                </div>
+
+
+                <button
+                    id="loginButton"
+                    class="primary-button"
+                    type="button"
+                >
+                    Login
+                </button>
+
+
+                <button
+                    id="showRegisterButton"
+                    class="secondary-button"
+                    type="button"
+                >
+                    Create New Account
+                </button>
+
+
+                <button
+                    id="forgotPasswordButton"
+                    class="text-button"
+                    type="button"
+                >
+                    Forgot Password?
+                </button>
+
+            </div>
+
+
+            <!-- REGISTER -->
+
+            <div
+                id="registerForm"
+                class="auth-form hidden"
+            >
+
+                <h2>Create Account</h2>
+
+                <p class="form-subtitle">
+                    Join Rahul Live
+                </p>
+
+
+                <div class="input-group">
+
+                    <label for="registerUsername">
+                        Username
+                    </label>
+
+                    <input
+                        id="registerUsername"
+                        type="text"
+                        autocomplete="username"
+                        placeholder="Choose username"
+                    >
+
+                </div>
+
+
+                <div class="input-group">
+
+                    <label for="registerName">
+                        Name
+                    </label>
+
+                    <input
+                        id="registerName"
+                        type="text"
+                        autocomplete="name"
+                        placeholder="Your name"
+                    >
+
+                </div>
+
+
+                <div class="input-group">
+
+                    <label for="registerEmail">
+                        Email
+                    </label>
+
+                    <input
+                        id="registerEmail"
+                        type="email"
+                        autocomplete="email"
+                        placeholder="Enter email"
+                    >
+
+                </div>
+
+
+                <div class="input-group">
+
+                    <label for="registerPhone">
+                        Phone
+                    </label>
+
+                    <input
+                        id="registerPhone"
+                        type="tel"
+                        autocomplete="tel"
+                        placeholder="Enter phone number"
+                    >
+
+                </div>
+
+
+                <div class="input-group">
+
+                    <label for="registerPassword">
+                        Password
+                    </label>
+
+                    <input
+                        id="registerPassword"
+                        type="password"
+                        autocomplete="new-password"
+                        placeholder="Create password"
+                    >
+
+                </div>
+
+
+                <button
+                    id="registerButton"
+                    class="primary-button"
+                    type="button"
+                >
+                    Sign Up
+                </button>
+
+
+                <button
+                    id="showLoginButton"
+                    class="secondary-button"
+                    type="button"
+                >
+                    Already have an account? Login
+                </button>
+
+            </div>
+
+
+            <div
+                id="authMessage"
+                class="auth-message"
+                role="alert"
+                aria-live="polite"
+            ></div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ========================= -->
+    <!-- HOME SCREEN               -->
+    <!-- ========================= -->
+
+    <section
+        id="homeScreen"
+        class="screen hidden"
+    >
+
+        <header class="top-header">
+
+            <div class="header-brand">
+
+                <div class="app-logo tiny">
+                    RL
+                </div>
+
+                <span>Rahul Live</span>
+
+            </div>
+
+
+            <button
+                id="notificationButton"
+                class="icon-button"
+                type="button"
+                aria-label="Notifications"
+            >
+                🔔
+            </button>
+
+        </header>
+
+
+        <main class="home-content">
+
+            <div class="home-tabs">
+
+                <button
+                    class="home-tab active"
+                    data-tab="popular"
+                    type="button"
+                >
+                    Popular
+                </button>
+
+                <button
+                    class="home-tab"
+                    data-tab="following"
+                    type="button"
+                >
+                    Following
+                </button>
+
+                <button
+                    class="home-tab"
+                    data-tab="new"
+                    type="button"
+                >
+                    New
+                </button>
+
+            </div>
+
+
+            <div
+                id="liveRoomsContainer"
+                class="live-rooms-container"
+            ></div>
+
+        </main>
+
+
+        <nav class="bottom-navigation">
+
+            <button
+                class="nav-item active"
+                data-screen="home"
+                type="button"
+            >
+                <span>🏠</span>
+                <small>Home</small>
+            </button>
+
+            <button
+                class="nav-item"
+                data-screen="chat"
+                type="button"
+            >
+                <span>💬</span>
+                <small>Chat</small>
+            </button>
+
+            <button
+                id="createRoomButton"
+                class="create-room-button"
+                type="button"
+            >
+                +
+            </button>
+
+            <button
+                class="nav-item"
+                data-screen="wallet"
+                type="button"
+            >
+                <span>💰</span>
+                <small>Wallet</small>
+            </button>
+
+            <button
+                class="nav-item"
+                data-screen="profile"
+                type="button"
+            >
+                <span>👤</span>
+                <small>Profile</small>
+            </button>
+
+        </nav>
+
+    </section>
+
+
+    <!-- ========================= -->
+    <!-- LIVE ROOM SCREEN          -->
+    <!-- ========================= -->
+
+    <section
+        id="liveRoomScreen"
+        class="screen hidden"
+    >
+
+        <header class="live-header">
+
+            <button
+                id="leaveRoomButton"
+                class="icon-button"
+                type="button"
+                aria-label="Leave room"
+            >
+                ←
+            </button>
+
+
+            <div class="live-room-title">
+
+                <strong id="liveRoomName">
+                    Live Room
+                </strong>
+
+                <small id="liveViewerCount">
+                    0 viewers
+                </small>
+
+            </div>
+
+
+            <button
+                id="roomMoreButton"
+                class="icon-button"
+                type="button"
+                aria-label="Room options"
+            >
+                ⋮
+            </button>
+
+        </header>
+
+
+        <div class="live-room-body">
+
+            <div
+                id="voiceSeats"
+                class="voice-seats"
+            ></div>
+
+
+            <div
+                id="roomAnnouncement"
+                class="room-announcement hidden"
+            ></div>
+
+
+            <div
+                id="roomChat"
+                class="room-chat"
+            ></div>
+
+        </div>
+
+
+        <footer class="live-controls">
+
+            <button
+                id="roomMicButton"
+                class="room-control"
+                type="button"
+            >
+                🎙️
+            </button>
+
+            <button
+                id="roomChatButton"
+                class="room-control"
+                type="button"
+            >
+                💬
+            </button>
+
+            <button
+                id="roomGiftButton"
+                class="room-control gift-control"
+                type="button"
+            >
+                🎁
+            </button>
+
+            <button
+                id="roomReactionButton"
+                class="room-control"
+                type="button"
+            >
+                ❤️
+            </button>
+
+            <button
+                id="roomMoreControlButton"
+                class="room-control"
+                type="button"
+            >
+                ⋯
+            </button>
+
+        </footer>
+
+    </section>
+<!-- ========================= -->
+<!-- PERSONAL CHAT SCREEN      -->
+<!-- ========================= -->
+
+<section id="chatScreen" class="screen hidden">
+
+    <header class="page-header">
+
+        <button
+            id="chatBackButton"
+            class="icon-button"
+            type="button"
+        >
+            ←
+        </button>
+
+        <h2>Messages</h2>
+
+        <button
+            id="newChatButton"
+            class="icon-button"
+            type="button"
+        >
+            ✎
+        </button>
+
+    </header>
+
+
+    <div
+        id="chatList"
+        class="chat-list"
+    ></div>
+
+</section>
+
+
+<!-- ========================= -->
+<!-- WALLET SCREEN             -->
+<!-- ========================= -->
+
+<section id="walletScreen" class="screen hidden">
+
+    <header class="page-header">
+
+        <button
+            id="walletBackButton"
+            class="icon-button"
+            type="button"
+        >
+            ←
+        </button>
+
+        <h2>Wallet</h2>
+
+        <span></span>
+
+    </header>
+
+
+    <main class="wallet-content">
+
+        <div class="wallet-card">
+
+            <span>Available Balance</span>
+
+            <strong id="walletBalance">
+                ₹0
+            </strong>
+
+        </div>
+
+
+        <div class="wallet-coins">
+
+            <div>
+                <small>Coins</small>
+                <strong id="walletCoins">0</strong>
+            </div>
+
+            <div>
+                <small>Diamonds</small>
+                <strong id="walletDiamonds">0</strong>
+            </div>
+
+        </div>
+
+
+        <div class="wallet-actions">
+
+            <button
+                id="rechargeButton"
+                type="button"
+            >
+                Recharge
+            </button>
+
+            <button
+                id="withdrawButton"
+                type="button"
+            >
+                Withdraw
+            </button>
+
+        </div>
+
+
+        <h3>Transaction History</h3>
+
+        <div
+            id="transactionList"
+            class="transaction-list"
+        ></div>
+
+    </main>
+
+</section>
+
+
+<!-- ========================= -->
+<!-- PROFILE SCREEN            -->
+<!-- ========================= -->
+
+<section id="profileScreen" class="screen hidden">
+
+    <header class="page-header">
+
+        <button
+            id="profileBackButton"
+            class="icon-button"
+            type="button"
+        >
+            ←
+        </button>
+
+        <h2>Profile</h2>
+
+        <button
+            id="settingsButton"
+            class="icon-button"
+            type="button"
+        >
+            ⚙️
+        </button>
+
+    </header>
+
+
+    <main class="profile-content">
+
+        <div class="profile-cover">
+
+            <img
+                id="profileCover"
+                src=""
+                alt="Profile cover"
+            >
+
+        </div>
+
+
+        <div class="profile-avatar-wrapper">
+
+            <img
+                id="profileAvatar"
+                class="profile-avatar"
+                src=""
+                alt="Profile photo"
+            >
+
+        </div>
+
+
+        <div class="profile-info">
+
+            <h2 id="profileName">
+                User
+            </h2>
+
+            <p id="profileUsername">
+                @username
+            </p>
+
+            <p id="profileBio">
+                No bio
+            </p>
+
+        </div>
+
+
+        <div class="profile-stats">
+
+            <div>
+                <strong id="profileFollowers">0</strong>
+                <span>Followers</span>
+            </div>
+
+            <div>
+                <strong id="profileFollowing">0</strong>
+                <span>Following</span>
+            </div>
+
+            <div>
+                <strong id="profileFriends">0</strong>
+                <span>Friends</span>
+            </div>
+
+        </div>
+
+
+        <button
+            id="editProfileButton"
+            class="primary-button"
+            type="button"
+        >
+            Edit Profile
+        </button>
+
+
+        <button
+            id="logoutButton"
+            class="danger-button"
+            type="button"
+        >
+            Logout
+        </button>
+
+    </main>
+
+</section>
+
+
+<!-- ========================= -->
+<!-- SETTINGS SCREEN           -->
+<!-- ========================= -->
+
+<section id="settingsScreen" class="screen hidden">
+
+    <header class="page-header">
+
+        <button
+            id="settingsBackButton"
+            class="icon-button"
+            type="button"
+        >
+            ←
+        </button>
+
+        <h2>Settings</h2>
+
+        <span></span>
+
+    </header>
+
+
+    <main class="settings-content">
+
+        <button
+            id="editProfileSetting"
+            class="settings-item"
+            type="button"
+        >
+            <span>👤</span>
+            <span>Edit Profile</span>
+            <b>›</b>
+        </button>
+
+
+        <button
+            id="privacySetting"
+            class="settings-item"
+            type="button"
+        >
+            <span>🔒</span>
+            <span>Privacy</span>
+            <b>›</b>
+        </button>
+
+
+        <button
+            id="notificationSetting"
+            class="settings-item"
+            type="button"
+        >
+            <span>🔔</span>
+            <span>Notifications</span>
+            <b>›</b>
+        </button>
+
+
+        <button
+            id="blockedUsersSetting"
+            class="settings-item"
+            type="button"
+        >
+            <span>🚫</span>
+            <span>Blocked Users</span>
+            <b>›</b>
+        </button>
+
+
+        <button
+            id="helpSetting"
+            class="settings-item"
+            type="button"
+        >
+            <span>❓</span>
+            <span>Help & Helpline</span>
+            <b>›</b>
+        </button>
+
+
+        <button
+            id="reportSetting"
+            class="settings-item"
+            type="button"
+        >
+            <span>⚠️</span>
+            <span>Report a Problem</span>
+            <b>›</b>
+        </button>
+
+
+        <button
+            id="aboutSetting"
+            class="settings-item"
+            type="button"
+        >
+            <span>ℹ️</span>
+            <span>About Rahul Live</span>
+            <b>›</b>
+        </button>
+
+    </main>
+
+</section>
+
+
+<!-- ========================= -->
+<!-- EDIT PROFILE MODAL        -->
+<!-- ========================= -->
+
+<div
+    id="editProfileModal"
+    class="modal hidden"
+>
+
+    <div class="modal-box">
+
+        <div class="modal-header">
+
+            <h3>Edit Profile</h3>
+
+            <button
+                id="closeEditProfile"
+                class="icon-button"
+                type="button"
+            >
+                ×
+            </button>
+
+        </div>
+
+
+        <label>
+            Name
+        </label>
+
+        <input
+            id="editName"
+            type="text"
+            placeholder="Your name"
+        >
+
+
+        <label>
+            Bio
+        </label>
+
+        <textarea
+            id="editBio"
+            placeholder="Write something about yourself"
+        ></textarea>
+
+
+        <label>
+            Gender
+        </label>
+
+        <select id="editGender">
+
+            <option value="">
+                Select
+            </option>
+
+            <option value="male">
+                Male
+            </option>
+
+            <option value="female">
+                Female
+            </option>
+
+            <option value="other">
+                Other
+            </option>
+
+        </select>
+
+
+        <label>
+            Country
+        </label>
+
+        <input
+            id="editCountry"
+            type="text"
+            placeholder="Country"
+        >
+
+
+        <button
+            id="saveProfileButton"
+            class="primary-button"
+            type="button"
+        >
+            Save Changes
+        </button>
+
+    </div>
 
 </div>
 
+
+<!-- ========================= -->
+<!-- CHAT WINDOW               -->
+<!-- ========================= -->
+
+<section
+    id="personalChatWindow"
+    class="screen hidden"
+>
+
+    <header class="chat-header">
+
+        <button
+            id="closePersonalChat"
+            class="icon-button"
+            type="button"
+        >
+            ←
+        </button>
+
+
+        <div class="chat-user">
+
+            <img
+                id="chatUserAvatar"
+                src=""
+                alt=""
+            >
+
+            <div>
+
+                <strong id="chatUserName">
+                    User
+                </strong>
+
+                <small id="chatUserStatus">
+                    Offline
+                </small>
+
+            </div>
+
+        </div>
+
+    </header>
+
+
+    <div
+        id="personalMessages"
+        class="personal-messages"
+    ></div>
+
+
+    <form
+        id="messageForm"
+        class="message-form"
+    >
+
+        <input
+            id="messageInput"
+            type="text"
+            autocomplete="off"
+            placeholder="Write a message..."
+        >
+
+        <button
+            type="button"
+            id="voiceMessageButton"
+        >
+            🎙️
+        </button>
+
+        <button
+            type="submit"
+            id="sendMessageButton"
+        >
+            ➤
+        </button>
+
+    </form>
+
+</section>
+</div>
+<!-- ========================= -->
+<!-- CREATE LIVE ROOM MODAL   -->
+<!-- ========================= -->
+
+<div
+    id="createRoomModal"
+    class="modal hidden"
+>
+
+    <div class="modal-box">
+
+        <div class="modal-header">
+
+            <h3>Create Live Room</h3>
+
+            <button
+                id="closeCreateRoom"
+                class="icon-button"
+                type="button"
+            >
+                ×
+            </button>
+
+        </div>
+
+
+        <label for="roomNameInput">
+            Room Name
+        </label>
+
+        <input
+            id="roomNameInput"
+            type="text"
+            maxlength="80"
+            placeholder="Enter room name"
+        >
+
+
+        <label for="roomCategoryInput">
+            Category
+        </label>
+
+        <select id="roomCategoryInput">
+
+            <option value="chat">
+                Chat
+            </option>
+
+            <option value="music">
+                Music
+            </option>
+
+            <option value="gaming">
+                Gaming
+            </option>
+
+            <option value="entertainment">
+                Entertainment
+            </option>
+
+        </select>
+
+
+        <label for="roomLanguageInput">
+            Language
+        </label>
+
+        <select id="roomLanguageInput">
+
+            <option value="hindi">
+                Hindi
+            </option>
+
+            <option value="english">
+                English
+            </option>
+
+            <option value="other">
+                Other
+            </option>
+
+        </select>
+
+
+        <label for="roomAnnouncementInput">
+            Announcement
+        </label>
+
+        <textarea
+            id="roomAnnouncementInput"
+            maxlength="250"
+            placeholder="Room announcement"
+        ></textarea>
+
+
+        <label class="checkbox-row">
+
+            <input
+                id="roomLockedInput"
+                type="checkbox"
+            >
+
+            <span>
+                Private / Locked Room
+            </span>
+
+        </label>
+
+
+        <button
+            id="createRoomSubmit"
+            class="primary-button"
+            type="button"
+        >
+            Create Live Room
+        </button>
+
+    </div>
+
+</div>
+
+
+<!-- ========================= -->
+<!-- ROOM OPTIONS MODAL       -->
+<!-- ========================= -->
+
+<div
+    id="roomOptionsModal"
+    class="modal hidden"
+>
+
+    <div class="modal-box">
+
+        <div class="modal-header">
+
+            <h3>Room Options</h3>
+
+            <button
+                id="closeRoomOptions"
+                class="icon-button"
+                type="button"
+            >
+                ×
+            </button>
+
+        </div>
+
+
+        <button
+            id="roomMuteAllButton"
+            class="modal-action"
+            type="button"
+        >
+            🔇 Mute All
+        </button>
+
+
+        <button
+            id="roomAnnouncementButton"
+            class="modal-action"
+            type="button"
+        >
+            📢 Announcement
+        </button>
+
+
+        <button
+            id="roomReportButton"
+            class="modal-action"
+            type="button"
+        >
+            ⚠️ Report Room
+        </button>
+
+
+        <button
+            id="roomBlockButton"
+            class="modal-action danger-action"
+            type="button"
+        >
+            🚫 Block Room
+        </button>
+
+    </div>
+
+</div>
+
+
+<!-- ========================= -->
+<!-- GIFT MODAL               -->
+<!-- ========================= -->
+
+<div
+    id="giftModal"
+    class="modal hidden"
+>
+
+    <div class="modal-box gift-modal-box">
+
+        <div class="modal-header">
+
+            <h3>Send Gift</h3>
+
+            <button
+                id="closeGiftModal"
+                class="icon-button"
+                type="button"
+            >
+                ×
+            </button>
+
+        </div>
+
+
+        <div
+            id="giftList"
+            class="gift-list"
+        ></div>
+
+
+        <div class="gift-balance">
+
+            Coins:
+
+            <strong id="giftCoinBalance">
+                0
+            </strong>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ========================= -->
+<!-- REPORT MODAL             -->
+<!-- ========================= -->
+
+<div
+    id="reportModal"
+    class="modal hidden"
+>
+
+    <div class="modal-box">
+
+        <div class="modal-header">
+
+            <h3>Report</h3>
+
+            <button
+                id="closeReportModal"
+                class="icon-button"
+                type="button"
+            >
+                ×
+            </button>
+
+        </div>
+
+
+        <label for="reportReason">
+            Reason
+        </label>
+
+        <select id="reportReason">
+
+            <option value="">
+                Select reason
+            </option>
+
+            <option value="spam">
+                Spam
+            </option>
+
+            <option value="harassment">
+                Harassment
+            </option>
+
+            <option value="abuse">
+                Abuse
+            </option>
+
+            <option value="fake">
+                Fake Account
+            </option>
+
+            <option value="inappropriate">
+                Inappropriate Content
+            </option>
+
+            <option value="other">
+                Other
+            </option>
+
+        </select>
+
+
+        <label for="reportDetails">
+            Details
+        </label>
+
+        <textarea
+            id="reportDetails"
+            maxlength="1000"
+            placeholder="Describe the problem"
+        ></textarea>
+
+
+        <button
+            id="submitReportButton"
+            class="primary-button"
+            type="button"
+        >
+            Submit Report
+        </button>
+
+    </div>
+
+</div>
+
+
+<!-- ========================= -->
+<!-- HELPLINE MODAL           -->
+<!-- ========================= -->
+
+<div
+    id="helpModal"
+    class="modal hidden"
+>
+
+    <div class="modal-box">
+
+        <div class="modal-header">
+
+            <h3>Help & Support</h3>
+
+            <button
+                id="closeHelpModal"
+                class="icon-button"
+                type="button"
+            >
+                ×
+            </button>
+
+        </div>
+
+
+        <p class="help-text">
+            Tell us what problem you are facing.
+        </p>
+
+
+        <input
+            id="supportSubject"
+            type="text"
+            maxlength="120"
+            placeholder="Subject"
+        >
+
+
+        <textarea
+            id="supportMessage"
+            maxlength="2000"
+            placeholder="Describe your problem"
+        ></textarea>
+
+
+        <button
+            id="submitSupportButton"
+            class="primary-button"
+            type="button"
+        >
+            Send to Support
+        </button>
+
+
+        <div
+            id="supportMessageStatus"
+            class="auth-message"
+            role="status"
+            aria-live="polite"
+        ></div>
+
+    </div>
+
+</div>
+
+
+<!-- ========================= -->
+<!-- USER SEARCH MODAL        -->
+<!-- ========================= -->
+
+<div
+    id="searchModal"
+    class="modal hidden"
+>
+
+    <div class="modal-box">
+
+        <div class="modal-header">
+
+            <h3>Search</h3>
+
+            <button
+                id="closeSearchModal"
+                class="icon-button"
+                type="button"
+            >
+                ×
+            </button>
+
+        </div>
+
+
+        <input
+            id="userSearchInput"
+            type="search"
+            autocomplete="off"
+            placeholder="Search username..."
+        >
+
+
+        <div
+            id="searchResults"
+            class="search-results"
+        ></div>
+
+    </div>
+
+</div>
+
+
+<!-- ========================= -->
+<!-- NOTIFICATIONS MODAL      -->
+<!-- ========================= -->
+
+<div
+    id="notificationModal"
+    class="modal hidden"
+>
+
+    <div class="modal-box notification-box">
+
+        <div class="modal-header">
+
+            <h3>Notifications</h3>
+
+            <button
+                id="closeNotificationModal"
+                class="icon-button"
+                type="button"
+            >
+                ×
+            </button>
+
+        </div>
+
+
+        <div
+            id="notificationList"
+            class="notification-list"
+        ></div>
+
+    </div>
+
+</div>
+
+
+<!-- ========================= -->
+<!-- TOAST                    -->
+<!-- ========================= -->
+
+<div
+    id="toast"
+    class="toast hidden"
+    role="status"
+    aria-live="polite"
+></div>
+<!-- ========================= -->
+<!-- RECHARGE MODAL            -->
+<!-- ========================= -->
+
+<div id="rechargeModal" class="modal hidden">
+
+    <div class="modal-box">
+
+        <div class="modal-header">
+
+            <h3>Recharge Coins</h3>
+
+            <button
+                id="closeRechargeModal"
+                class="icon-button"
+                type="button"
+            >
+                ×
+            </button>
+
+        </div>
+
+        <div class="recharge-packages">
+
+            <button
+                class="recharge-package"
+                data-amount="100"
+                type="button"
+            >
+                <strong>100 Coins</strong>
+                <span>₹10</span>
+            </button>
+
+            <button
+                class="recharge-package"
+                data-amount="500"
+                type="button"
+            >
+                <strong>500 Coins</strong>
+                <span>₹50</span>
+            </button>
+
+            <button
+                class="recharge-package"
+                data-amount="1000"
+                type="button"
+            >
+                <strong>1,000 Coins</strong>
+                <span>₹100</span>
+            </button>
+
+            <button
+                class="recharge-package"
+                data-amount="5000"
+                type="button"
+            >
+                <strong>5,000 Coins</strong>
+                <span>₹500</span>
+            </button>
+
+        </div>
+
+        <div
+            id="rechargeStatus"
+            class="auth-message"
+            role="status"
+            aria-live="polite"
+        ></div>
+
+    </div>
+
+</div>
+
+
+<!-- ========================= -->
+<!-- WITHDRAW MODAL            -->
+<!-- ========================= -->
+
+<div id="withdrawModal" class="modal hidden">
+
+    <div class="modal-box">
+
+        <div class="modal-header">
+
+            <h3>Withdraw</h3>
+
+            <button
+                id="closeWithdrawModal"
+                class="icon-button"
+                type="button"
+            >
+                ×
+            </button>
+
+        </div>
+
+        <label for="withdrawAmount">
+            Amount
+        </label>
+
+        <input
+            id="withdrawAmount"
+            type="number"
+            min="1"
+            inputmode="numeric"
+            placeholder="Enter amount"
+        >
+
+        <label for="withdrawAccountName">
+            Account Holder Name
+        </label>
+
+        <input
+            id="withdrawAccountName"
+            type="text"
+            autocomplete="name"
+            placeholder="Account holder name"
+        >
+
+        <label for="withdrawUpi">
+            UPI ID
+        </label>
+
+        <input
+            id="withdrawUpi"
+            type="text"
+            autocomplete="off"
+            placeholder="example@upi"
+        >
+
+        <label for="withdrawIfsc">
+            IFSC
+        </label>
+
+        <input
+            id="withdrawIfsc"
+            type="text"
+            autocomplete="off"
+            placeholder="IFSC Code"
+        >
+
+        <button
+            id="submitWithdrawButton"
+            class="primary-button"
+            type="button"
+        >
+            Submit Withdrawal
+        </button>
+
+        <div
+            id="withdrawStatus"
+            class="auth-message"
+            role="status"
+            aria-live="polite"
+        ></div>
+
+    </div>
+
+</div>
+
+
+<!-- ========================= -->
+<!-- USER PROFILE VIEW         -->
+<!-- ========================= -->
+
+<section
+    id="userProfileScreen"
+    class="screen hidden"
+>
+
+    <header class="page-header">
+
+        <button
+            id="userProfileBackButton"
+            class="icon-button"
+            type="button"
+        >
+            ←
+        </button>
+
+        <h2>Profile</h2>
+
+        <button
+            id="userProfileMoreButton"
+            class="icon-button"
+            type="button"
+        >
+            ⋮
+        </button>
+
+    </header>
+
+    <main class="profile-content">
+
+        <div class="profile-cover">
+
+            <img
+                id="viewProfileCover"
+                src=""
+                alt="Cover"
+            >
+
+        </div>
+
+        <div class="profile-avatar-wrapper">
+
+            <img
+                id="viewProfileAvatar"
+                class="profile-avatar"
+                src=""
+                alt="Profile"
+            >
+
+        </div>
+
+        <div class="profile-info">
+
+            <h2 id="viewProfileName">
+                User
+            </h2>
+
+            <p id="viewProfileUsername">
+                @username
+            </p>
+
+            <p id="viewProfileBio">
+                No bio
+            </p>
+
+        </div>
+
+        <div class="profile-stats">
+
+            <div>
+                <strong id="viewProfileFollowers">0</strong>
+                <span>Followers</span>
+            </div>
+
+            <div>
+                <strong id="viewProfileFollowing">0</strong>
+                <span>Following</span>
+            </div>
+
+            <div>
+                <strong id="viewProfileFriends">0</strong>
+                <span>Friends</span>
+            </div>
+
+        </div>
+
+        <div class="profile-actions">
+
+            <button
+                id="followUserButton"
+                class="primary-button"
+                type="button"
+            >
+                Follow
+            </button>
+
+            <button
+                id="messageUserButton"
+                class="secondary-button"
+                type="button"
+            >
+                Message
+            </button>
+
+        </div>
+
+    </main>
+
+</section>
+
+
+<!-- ========================= -->
+<!-- USER OPTIONS MODAL        -->
+<!-- ========================= -->
+
+<div id="userOptionsModal" class="modal hidden">
+
+    <div class="modal-box">
+
+        <div class="modal-header">
+
+            <h3>User Options</h3>
+
+            <button
+                id="closeUserOptions"
+                class="icon-button"
+                type="button"
+            >
+                ×
+            </button>
+
+        </div>
+
+        <button
+            id="sendFriendRequestButton"
+            class="modal-action"
+            type="button"
+        >
+            👥 Add Friend
+        </button>
+
+        <button
+            id="blockUserButton"
+            class="modal-action danger-action"
+            type="button"
+        >
+            🚫 Block User
+        </button>
+
+        <button
+            id="reportUserButton"
+            class="modal-action"
+            type="button"
+        >
+            ⚠️ Report User
+        </button>
+
+    </div>
+
+</div>
+
+
+<!-- ========================= -->
+<!-- GENERIC CONFIRM MODAL    -->
+<!-- ========================= -->
+
+<div id="confirmModal" class="modal hidden">
+
+    <div class="modal-box">
+
+        <div class="modal-header">
+
+            <h3 id="confirmTitle">
+                Confirm
+            </h3>
+
+            <button
+                id="closeConfirmModal"
+                class="icon-button"
+                type="button"
+            >
+                ×
+            </button>
+
+        </div>
+
+        <p id="confirmMessage">
+            Are you sure?
+        </p>
+
+        <div class="confirm-actions">
+
+            <button
+                id="confirmCancelButton"
+                class="secondary-button"
+                type="button"
+            >
+                Cancel
+            </button>
+
+            <button
+                id="confirmOkButton"
+                class="danger-button"
+                type="button"
+            >
+                Confirm
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+<!-- ========================= -->
+<!-- ADMIN PANEL SCREEN        -->
+<!-- ========================= -->
+
+<section id="adminScreen" class="screen hidden">
+
+    <header class="page-header">
+
+        <button
+            id="adminBackButton"
+            class="icon-button"
+            type="button"
+        >
+            ←
+        </button>
+
+        <h2>Admin Panel</h2>
+
+        <button
+            id="adminRefreshButton"
+            class="icon-button"
+            type="button"
+        >
+            ↻
+        </button>
+
+    </header>
+
+
+    <main class="admin-content">
+
+        <div class="admin-stat-grid">
+
+            <div class="admin-stat-card">
+                <span>Users</span>
+                <strong id="adminUsersCount">0</strong>
+            </div>
+
+            <div class="admin-stat-card">
+                <span>Live Rooms</span>
+                <strong id="adminRoomsCount">0</strong>
+            </div>
+
+            <div class="admin-stat-card">
+                <span>Reports</span>
+                <strong id="adminReportsCount">0</strong>
+            </div>
+
+            <div class="admin-stat-card">
+                <span>Support</span>
+                <strong id="adminSupportCount">0</strong>
+            </div>
+
+        </div>
+
+
+        <h3 class="admin-section-title">
+            Management
+        </h3>
+
+
+        <button
+            id="adminUsersButton"
+            class="admin-action"
+            type="button"
+        >
+            <span>👥</span>
+            <div>
+                <strong>User Management</strong>
+                <small>Users, profiles and accounts</small>
+            </div>
+            <b>›</b>
+        </button>
+
+
+        <button
+            id="adminRoomsButton"
+            class="admin-action"
+            type="button"
+        >
+            <span>🎙️</span>
+            <div>
+                <strong>Live Rooms</strong>
+                <small>Manage active rooms</small>
+            </div>
+            <b>›</b>
+        </button>
+
+
+        <button
+            id="adminReportsButton"
+            class="admin-action"
+            type="button"
+        >
+            <span>⚠️</span>
+            <div>
+                <strong>Reports</strong>
+                <small>Review reported content</small>
+            </div>
+            <b>›</b>
+        </button>
+
+
+        <button
+            id="adminSupportButton"
+            class="admin-action"
+            type="button"
+        >
+            <span>🎧</span>
+            <div>
+                <strong>Support Tickets</strong>
+                <small>Manage helpline requests</small>
+            </div>
+            <b>›</b>
+        </button>
+
+
+        <button
+            id="adminWalletButton"
+            class="admin-action"
+            type="button"
+        >
+            <span>💰</span>
+            <div>
+                <strong>Wallet & Withdrawals</strong>
+                <small>Review financial requests</small>
+            </div>
+            <b>›</b>
+        </button>
+
+
+        <button
+            id="adminGiftsButton"
+            class="admin-action"
+            type="button"
+        >
+            <span>🎁</span>
+            <div>
+                <strong>Gifts</strong>
+                <small>Manage gifts and pricing</small>
+            </div>
+            <b>›</b>
+        </button>
+
+
+        <h3 class="admin-section-title">
+            Security
+        </h3>
+
+
+        <button
+            id="adminLogsButton"
+            class="admin-action"
+            type="button"
+        >
+            <span>📋</span>
+            <div>
+                <strong>Admin Logs</strong>
+                <small>View administrative actions</small>
+            </div>
+            <b>›</b>
+        </button>
+
+
+        <button
+            id="adminLogoutButton"
+            class="danger-button"
+            type="button"
+        >
+            Logout
+        </button>
+
+    </main>
+
+</section>
+
+
+<!-- ========================= -->
+<!-- FRIEND REQUESTS SCREEN    -->
+<!-- ========================= -->
+
+<section id="friendsScreen" class="screen hidden">
+
+    <header class="page-header">
+
+        <button
+            id="friendsBackButton"
+            class="icon-button"
+            type="button"
+        >
+            ←
+        </button>
+
+        <h2>Friends</h2>
+
+        <button
+            id="friendSearchButton"
+            class="icon-button"
+            type="button"
+        >
+            🔍
+        </button>
+
+    </header>
+
+
+    <div class="friends-tabs">
+
+        <button
+            class="friends-tab active"
+            data-friend-tab="friends"
+            type="button"
+        >
+            Friends
+        </button>
+
+        <button
+            class="friends-tab"
+            data-friend-tab="requests"
+            type="button"
+        >
+            Requests
+        </button>
+
+    </div>
+
+
+    <div
+        id="friendsList"
+        class="friends-list"
+    ></div>
+
+
+    <div
+        id="friendRequestsList"
+        class="friends-list hidden"
+    ></div>
+
+</section>
+
+
+<!-- ========================= -->
+<!-- FOLLOWING SCREEN         -->
+<!-- ========================= -->
+
+<section id="followingScreen" class="screen hidden">
+
+    <header class="page-header">
+
+        <button
+            id="followingBackButton"
+            class="icon-button"
+            type="button"
+        >
+            ←
+        </button>
+
+        <h2>Following</h2>
+
+        <span></span>
+
+    </header>
+
+
+    <div
+        id="followingList"
+        class="friends-list"
+    ></div>
+
+</section>
+
+
+<!-- ========================= -->
+<!-- NOTIFICATION CENTER      -->
+<!-- ========================= -->
+
+<section id="notificationsScreen" class="screen hidden">
+
+    <header class="page-header">
+
+        <button
+            id="notificationsBackButton"
+            class="icon-button"
+            type="button"
+        >
+            ←
+        </button>
+
+        <h2>Notifications</h2>
+
+        <button
+            id="markNotificationsReadButton"
+            class="text-button"
+            type="button"
+        >
+            Read All
+        </button>
+
+    </header>
+
+
+    <div
+        id="notificationsCenterList"
+        class="notification-list"
+    ></div>
+
+</section>
+
+
+<!-- ========================= -->
+<!-- DISCOVERY / SEARCH       -->
+<!-- ========================= -->
+
+<section id="discoverScreen" class="screen hidden">
+
+    <header class="page-header">
+
+        <button
+            id="discoverBackButton"
+            class="icon-button"
+            type="button"
+        >
+            ←
+        </button>
+
+        <h2>Discover</h2>
+
+        <span></span>
+
+    </header>
+
+
+    <div class="discover-search">
+
+        <input
+            id="discoverSearchInput"
+            type="search"
+            autocomplete="off"
+            placeholder="Search people or rooms..."
+        >
+
+    </div>
+
+
+    <div class="discover-tabs">
+
+        <button
+            class="discover-tab active"
+            data-discover-tab="people"
+            type="button"
+        >
+            People
+        </button>
+
+        <button
+            class="discover-tab"
+            data-discover-tab="rooms"
+            type="button"
+        >
+            Rooms
+        </button>
+
+    </div>
+
+
+    <div
+        id="discoverResults"
+        class="discover-results"
+    ></div>
+
+</section>
+
+
+<!-- ========================= -->
+<!-- BOTTOM SCRIPT             -->
+<!-- ========================= -->
+
+<script src="script.js"></script>
+
+</body>
+</html>
 <script src="script.js"></script>
 
 </body>
