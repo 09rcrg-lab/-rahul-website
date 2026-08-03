@@ -1,27 +1,60 @@
 {
-  "name": "Rahul Live Community",
-  "short_name": "Rahul Live",
-  "description": "Rahul Live Community - Live Rooms, Voice Chat, Music, Friends and Support",
+  "name": "Rahul Live",
+  "short_name": "RahulLive",
+  "description": "Rahul Live Voice Room & Chat",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#050505",
-  "theme_color": "#00ff66",
-  "lang": "hi-IN",
+  "background_color": "#111111",
+  "theme_color": "#111111",
+  "lang": "en",
   "dir": "ltr",
+  "categories": [
+    "social",
+    "communication",
+    "entertainment"
+  ],
   "icons": [
     {
-      "src": "/icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "src": "icons/icon-72.png",
+      "sizes": "72x72",
+      "type": "image/png"
     },
     {
-      "src": "/icon-512.png",
+      "src": "icons/icon-96.png",
+      "sizes": "96x96",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-128.png",
+      "sizes": "128x128",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-144.png",
+      "sizes": "144x144",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-152.png",
+      "sizes": "152x152",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-384.png",
+      "sizes": "384x384",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-512.png",
       "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/png"
     }
   ]
 }
