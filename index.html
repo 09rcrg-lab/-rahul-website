@@ -4,1143 +4,595 @@
   <meta charset="UTF-8">
   <meta
     name="viewport"
-    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    content="width=device-width, initial-scale=1.0"
   >
   <meta
     name="theme-color"
     content="#050505"
   >
-  <meta
-    name="description"
-    content="Rahul Live - Live Voice Rooms, Friends, Chat and Music"
-  >
+  <title>
+    Rahul Live
+  </title>
   <link
-    rel="manifest"
-    href="manifest.json"
+    rel="stylesheet"
+    href="style.css"
   >
-  <title>Rahul Live</title>
-  <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      -webkit-tap-highlight-color: transparent;
-    }
-    :root {
-      --bg: #050505;
-      --card: #101010;
-      --card2: #161616;
-      --border: #252525;
-      --text: #ffffff;
-      --muted: #9a9a9a;
-      --green: #39ff88;
-      --danger: #ff4568;
-      --gold: #ffd447;
-    }
-    body {
-      background:
-        radial-gradient(
-          circle at top,
-          #122016 0,
-          #050505 42%
-        );
-      color: var(--text);
-      font-family:
-        -apple-system,
-        BlinkMacSystemFont,
-        "Segoe UI",
-        sans-serif;
-      min-height: 100vh;
-    }
-    button,
-    input,
-    textarea,
-    select {
-      font: inherit;
-    }
-    button {
-      cursor: pointer;
-    }
-    .hidden {
-      display: none !important;
-    }
-    .page {
-      min-height: 100vh;
-    }
-    /* ================= AUTH ================= */
-    #authScreen {
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-    }
-    .auth-box {
-      width: 100%;
-      max-width: 430px;
-      background: rgba(16,16,16,.96);
-      border: 1px solid var(--border);
-      border-radius: 24px;
-      padding: 28px 22px;
-      box-shadow:
-        0 20px 70px rgba(0,0,0,.55);
-    }
-    .logo {
-      text-align: center;
-      font-size: 34px;
-      font-weight: 900;
-      margin-bottom: 8px;
-    }
-    .logo span {
-      color: var(--green);
-    }
-    .subtitle {
-      text-align: center;
-      color: var(--muted);
-      margin-bottom: 25px;
-    }
-    .auth-form {
-      display: grid;
-      gap: 13px;
-    }
-    input,
-    textarea,
-    select {
-      width: 100%;
-      background: #090909;
-      border: 1px solid var(--border);
-      color: white;
-      border-radius: 13px;
-      padding: 14px;
-      outline: none;
-    }
-    input:focus,
-    textarea:focus,
-    select:focus {
-      border-color: var(--green);
-    }
-    textarea {
-      min-height: 100px;
-      resize: vertical;
-    }
-    .primary-btn,
-    .green-btn {
-      border: 0;
-      border-radius: 13px;
-      padding: 14px;
-      background: var(--green);
-      color: #000;
-      font-weight: 800;
-    }
-    .secondary-btn {
-      border: 1px solid var(--border);
-      background: var(--card2);
-      color: white;
-      border-radius: 13px;
-      padding: 13px;
-      font-weight: 700;
-    }
-    .text-btn {
-      border: 0;
-      background: transparent;
-      color: var(--green);
-      padding: 8px;
-    }
-    .auth-switch {
-      text-align: center;
-      color: var(--muted);
-      margin-top: 16px;
-    }
-    /* ================= HEADER ================= */
-    .topbar {
-      position: sticky;
-      top: 0;
-      z-index: 50;
-      height: 65px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 16px;
-      background: rgba(5,5,5,.92);
-      backdrop-filter: blur(15px);
-      border-bottom: 1px solid var(--border);
-    }
-    .brand {
-      font-size: 23px;
-      font-weight: 900;
-    }
-    .brand span {
-      color: var(--green);
-    }
-    .top-actions {
-      display: flex;
-      gap: 8px;
-    }
-    .icon-btn {
-      width: 42px;
-      height: 42px;
-      border-radius: 50%;
-      border: 1px solid var(--border);
-      background: var(--card);
-      color: white;
-    }
-    /* ================= MAIN ================= */
-    .main-content {
-      padding: 18px 15px 100px;
-      max-width: 900px;
-      margin: auto;
-    }
-    .hero {
-      background:
-        linear-gradient(
-          135deg,
-          #13251a,
-          #0b0b0b
-        );
-      border: 1px solid var(--border);
-      border-radius: 22px;
-      padding: 22px;
-      margin-bottom: 18px;
-    }
-    .hero h1 {
-      font-size: 28px;
-      margin-bottom: 8px;
-    }
-    .hero p {
-      color: var(--muted);
-      line-height: 1.5;
-    }
-    .section-title {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin: 22px 0 12px;
-    }
-    .section-title h2 {
-      font-size: 20px;
-    }
-    .room-search {
-      margin-bottom: 12px;
-    }
-    #roomsContainer {
-      display: grid;
-      gap: 12px;
-    }
-    .room-card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 18px;
-      padding: 17px;
-    }
-    .room-card-content h3 {
-      font-size: 18px;
-      margin-bottom: 6px;
-    }
-    .room-card-content p {
-      color: var(--muted);
-      margin-bottom: 8px;
-    }
-    .room-card-content small {
-      display: block;
-      color: #777;
-      margin-bottom: 13px;
-    }
-    .join-room-btn {
-      width: 100%;
-      border: 0;
-      border-radius: 11px;
-      padding: 12px;
-      background: var(--green);
-      color: #000;
-      font-weight: 800;
-    }
-    .empty-state {
-      text-align: center;
-      padding: 40px 15px;
-      background: var(--card);
-      border: 1px dashed var(--border);
-      border-radius: 18px;
-    }
-    .empty-state p {
-      color: var(--muted);
-      margin-top: 7px;
-    }
-    /* ================= ROOM ================= */
-    #roomPage {
-      background:
-        radial-gradient(
-          circle at top,
-          #14271a,
-          #050505 45%
-        );
-    }
-    .room-header {
-      position: sticky;
-      top: 0;
-      z-index: 40;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 12px;
-      background: rgba(5,5,5,.94);
-      border-bottom: 1px solid var(--border);
-    }
-    .room-title {
-      font-weight: 800;
-    }
-    .room-actions {
-      display: flex;
-      gap: 7px;
-    }
-    .room-body {
-      padding: 15px;
-      padding-bottom: 95px;
-      max-width: 900px;
-      margin: auto;
-    }
-    /* Voice seats */
-    .voice-room {
-      background: rgba(10,10,10,.9);
-      border: 1px solid var(--border);
-      border-radius: 22px;
-      padding: 20px 12px;
-      margin-bottom: 15px;
-    }
-    .voice-room-title {
-      text-align: center;
-      color: var(--muted);
-      margin-bottom: 17px;
-    }
-    .voice-seats {
-      display: grid;
-      grid-template-columns:
-        repeat(4, 1fr);
-      gap: 15px 8px;
-    }
-    .seat {
-      text-align: center;
-    }
-    .seat-avatar {
-      width: 58px;
-      height: 58px;
-      margin: auto;
-      border-radius: 50%;
-      border: 2px solid #333;
-      background: #171717;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 24px;
-    }
-    .seat-name {
-      font-size: 11px;
-      margin-top: 6px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-    .seat-empty {
-      color: #555;
-    }
-    /* Room controls */
-    .room-controls {
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-      margin: 15px 0;
-    }
-    .round-control {
-      width: 48px;
-      height: 48px;
-      border-radius: 50%;
-      background: var(--card);
-      border: 1px solid var(--border);
-      color: white;
-    }
-    .round-control.active {
-      background: var(--green);
-      color: #000;
-    }
-    .room-tools {
-      display: grid;
-      grid-template-columns:
-        repeat(3, 1fr);
-      gap: 8px;
-      margin-bottom: 15px;
-    }
-    .tool-btn {
-      border: 1px solid var(--border);
-      background: var(--card);
-      color: white;
-      border-radius: 12px;
-      padding: 12px 5px;
-    }
-    /* Chat */
-    .chat-box {
-      background: rgba(10,10,10,.9);
-      border: 1px solid var(--border);
-      border-radius: 18px;
-      overflow: hidden;
-    }
-    #roomMessages {
-      height: 330px;
-      overflow-y: auto;
-      padding: 14px;
-    }
-    .chat-message {
-      margin-bottom: 12px;
-      line-height: 1.4;
-    }
-    .chat-message strong {
-      color: var(--green);
-      margin-right: 6px;
-    }
-    .chat-message span {
-      color: #eee;
-      word-break: break-word;
-    }
-    .chat-input-row {
-      display: flex;
-      gap: 7px;
-      padding: 10px;
-      border-top: 1px solid var(--border);
-    }
-    .chat-input-row input {
-      margin: 0;
-    }
-    .send-btn {
-      min-width: 55px;
-      border: 0;
-      border-radius: 11px;
-      background: var(--green);
-      color: #000;
-      font-weight: 900;
-    }
-    /* ================= MODAL ================= */
-    .modal {
-      position: fixed;
-      inset: 0;
-      z-index: 100;
-      display: flex;
-      align-items: flex-end;
-      justify-content: center;
-      background: rgba(0,0,0,.7);
-      padding: 12px;
-    }
-    .modal-box {
-      width: 100%;
-      max-width: 500px;
-      background: #111;
-      border: 1px solid var(--border);
-      border-radius: 22px;
-      padding: 20px;
-    }
-    .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 17px;
-    }
-    .modal-close {
-      width: 38px;
-      height: 38px;
-      border-radius: 50%;
-      border: 1px solid var(--border);
-      background: var(--card);
-      color: white;
-    }
-    .modal-form {
-      display: grid;
-      gap: 12px;
-    }
-    /* ================= BOTTOM NAV ================= */
-    .bottom-nav {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      z-index: 60;
-      height: 70px;
-      display: grid;
-      grid-template-columns:
-        repeat(5, 1fr);
-      background: rgba(8,8,8,.97);
-      border-top: 1px solid var(--border);
-      backdrop-filter: blur(15px);
-    }
-    .nav-item {
-      border: 0;
-      background: transparent;
-      color: #777;
-      font-size: 11px;
-    }
-    .nav-item span {
-      display: block;
-      font-size: 20px;
-      margin-bottom: 3px;
-    }
-    .nav-item.active {
-      color: var(--green);
-    }
-    /* ================= TOAST ================= */
-    #toast {
-      position: fixed;
-      left: 50%;
-      bottom: 85px;
-      transform: translateX(-50%);
-      z-index: 200;
-      max-width: 90%;
-      background: #202020;
-      border: 1px solid var(--border);
-      color: white;
-      padding: 12px 17px;
-      border-radius: 12px;
-      box-shadow: 0 10px 40px rgba(0,0,0,.5);
-    }
-    /* ================= EXTRA PAGES ================= */
-    .feature-grid {
-      display: grid;
-      grid-template-columns:
-        repeat(2, 1fr);
-      gap: 10px;
-    }
-    .feature-card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 17px;
-      padding: 17px;
-    }
-    .feature-card .feature-icon {
-      font-size: 27px;
-      margin-bottom: 9px;
-    }
-    .feature-card h3 {
-      margin-bottom: 5px;
-    }
-    .feature-card p {
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.4;
-    }
-    .profile-card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 22px;
-      text-align: center;
-    }
-    .profile-avatar {
-      width: 85px;
-      height: 85px;
-      border-radius: 50%;
-      background: #222;
-      margin: auto auto 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 36px;
-    }
-    .danger-btn {
-      width: 100%;
-      border: 1px solid #54202c;
-      background: #211014;
-      color: #ff718c;
-      border-radius: 13px;
-      padding: 13px;
-      font-weight: 800;
-    }
-    @media (min-width: 700px) {
-      .modal {
-        align-items: center;
-      }
-      .voice-seats {
-        grid-template-columns:
-          repeat(8, 1fr);
-      }
-      .feature-grid {
-        grid-template-columns:
-          repeat(4, 1fr);
-      }
-    }
-  </style>
 </head>
 <body>
-  <!-- =====================================================
-       AUTH
-       ===================================================== -->
-  <section id="authScreen">
-    <div class="auth-box">
-      <div class="logo">
-        Rahul <span>Live</span>
-      </div>
-      <div class="subtitle">
-        Voice Rooms • Friends • Chat • Music
-      </div>
-      <!-- LOGIN -->
-      <div
-        id="loginForm"
-        class="auth-form"
+<!-- =====================================================
+     AUTH
+     ===================================================== -->
+<section
+  id="authScreen"
+  class="auth-screen"
+>
+  <div class="auth-card">
+    <div class="logo">
+      Rahul Live
+    </div>
+    <p class="subtitle">
+      Live • Chat • Friends • Rooms
+    </p>
+    <!-- LOGIN -->
+    <div id="loginForm">
+      <h2>
+        Login
+      </h2>
+      <input
+        id="loginEmail"
+        type="email"
+        placeholder="Email"
+        autocomplete="email"
       >
-        <input
-          id="loginEmail"
-          type="email"
-          placeholder="Email"
-          autocomplete="email"
-        >
-        <input
-          id="loginPassword"
-          type="password"
-          placeholder="Password"
-          autocomplete="current-password"
-        >
+      <input
+        id="loginPassword"
+        type="password"
+        placeholder="Password"
+        autocomplete="current-password"
+      >
+      <button
+        id="loginBtn"
+        type="button"
+      >
+        Login
+      </button>
+      <p>
+        Account नहीं है?
         <button
-          id="loginBtn"
-          class="primary-btn"
+          id="showRegisterBtn"
+          class="text-button"
+          type="button"
+        >
+          Register
+        </button>
+      </p>
+    </div>
+    <!-- REGISTER -->
+    <div
+      id="registerForm"
+      class="hidden"
+    >
+      <h2>
+        Create Account
+      </h2>
+      <input
+        id="registerName"
+        type="text"
+        placeholder="Your name"
+        autocomplete="name"
+      >
+      <input
+        id="registerEmail"
+        type="email"
+        placeholder="Email"
+        autocomplete="email"
+      >
+      <input
+        id="registerPassword"
+        type="password"
+        placeholder="Password"
+        autocomplete="new-password"
+      >
+      <input
+        id="registerPasswordConfirm"
+        type="password"
+        placeholder="Confirm password"
+        autocomplete="new-password"
+      >
+      <button
+        id="registerBtn"
+        type="button"
+      >
+        Create Account
+      </button>
+      <p>
+        पहले से account है?
+        <button
+          id="showLoginBtn"
+          class="text-button"
           type="button"
         >
           Login
         </button>
-        <div class="auth-switch">
-          नया account है?
-          <button
-            id="showRegisterBtn"
-            class="text-btn"
-            type="button"
-          >
-            Register करें
-          </button>
-        </div>
+      </p>
+    </div>
+  </div>
+</section>
+<!-- =====================================================
+     MAIN APP
+     ===================================================== -->
+<section
+  id="mainApp"
+  class="hidden app"
+>
+  <!-- HEADER -->
+  <header class="topbar">
+    <div>
+      <strong>
+        Rahul Live
+      </strong>
+      <small>
+        Live Community
+      </small>
+    </div>
+    <button
+      id="logoutBtn"
+      type="button"
+      class="outline-button"
+    >
+      Logout
+    </button>
+  </header>
+  <!-- HOME -->
+  <main
+    id="homePage"
+    class="page"
+  >
+    <div class="page-heading">
+      <div>
+        <h1>
+          Live Rooms
+        </h1>
+        <p>
+          अपने दोस्तों के साथ अपना room बनाइए।
+        </p>
       </div>
-      <!-- REGISTER -->
-      <div
-        id="registerForm"
-        class="auth-form hidden"
+      <button
+        id="createRoomBtn"
+        type="button"
       >
-        <input
-          id="registerName"
-          type="text"
-          placeholder="पूरा नाम"
-          autocomplete="name"
-        >
-        <input
-          id="registerEmail"
-          type="email"
-          placeholder="Email"
-          autocomplete="email"
-        >
-        <input
-          id="registerPassword"
-          type="password"
-          placeholder="Password"
-          autocomplete="new-password"
-        >
-        <input
-          id="registerPasswordConfirm"
-          type="password"
-          placeholder="Password दोबारा डालें"
-          autocomplete="new-password"
-        >
-        <button
-          id="registerBtn"
-          class="primary-btn"
-          type="button"
-        >
-          Create Account
-        </button>
-        <div class="auth-switch">
-          पहले से account है?
-          <button
-            id="showLoginBtn"
-            class="text-btn"
-            type="button"
-          >
-            Login करें
-          </button>
-        </div>
+        + Create Room
+      </button>
+    </div>
+    <div class="search-box">
+      <input
+        id="roomSearch"
+        type="search"
+        placeholder="Room search करें..."
+      >
+    </div>
+    <div
+      id="roomsContainer"
+      class="rooms-grid"
+    >
+      <div class="empty-state">
+        <h3>
+          Rooms loading...
+        </h3>
       </div>
     </div>
-  </section>
-  <!-- =====================================================
-       MAIN APP
-       ===================================================== -->
-  <section
-    id="mainApp"
-    class="hidden"
-  >
-    <!-- TOP BAR -->
-    <header class="topbar">
-      <div class="brand">
-        Rahul <span>Live</span>
-      </div>
-      <div class="top-actions">
-        <button
-          class="icon-btn"
-          type="button"
-          onclick="openPage('notificationsPage')"
-        >
-          🔔
-        </button>
-        <button
-          class="icon-btn"
-          type="button"
-          onclick="openPage('profilePage')"
-        >
-          👤
-        </button>
-      </div>
-    </header>
-    <!-- HOME -->
-    <main
-      id="homePage"
-      class="page"
-    >
-      <div class="main-content">
-        <section class="hero">
-          <h1>
-            Welcome to Rahul Live 👋
-          </h1>
-          <p>
-            अपना room बनाइए, दोस्तों को जोड़िए,
-            live chat कीजिए और अपनी पसंद का
-            music सुनिए।
-          </p>
-        </section>
-        <div class="section-title">
-          <h2>
-            Live Rooms
-          </h2>
-          <button
-            id="createRoomBtn"
-            class="green-btn"
-            type="button"
-          >
-            + Create
-          </button>
-        </div>
-        <input
-          id="roomSearch"
-          class="room-search"
-          type="search"
-          placeholder="Room खोजें..."
-        >
-        <div id="roomsContainer">
-          <div class="empty-state">
-            <h3>
-              Rooms load हो रहे हैं...
-            </h3>
-          </div>
-        </div>
-      </div>
-    </main>
-    <!-- DISCOVER -->
-    <main
-      id="discoverPage"
-      class="page hidden"
-    >
-      <div class="main-content">
-        <div class="section-title">
-          <h2>Discover</h2>
-        </div>
-        <div class="feature-grid">
-          <div class="feature-card">
-            <div class="feature-icon">🎙️</div>
-            <h3>Voice Rooms</h3>
-            <p>
-              Live voice conversation.
-            </p>
-          </div>
-          <div class="feature-card">
-            <div class="feature-icon">👥</div>
-            <h3>Friends</h3>
-            <p>
-              अपने दोस्तों के साथ connect करें।
-            </p>
-          </div>
-          <div class="feature-card">
-            <div class="feature-icon">🎵</div>
-            <h3>Music</h3>
-            <p>
-              Room में music सुनने की सुविधा।
-            </p>
-          </div>
-          <div class="feature-card">
-            <div class="feature-icon">🎁</div>
-            <h3>Gifts</h3>
-            <p>
-              Live room में gifts भेजें।
-            </p>
-          </div>
-        </div>
-      </div>
-    </main>
-    <!-- FRIENDS -->
-    <main
-      id="friendsPage"
-      class="page hidden"
-    >
-      <div class="main-content">
-        <div class="section-title">
-          <h2>Friends</h2>
-        </div>
-        <div class="empty-state">
-          <h3>
-            अपने Friends जोड़ें
-          </h3>
-          <p>
-            Friends system को real API से connect
-            करने के बाद यहाँ requests और friends
-            दिखाई देंगे।
-          </p>
-        </div>
-      </div>
-    </main>
-    <!-- MUSIC -->
-    <main
-      id="musicPage"
-      class="page hidden"
-    >
-      <div class="main-content">
-        <div class="section-title">
-          <h2>Music 🎵</h2>
-        </div>
-        <div class="empty-state">
-          <h3>
-            अपनी पसंद का music
-          </h3>
-          <p>
-            Music tracks केवल वास्तविक audio source
-            से चलेंगे। कोई fake/demo song नहीं रखा गया है।
-          </p>
-        </div>
-      </div>
-    </main>
-    <!-- PROFILE -->
-    <main
-      id="profilePage"
-      class="page hidden"
-    >
-      <div class="main-content">
-        <div class="profile-card">
-          <div class="profile-avatar">
-            👤
-          </div>
-          <h2>
-            My Profile
-          </h2>
-          <p
-            style="color:#999;margin:8px 0 20px"
-          >
-            अपना profile और account manage करें।
-          </p>
-          <button
-            id="logoutBtn"
-            class="danger-btn"
-            type="button"
-          >
-            Logout
-          </button>
-        </div>
-      </div>
-    </main>
-    <!-- NOTIFICATIONS -->
-    <main
-      id="notificationsPage"
-      class="page hidden"
-    >
-      <div class="main-content">
-        <div class="section-title">
-          <h2>Notifications</h2>
-        </div>
-        <div class="empty-state">
-          <h3>
-            Notifications
-          </h3>
-          <p>
-            यहाँ आपकी वास्तविक notifications आएँगी।
-          </p>
-        </div>
-      </div>
-    </main>
-    <!-- PERSONAL HELPLINE -->
-    <main
-      id="helpPage"
-      class="page hidden"
-    >
-      <div class="main-content">
-        <div class="hero">
-          <h1>
-            Personal Helpline 🆘
-          </h1>
-          <p>
-            किसी feature या account में समस्या आए
-            तो यहाँ support request भेजी जाएगी।
-          </p>
-        </div>
-        <div class="feature-card">
-          <h3>
-            Support
-          </h3>
-          <p style="margin-bottom:15px">
-            अपनी समस्या लिखकर support team को भेजें।
-          </p>
-          <textarea
-            id="supportMessage"
-            placeholder="अपनी समस्या लिखें..."
-          ></textarea>
-          <button
-            class="green-btn"
-            type="button"
-            style="width:100%;margin-top:10px"
-            onclick="alert('Support API अगली backend integration में जोड़ी जाएगी।')"
-          >
-            Send Support Request
-          </button>
-        </div>
-      </div>
-    </main>
-    <!-- BOTTOM NAV -->
-    <nav class="bottom-nav">
-      <button
-        class="nav-item active"
-        data-page="homePage"
-        type="button"
-      >
-        <span>🏠</span>
-        Home
-      </button>
-      <button
-        class="nav-item"
-        data-page="discoverPage"
-        type="button"
-      >
-        <span>🔎</span>
-        Discover
-      </button>
-      <button
-        id="bottomCreateRoomBtn"
-        class="nav-item"
-        type="button"
-      >
-        <span>🎙️</span>
-        Create
-      </button>
-      <button
-        class="nav-item"
-        data-page="friendsPage"
-        type="button"
-      >
-        <span>👥</span>
-        Friends
-      </button>
-      <button
-        class="nav-item"
-        data-page="profilePage"
-        type="button"
-      >
-        <span>👤</span>
-        Profile
-      </button>
-    </nav>
-  </section>
-  <!-- =====================================================
-       LIVE ROOM
-       ===================================================== -->
-  <section
-    id="roomPage"
+  </main>
+  <!-- DISCOVER -->
+  <main
+    id="discoverPage"
     class="page hidden"
   >
-    <header class="room-header">
-      <button
-        id="leaveRoomBtn"
-        class="icon-btn"
-        type="button"
-      >
-        ←
-      </button>
-      <div class="room-title">
-        Live Room
+    <div class="page-heading">
+      <div>
+        <h1>
+          Discover
+        </h1>
+        <p>
+          नए rooms और communities खोजें।
+        </p>
       </div>
-      <div class="room-actions">
-        <button
-          class="icon-btn"
-          type="button"
-          onclick="openPage('helpPage')"
-        >
-          🆘
-        </button>
-      </div>
-    </header>
-    <div class="room-body">
-      <!-- VOICE SEATS -->
-      <section class="voice-room">
-        <div class="voice-room-title">
-          Voice Seats
-        </div>
-        <div class="voice-seats">
-          <div class="seat">
-            <div class="seat-avatar">🎙️</div>
-            <div class="seat-name">Seat 1</div>
-          </div>
-          <div class="seat">
-            <div class="seat-avatar">🎙️</div>
-            <div class="seat-name">Seat 2</div>
-          </div>
-          <div class="seat">
-            <div class="seat-avatar">🎙️</div>
-            <div class="seat-name">Seat 3</div>
-          </div>
-          <div class="seat">
-            <div class="seat-avatar">🎙️</div>
-            <div class="seat-name">Seat 4</div>
-          </div>
-          <div class="seat">
-            <div class="seat-avatar seat-empty">+</div>
-            <div class="seat-name">Empty</div>
-          </div>
-          <div class="seat">
-            <div class="seat-avatar seat-empty">+</div>
-            <div class="seat-name">Empty</div>
-          </div>
-          <div class="seat">
-            <div class="seat-avatar seat-empty">+</div>
-            <div class="seat-name">Empty</div>
-          </div>
-          <div class="seat">
-            <div class="seat-avatar seat-empty">+</div>
-            <div class="seat-name">Empty</div>
-          </div>
-        </div>
-      </section>
-      <!-- CONTROLS -->
-      <div class="room-controls">
-        <button
-          class="round-control"
-          type="button"
-        >
-          🎤
-        </button>
-        <button
-          class="round-control"
-          type="button"
-        >
-          🔇
-        </button>
-        <button
-          class="round-control"
-          type="button"
-        >
-          ❤️
-        </button>
-        <button
-          class="round-control"
-          type="button"
-        >
-          🎁
-        </button>
-      </div>
-      <!-- TOOLS -->
-      <div class="room-tools">
-        <button
-          class="tool-btn"
-          type="button"
-        >
-          👥
-          <br>
-          Friends
-        </button>
-        <button
-          class="tool-btn"
-          type="button"
-        >
-          🎵
-          <br>
-          Music
-        </button>
-        <button
-          class="tool-btn"
-          type="button"
-        >
-          🎁
-          <br>
-          Gifts
-        </button>
-      </div>
-      <!-- CHAT -->
-      <section class="chat-box">
-        <div id="roomMessages">
-        </div>
-        <div class="chat-input-row">
-          <input
-            id="roomMessageInput"
-            type="text"
-            placeholder="Message लिखें..."
-            autocomplete="off"
-          >
-          <button
-            id="sendRoomMessageBtn"
-            class="send-btn"
-            type="button"
-          >
-            ➤
-          </button>
-        </div>
-      </section>
     </div>
-  </section>
-  <!-- =====================================================
-       CREATE ROOM MODAL
-       ===================================================== -->
-  <div
-    id="createRoomModal"
-    class="modal hidden"
+    <div class="empty-state">
+      <h3>
+        Live rooms
+      </h3>
+      <p>
+        यहाँ active rooms दिखाई देंगे।
+      </p>
+    </div>
+  </main>
+  <!-- FRIENDS -->
+  <main
+    id="friendsPage"
+    class="page hidden"
   >
-    <div class="modal-box">
-      <div class="modal-header">
-        <h2>
-          Create Live Room
-        </h2>
-        <button
-          id="closeCreateRoomBtn"
-          class="modal-close"
-          type="button"
-        >
-          ×
-        </button>
+    <div class="page-heading">
+      <div>
+        <h1>
+          Friends
+        </h1>
+        <p>
+          अपने friends के साथ जुड़े रहें।
+        </p>
       </div>
-      <div class="modal-form">
+    </div>
+    <div class="empty-state">
+      <h3>
+        Friends
+      </h3>
+      <p>
+        Friends system अगला चरण में जोड़ेंगे।
+      </p>
+    </div>
+  </main>
+  <!-- MUSIC -->
+  <main
+    id="musicPage"
+    class="page hidden"
+  >
+    <div class="page-heading">
+      <div>
+        <h1>
+          Music
+        </h1>
+        <p>
+          Room में पसंद का music सुनें।
+        </p>
+      </div>
+    </div>
+    <div class="empty-state">
+      <h3>
+        Room Music
+      </h3>
+      <p>
+        Real music system अगले चरण में जोड़ा जाएगा।
+      </p>
+    </div>
+  </main>
+  <!-- PROFILE -->
+  <main
+    id="profilePage"
+    class="page hidden"
+  >
+    <div class="page-heading">
+      <div>
+        <h1>
+          Profile
+        </h1>
+        <p>
+          आपका account
+        </p>
+      </div>
+    </div>
+    <div
+      id="profileCard"
+      class="profile-card"
+    >
+      <div class="avatar">
+        👤
+      </div>
+      <div>
+        <h2>
+          Profile
+        </h2>
+        <p>
+          Login के बाद आपकी profile information यहाँ दिखाई जाएगी।
+        </p>
+      </div>
+    </div>
+  </main>
+  <!-- NOTIFICATIONS -->
+  <main
+    id="notificationsPage"
+    class="page hidden"
+  >
+    <div class="page-heading">
+      <div>
+        <h1>
+          Notifications
+        </h1>
+      </div>
+    </div>
+    <div class="empty-state">
+      अभी कोई notification नहीं है।
+      
+    </div>
+  </main>
+  <!-- HELP -->
+  <main
+    id="helpPage"
+    class="page hidden"
+  >
+    <div class="page-heading">
+      <div>
+        <h1>
+          Personal Help
+        </h1>
+        <p>
+          किसी समस्या में सहायता के लिए यहाँ जाएँ।
+        </p>
+      </div>
+    </div>
+    <div class="support-card">
+      <h3>
+        Rahul Live Support
+      </h3>
+      <p>
+        अपनी समस्या support team को भेजें।
+      </p>
+      <button
+        type="button"
+        id="openSupportBtn"
+      >
+        Contact Support
+      </button>
+    </div>
+  </main>
+  <!-- BOTTOM NAV -->
+  <nav class="bottom-nav">
+    <button
+      class="nav-item active"
+      data-page="homePage"
+      type="button"
+    >
+      🏠
+      <span>Home</span>
+    </button>
+    <button
+      class="nav-item"
+      data-page="discoverPage"
+      type="button"
+    >
+      🔎
+      <span>Discover</span>
+    </button>
+    <button
+      class="nav-item"
+      id="bottomCreateRoomBtn"
+      type="button"
+    >
+      ➕
+      <span>Room</span>
+    </button>
+    <button
+      class="nav-item"
+      data-page="friendsPage"
+      type="button"
+    >
+      👥
+      <span>Friends</span>
+    </button>
+    <button
+      class="nav-item"
+      data-page="profilePage"
+      type="button"
+    >
+      👤
+      <span>Profile</span>
+    </button>
+  </nav>
+</section>
+<!-- =====================================================
+     CREATE ROOM MODAL
+     ===================================================== -->
+<div
+  id="createRoomModal"
+  class="modal hidden"
+>
+  <div class="modal-card">
+    <button
+      id="closeCreateRoomBtn"
+      class="modal-close"
+      type="button"
+    >
+      ×
+    </button>
+    <h2>
+      Create Live Room
+    </h2>
+    <p>
+      अपना अलग room बनाइए और friends को जोड़िए।
+    </p>
+    <label>
+      Room Name
+    </label>
+    <input
+      id="roomName"
+      type="text"
+      maxlength="100"
+      placeholder="जैसे Rahul Friends Room"
+    >
+    <label>
+      Description
+    </label>
+    <textarea
+      id="roomDescription"
+      maxlength="500"
+      placeholder="Room के बारे में..."
+    ></textarea>
+    <label>
+      Room Type
+    </label>
+    <select
+      id="roomType"
+    >
+      <option value="public">
+        Public — सभी join कर सकते हैं
+      </option>
+      <option value="private">
+        Private — invitation से
+      </option>
+    </select>
+    <button
+      id="saveRoomBtn"
+      type="button"
+    >
+      Create Room
+    </button>
+  </div>
+</div>
+<!-- =====================================================
+     LIVE ROOM
+     ===================================================== -->
+<section
+  id="roomPage"
+  class="room-page hidden"
+>
+  <!-- ROOM HEADER -->
+  <header class="room-header">
+    <button
+      id="leaveRoomBtn"
+      type="button"
+      class="room-back"
+    >
+      ←
+    </button>
+    <div>
+      <h2 class="room-title">
+        Live Room
+      </h2>
+      <small>
+        Live conversation
+      </small>
+    </div>
+  </header>
+  <!-- ROOM BODY -->
+  <div class="room-body">
+    <!-- ROOM INFO -->
+    <div class="room-info-card">
+      <div class="room-host-avatar">
+        👤
+      </div>
+      <div>
+        <strong>
+          Live Room
+        </strong>
+        <p>
+          आप इस room में शामिल हैं।
+        </p>
+      </div>
+    </div>
+    <!-- VOICE AREA -->
+    <div class="voice-area">
+      <div class="voice-seat empty-seat">
+        <div class="seat-avatar">
+          +
+        </div>
+        <span>
+          Seat 1
+        </span>
+      </div>
+      <div class="voice-seat empty-seat">
+        <div class="seat-avatar">
+          +
+        </div>
+        <span>
+          Seat 2
+        </span>
+      </div>
+      <div class="voice-seat empty-seat">
+        <div class="seat-avatar">
+          +
+        </div>
+        <span>
+          Seat 3
+        </span>
+      </div>
+      <div class="voice-seat empty-seat">
+        <div class="seat-avatar">
+          +
+        </div>
+        <span>
+          Seat 4
+        </span>
+      </div>
+    </div>
+    <!-- CHAT -->
+    <div class="chat-card">
+      <div class="chat-heading">
+        <strong>
+          Room Chat
+        </strong>
+        <span>
+          Live
+        </span>
+      </div>
+      <div
+        id="roomMessages"
+        class="room-messages"
+      >
+        <div class="empty-chat">
+          Messages loading...
+        </div>
+      </div>
+      <div class="chat-input-area">
         <input
-          id="roomName"
+          id="roomMessageInput"
           type="text"
-          placeholder="Room का नाम"
+          maxlength="2000"
+          placeholder="Message लिखें..."
+          autocomplete="off"
         >
-        <textarea
-          id="roomDescription"
-          placeholder="Room के बारे में..."
-        ></textarea>
-        <select id="roomType">
-          <option value="public">
-            Public Room
-          </option>
-          <option value="private">
-            Private Room
-          </option>
-        </select>
         <button
-          id="saveRoomBtn"
-          class="green-btn"
+          id="sendRoomMessageBtn"
           type="button"
         >
-          Create Room
+          Send
         </button>
       </div>
     </div>
   </div>
-  <!-- TOAST -->
-  <div
-    id="toast"
-    class="hidden"
-  ></div>
-  <!-- SCRIPT -->
-  <script src="script.js"></script>
+  <!-- ROOM CONTROLS -->
+  <div class="room-controls">
+    <button
+      type="button"
+      disabled
+      title="Voice system next stage में"
+    >
+      🎙️
+      <span>Mic</span>
+    </button>
+    <button
+      type="button"
+      disabled
+      title="Music system next stage में"
+    >
+      🎵
+      <span>Music</span>
+    </button>
+    <button
+      type="button"
+      disabled
+      title="Friends system next stage में"
+    >
+      👥
+      <span>Invite</span>
+    </button>
+    <button
+      type="button"
+      disabled
+      title="Gifts system next stage में"
+    >
+      🎁
+      <span>Gift</span>
+    </button>
+  </div>
+</section>
+<!-- =====================================================
+     TOAST
+     ===================================================== -->
+<div
+  id="toast"
+  class="toast hidden"
+></div>
+<script
+  src="script.js"
+  defer
+></script>
 </body>
 </html>
