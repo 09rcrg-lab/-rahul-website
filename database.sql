@@ -1,138 +1,91 @@
-PRAGMA foreign_keys = ON;
--- =========================================================
--- RAHUL LIVE DATABASE
--- =========================================================
--- =========================
--- USERS
--- =========================
 CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     username TEXT NOT NULL UNIQUE,
     email TEXT NOT NULL UNIQUE,
-    password_hash TEXT NOT NULL,
-    role TEXT NOT NULL DEFAULT 'viewer'
-        CHECK (role IN ('viewer', 'host', 'admin')),
-    is_blocked INTEGER NOT NULL DEFAULT 0,
-    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    password TEXT NOT NULL,
+    coins INTEGER DEFAULT 0,
+    level INTEGER DEFAULT 1,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
--- =========================
--- LIVE ROOMS
--- =========================
-CREATE TABLE IF NOT EXISTS live_rooms (
+
+CREATE TABLE IF NOT EXISTS rooms (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
+    room_code TEXT NOT NULL UNIQUE,
+    name TEXT NOT NULL,
+    category TEXT DEFAULT 'chat',
     host_id INTEGER NOT NULL,
-    title TEXT NOT NULL DEFAULT 'Chat LIVE Room',
-    status TEXT NOT NULL DEFAULT 'live'
-        CHECK (status IN ('live', 'ended')),
-    started_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    ended_at TEXT,
-    FOREIGN KEY (host_id)
-        REFERENCES users(id)
-        ON DELETE CASCADE
+    viewers INTEGER DEFAULT 0,
+    is_live INTEGER DEFAULT 1,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (host_id) REFERENCES users(id)
 );
--- =========================
--- LIVE VIEWERS
--- =========================
-CREATE TABLE IF NOT EXISTS live_viewers (
+
+CREATE TABLE IF NOT EXISTS room_members (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    live_room_id INTEGER NOT NULL,
+    room_id INTEGER NOT NULL,
     user_id INTEGER NOT NULL,
-    joined_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    left_at TEXT,
-    UNIQUE (live_room_id, user_id),
-    FOREIGN KEY (live_room_id)
-        REFERENCES live_rooms(id)
-        ON DELETE CASCADE,
-    FOREIGN KEY (user_id)
-        REFERENCES users(id)
-        ON DELETE CASCADE
+    role TEXT DEFAULT 'listener',
+    mic_enabled INTEGER DEFAULT 0,
+    joined_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (room_id) REFERENCES rooms(id),
+    FOREIGN KEY (user_id) REFERENCES users(id)
 );
--- =========================
--- LIVE CHAT MESSAGES
--- =========================
-CREATE TABLE IF NOT EXISTS live_messages (
+
+CREATE TABLE IF NOT EXISTS messages (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    live_room_id INTEGER NOT NULL,
+    room_id INTEGER NOT NULL,
     user_id INTEGER NOT NULL,
     message TEXT NOT NULL,
-    message_type TEXT NOT NULL DEFAULT 'text'
-        CHECK (
-            message_type IN (
-                'text',
-                'emoji',
-                'reaction',
-                'system'
-            )
-        ),
-    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (live_room_id)
-        REFERENCES live_rooms(id)
-        ON DELETE CASCADE,
-    FOREIGN KEY (user_id)
-        REFERENCES users(id)
-        ON DELETE CASCADE
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (room_id) REFERENCES rooms(id),
+    FOREIGN KEY (user_id) REFERENCES users(id)
 );
--- =========================
--- LIVE MODERATION
--- =========================
-CREATE TABLE IF NOT EXISTS live_moderation (
+
+CREATE TABLE IF NOT EXISTS gifts (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    live_room_id INTEGER NOT NULL,
-    host_id INTEGER NOT NULL,
-    target_user_id INTEGER NOT NULL,
-    action TEXT NOT NULL
-        CHECK (
-            action IN (
-                'mute',
-                'unmute',
-                'kick',
-                'block',
-                'unblock'
-            )
-        ),
-    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (live_room_id)
-        REFERENCES live_rooms(id)
-        ON DELETE CASCADE,
-    FOREIGN KEY (host_id)
-        REFERENCES users(id)
-        ON DELETE CASCADE,
-    FOREIGN KEY (target_user_id)
-        REFERENCES users(id)
-        ON DELETE CASCADE
+    name TEXT NOT NULL,
+    emoji TEXT NOT NULL,
+    cost INTEGER NOT NULL
 );
--- =========================
--- LIVE ROOM SETTINGS
--- =========================
-CREATE TABLE IF NOT EXISTS live_room_settings (
+
+CREATE TABLE IF NOT EXISTS gift_transactions (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    live_room_id INTEGER NOT NULL UNIQUE,
-    chat_enabled INTEGER NOT NULL DEFAULT 1,
-    emoji_enabled INTEGER NOT NULL DEFAULT 1,
-    reactions_enabled INTEGER NOT NULL DEFAULT 1,
-    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (live_room_id)
-        REFERENCES live_rooms(id)
-        ON DELETE CASCADE
+    room_id INTEGER NOT NULL,
+    sender_id INTEGER NOT NULL,
+    receiver_id INTEGER NOT NULL,
+    gift_id INTEGER NOT NULL,
+    quantity INTEGER DEFAULT 1,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (room_id) REFERENCES rooms(id),
+    FOREIGN KEY (sender_id) REFERENCES users(id),
+    FOREIGN KEY (receiver_id) REFERENCES users(id),
+    FOREIGN KEY (gift_id) REFERENCES gifts(id)
 );
--- =========================
--- INDEXES
--- =========================
-CREATE INDEX IF NOT EXISTS idx_live_rooms_status
-ON live_rooms(status);
-CREATE INDEX IF NOT EXISTS idx_live_rooms_host
-ON live_rooms(host_id);
-CREATE INDEX IF NOT EXISTS idx_live_viewers_room
-ON live_viewers(live_room_id);
-CREATE INDEX IF NOT EXISTS idx_live_viewers_user
-ON live_viewers(user_id);
-CREATE INDEX IF NOT EXISTS idx_live_messages_room
-ON live_messages(live_room_id);
-CREATE INDEX IF NOT EXISTS idx_live_messages_created
-ON live_messages(created_at);
-CREATE INDEX IF NOT EXISTS idx_live_moderation_room
-ON live_moderation(live_room_id);
-CREATE INDEX IF NOT EXISTS idx_users_username
-ON users(username);
-CREATE INDEX IF NOT EXISTS idx_users_email
-ON users(email);
+
+CREATE TABLE IF NOT EXISTS reactions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    room_id INTEGER NOT NULL,
+    user_id INTEGER NOT NULL,
+    emoji TEXT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (room_id) REFERENCES rooms(id),
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);
+
+CREATE TABLE IF NOT EXISTS wallets (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL UNIQUE,
+    coins INTEGER DEFAULT 0,
+    diamonds INTEGER DEFAULT 0,
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);
+
+INSERT OR IGNORE INTO gifts (name, emoji, cost) VALUES
+('Rose', '🌹', 10),
+('Heart', '❤️', 20),
+('Diamond', '💎', 50),
+('Crown', '👑', 100),
+('Car', '🚗', 500),
+('Money', '💰', 1000),
+('Rose Premium', '🌹', 5000),
+('Heart Premium', '💖', 10000);
