@@ -1,146 +1,42 @@
 export default {
+
   async fetch(request, env) {
+
     const url = new URL(request.url);
-    const origin =
-      request.headers.get("Origin") || "*";
-    const cors = {
-      "Access-Control-Allow-Origin": origin,
-      "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type, Authorization",
-      "Access-Control-Max-Age": "86400"
-    };
-    if (request.method === "OPTIONS") {
-      return new Response(null, {
-        status: 204,
-        headers: cors
-      });
-    }
-    function json(data, status = 200) {
-      return new Response(
-        JSON.stringify(data),
-        {
-          status,
-          headers: {
-            ...cors,
-            "Content-Type":
-              "application/json; charset=UTF-8"
-          }
-        }
-      );
-    }
-    function fail(message, status = 400) {
-      return json({
-        success: false,
-        message
-      }, status);
-    }
-    async function body() {
-      try {
-        return await request.json();
-      } catch {
-        return {};
+    const path = url.pathname;
+    const method = request.method;
+
+    try {
+
+      await initDatabase(env);
+
+      /* =========================
+         CORS
+      ========================= */
+
+      if (method === "OPTIONS") {
+        return new Response(null, {
+          status: 204,
+          headers: corsHeaders()
+        });
       }
-    }
-    async function hash(value) {
-      const bytes =
-        new TextEncoder().encode(value);
-      const digest =
-        await crypto.subtle.digest(
-          "SHA-256",
-          bytes
-        );
-      return Array
-        .from(new Uint8Array(digest))
-        .map(
-          x =>
-            x.toString(16).padStart(2, "0")
-        )
-        .join("");
-    }
-    function token() {
-      const bytes =
-        crypto.getRandomValues(
-          new Uint8Array(32)
-        );
-      return Array
-        .from(bytes)
-        .map(
-          x =>
-            x.toString(16).padStart(2, "0")
-        )
-        .join("");
-    }
-    async function currentUser() {
-      const header =
-        request.headers.get("Authorization");
-      if (!header) {
-        return null;
+
+
+      /* =========================
+         BASIC
+      ========================= */
+
+      if (path === "/") {
+        return json({
+          success: true,
+          service: "Rahul Live API",
+          status: "running"
+        });
       }
-      const raw =
-        header.replace(/^Bearer\s+/i, "").trim();
-      if (!raw) {
-        return null;
-      }
-      const tokenHash =
-        await hash(raw);
-      const row =
-        await env.DB
-          .prepare(`
-            SELECT
-              users.id,
-              users.name,
-              users.email,
-              users.username,
-              users.avatar_url,
-              users.bio,
-              users.coins,
-              users.is_online
-            FROM sessions
-            INNER JOIN users
-              ON users.id = sessions.user_id
-            WHERE sessions.token_hash = ?
-              AND sessions.expires_at > CURRENT_TIMESTAMP
-            LIMIT 1
-          `)
-          .bind(tokenHash)
-          .first();
-      return row || null;
-    }
-    async function requireUser() {
-      const user =
-        await currentUser();
-      if (!user) {
-        return {
-          error: fail(
-            "Login required.",
-            401
-          )
-        };
-      }
-      return { user };
-    }
-    /* =====================================================
-       HOME
-    ===================================================== */
-    if (
-      url.pathname === "/" &&
-      request.method === "GET"
-    ) {
-      return json({
-        success: true,
-        service: "Rahul Live API",
-        status: "running",
-        database: "D1"
-      });
-    }
-    /* =====================================================
-       DATABASE
-    ===================================================== */
-    if (
-      url.pathname === "/api/test" &&
-      request.method === "GET"
-    ) {
-      try {
+
+
+      if (path === "/api/test") {
+
         const result =
           await env.DB
             .prepare(`
@@ -150,78 +46,80 @@ export default {
               ORDER BY name
             `)
             .all();
+
         return json({
           success: true,
           database: "connected",
-          tables:
-            result.results || []
+          tables: result.results || []
         });
-      } catch (e) {
-        return fail(
-          e.message,
-          500
-        );
       }
-    }
-    /* =====================================================
-       REGISTER
-    ===================================================== */
-    if (
-      url.pathname === "/api/register" &&
-      request.method === "POST"
-    ) {
-      const data =
-        await body();
-      const name =
-        String(data.name || "").trim();
-      const email =
-        String(data.email || "")
-          .trim()
-          .toLowerCase();
-      const password =
-        String(data.password || "");
-      if (!name || !email || !password) {
-        return fail(
-          "Name, email और password जरूरी हैं।"
-        );
-      }
-      if (password.length < 6) {
-        return fail(
-          "Password कम से कम 6 characters का होना चाहिए।"
-        );
-      }
-      const username =
-        String(
-          data.username ||
-          name
-            .toLowerCase()
-            .replace(/[^a-z0-9]/g, "")
-            .slice(0, 20)
-        ).trim() ||
-        `user${Date.now()}`;
-      try {
+
+
+      /* =========================
+         REGISTER
+      ========================= */
+
+      if (
+        path === "/api/register" &&
+        method === "POST"
+      ) {
+
+        const body = await readJSON(request);
+
+        const name =
+          String(body.name || "").trim();
+
+        const email =
+          String(body.email || "")
+            .trim()
+            .toLowerCase();
+
+        const password =
+          String(body.password || "");
+
+        if (!name || !email || !password) {
+          return json({
+            success: false,
+            message: "Name, email और password जरूरी हैं।"
+          }, 400);
+        }
+
+        if (password.length < 6) {
+          return json({
+            success: false,
+            message: "Password कम से कम 6 characters का होना चाहिए।"
+          }, 400);
+        }
+
+
         const existing =
           await env.DB
             .prepare(`
               SELECT id
               FROM users
               WHERE email = ?
-                 OR username = ?
               LIMIT 1
             `)
-            .bind(
-              email,
-              username
-            )
+            .bind(email)
             .first();
+
+
         if (existing) {
-          return fail(
-            "Email या username पहले से मौजूद है।",
-            409
-          );
+          return json({
+            success: false,
+            message: "यह email पहले से registered है।"
+          }, 409);
         }
+
+
         const passwordHash =
-          await hash(password);
+          await hashPassword(password);
+
+
+        const username =
+          await makeUsername(env, name);
+
+
         const result =
           await env.DB
             .prepare(`
@@ -245,263 +143,265 @@ export default {
               username
             )
             .run();
+
+
         return json({
           success: true,
           message: "Account successfully created.",
-          user_id:
-            result.meta.last_row_id
-        }, 201);
-      } catch (e) {
-        return fail(
-          e.message,
-          500
-        );
+          user_id: result.meta.last_row_id,
+          username
+        });
       }
-    }
-    /* =====================================================
-       LOGIN
-    ===================================================== */
-    if (
-      url.pathname === "/api/login" &&
-      request.method === "POST"
-    ) {
-      const data =
-        await body();
-      const email =
-        String(data.email || "")
-          .trim()
-          .toLowerCase();
-      const password =
-        String(data.password || "");
-      if (!email || !password) {
-        return fail(
-          "Email और password जरूरी हैं।"
-        );
-      }
-      try {
+
+
+      /* =========================
+         LOGIN
+      ========================= */
+
+      if (
+        path === "/api/login" &&
+        method === "POST"
+      ) {
+
+        const body = await readJSON(request);
+
+        const email =
+          String(body.email || "")
+            .trim()
+            .toLowerCase();
+
+        const password =
+          String(body.password || "");
+
+
         const user =
           await env.DB
             .prepare(`
-              SELECT
-                id,
-                name,
-                email,
-                username,
-                avatar_url,
-                bio,
-                coins,
-                is_online,
-                password_hash
+              SELECT *
               FROM users
               WHERE email = ?
               LIMIT 1
             `)
             .bind(email)
             .first();
+
+
         if (!user) {
-          return fail(
-            "Email या password गलत है।",
-            401
-          );
+          return json({
+            success: false,
+            message: "Email या password गलत है।"
+          }, 401);
         }
-        const passwordHash =
-          await hash(password);
-        if (
-          passwordHash !==
-          user.password_hash
-        ) {
-          return fail(
-            "Email या password गलत है।",
-            401
+
+
+        const valid =
+          await verifyPassword(
+            password,
+            user.password_hash
           );
+
+
+        if (!valid) {
+          return json({
+            success: false,
+            message: "Email या password गलत है।"
+          }, 401);
         }
-        const rawToken =
-          token();
-        const tokenHash =
-          await hash(rawToken);
+
+
+        const token =
+          crypto.randomUUID() +
+          "-" +
+          crypto.randomUUID();
+
+
         await env.DB
           .prepare(`
             INSERT INTO sessions
             (
+              token,
               user_id,
-              token_hash,
-              expires_at
+              created_at
             )
-            VALUES (
-              ?,
-              ?,
-              datetime('now', '+30 days')
-            )
+            VALUES (?, ?, CURRENT_TIMESTAMP)
           `)
           .bind(
-            user.id,
-            tokenHash
+            token,
+            user.id
           )
           .run();
+
+
         await env.DB
           .prepare(`
             UPDATE users
-            SET
-              is_online = 1,
-              updated_at = CURRENT_TIMESTAMP
+            SET is_online = 1,
+                updated_at = CURRENT_TIMESTAMP
             WHERE id = ?
           `)
           .bind(user.id)
           .run();
-        delete user.password_hash;
+
+
         return json({
           success: true,
-          token: rawToken,
-          user
+          token,
+          user: publicUser(user)
         });
-      } catch (e) {
-        return fail(
-          e.message,
-          500
-        );
       }
-    }
-    /* =====================================================
-       LOGOUT
-    ===================================================== */
-    if (
-      url.pathname === "/api/logout" &&
-      request.method === "POST"
-    ) {
-      const user =
-        await currentUser();
-      const header =
-        request.headers.get("Authorization");
-      if (header) {
-        const raw =
-          header
-            .replace(/^Bearer\s+/i, "")
-            .trim();
-        if (raw) {
-          const tokenHash =
-            await hash(raw);
+
+
+      /* =========================
+         LOGOUT
+      ========================= */
+
+      if (
+        path === "/api/logout" &&
+        method === "POST"
+      ) {
+
+        const user =
+          await authenticate(
+            request,
+            env
+          );
+
+
+        if (user) {
+
+          await env.DB
+            .prepare(`
+              UPDATE users
+              SET is_online = 0,
+                  updated_at = CURRENT_TIMESTAMP
+              WHERE id = ?
+            `)
+            .bind(user.id)
+            .run();
+
+
+          const token =
+            getToken(request);
+
+
           await env.DB
             .prepare(`
               DELETE FROM sessions
-              WHERE token_hash = ?
+              WHERE token = ?
             `)
-            .bind(tokenHash)
+            .bind(token)
             .run();
         }
+
+
+        return json({
+          success: true,
+          message: "Logged out."
+        });
       }
-      if (user) {
-        await env.DB
-          .prepare(`
-            UPDATE users
-            SET
-              is_online = 0,
-              updated_at = CURRENT_TIMESTAMP
-            WHERE id = ?
-          `)
-          .bind(user.id)
-          .run();
+
+
+      /* =========================
+         CURRENT USER
+      ========================= */
+
+      if (
+        path === "/api/me" &&
+        method === "GET"
+      ) {
+
+        const user =
+          await requireAuth(
+            request,
+            env
+          );
+
+
+        return json({
+          success: true,
+          user: publicUser(user)
+        });
       }
-      return json({
-        success: true
-      });
-    }
-    /* =====================================================
-       ME
-    ===================================================== */
-    if (
-      url.pathname === "/api/me" &&
-      request.method === "GET"
-    ) {
-      const result =
-        await requireUser();
-      if (result.error) {
-        return result.error;
-      }
-      return json({
-        success: true,
-        user: result.user
-      });
-    }
-    /* =====================================================
-       GET ROOMS
-    ===================================================== */
-    if (
-      url.pathname === "/api/rooms" &&
-      request.method === "GET"
-    ) {
-      try {
-        const result =
+
+
+      /* =========================
+         ROOMS LIST
+      ========================= */
+
+      if (
+        path === "/api/rooms" &&
+        method === "GET"
+      ) {
+
+        const rooms =
           await env.DB
             .prepare(`
               SELECT
-                rooms.id,
-                rooms.owner_id,
-                rooms.name,
-                rooms.description,
-                rooms.room_type,
-                rooms.cover_url,
-                rooms.created_at,
-                users.name AS owner_name,
-                users.username AS owner_username,
-                users.avatar_url AS owner_avatar,
+                r.*,
+                u.name AS owner_name,
+                u.avatar_url AS owner_avatar,
                 (
                   SELECT COUNT(*)
-                  FROM room_viewers
-                  WHERE room_viewers.room_id = rooms.id
-                    AND room_viewers.is_inside = 1
+                  FROM room_viewers rv
+                  WHERE rv.room_id = r.id
                 ) AS viewer_count
-              FROM rooms
-              INNER JOIN users
-                ON users.id = rooms.owner_id
-              WHERE rooms.is_active = 1
-              ORDER BY rooms.created_at DESC
-              LIMIT 100
+              FROM rooms r
+              LEFT JOIN users u
+                ON u.id = r.owner_id
+              ORDER BY r.id DESC
             `)
             .all();
+
+
         return json({
           success: true,
-          rooms:
-            result.results || []
+          rooms: rooms.results || []
         });
-      } catch (e) {
-        return fail(
-          e.message,
-          500
-        );
       }
-    }
-    /* =====================================================
-       CREATE ROOM
-    ===================================================== */
-    if (
-      url.pathname === "/api/rooms" &&
-      request.method === "POST"
-    ) {
-      const auth =
-        await requireUser();
-      if (auth.error) {
-        return auth.error;
-      }
-      const data =
-        await body();
-      const name =
-        String(data.name || "")
-          .trim()
-          .slice(0, 80);
-      const description =
-        String(data.description || "")
-          .trim()
-          .slice(0, 300);
-      const roomType =
-        data.room_type === "private"
-          ? "private"
-          : "public";
-      if (!name) {
-        return fail(
-          "Room name जरूरी है।"
-        );
-      }
-      try {
+
+
+      /* =========================
+         CREATE ROOM
+      ========================= */
+
+      if (
+        path === "/api/rooms" &&
+        method === "POST"
+      ) {
+
+        const user =
+          await requireAuth(
+            request,
+            env
+          );
+
+
+        const body =
+          await readJSON(request);
+
+
+        const name =
+          String(body.name || "")
+            .trim();
+
+        const description =
+          String(body.description || "")
+            .trim();
+
+        const roomType =
+          body.room_type === "private"
+            ? "private"
+            : "public";
+
+
+        if (!name) {
+          return json({
+            success: false,
+            message: "Room name जरूरी है।"
+          }, 400);
+        }
+
+
         const result =
           await env.DB
             .prepare(`
@@ -511,414 +411,405 @@ export default {
                 name,
                 description,
                 room_type,
-                is_active
+                created_at
               )
-              VALUES (?, ?, ?, ?, 1)
+              VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
             `)
             .bind(
-              auth.user.id,
+              user.id,
               name,
               description,
               roomType
             )
             .run();
+
+
         const roomId =
           result.meta.last_row_id;
-        /* Create exactly 8 seats */
-        for (
-          let i = 1;
-          i <= 8;
-          i++
-        ) {
-          await env.DB
-            .prepare(`
-              INSERT INTO room_seats
-              (
-                room_id,
-                seat_number,
-                user_id,
-                is_muted
-              )
-              VALUES (?, ?, NULL, 0)
-            `)
-            .bind(
-              roomId,
-              i
+
+
+        /* Host automatically joins */
+
+        await env.DB
+          .prepare(`
+            INSERT OR IGNORE INTO room_members
+            (
+              room_id,
+              user_id,
+              joined_at
             )
-            .run();
-        }
+            VALUES (?, ?, CURRENT_TIMESTAMP)
+          `)
+          .bind(
+            roomId,
+            user.id
+          )
+          .run();
+
+
+        await env.DB
+          .prepare(`
+            INSERT OR IGNORE INTO room_viewers
+            (
+              room_id,
+              user_id,
+              joined_at
+            )
+            VALUES (?, ?, CURRENT_TIMESTAMP)
+          `)
+          .bind(
+            roomId,
+            user.id
+          )
+          .run();
+
+
         return json({
           success: true,
-          room_id: roomId,
-          message: "Room created."
-        }, 201);
-      } catch (e) {
-        return fail(
-          e.message,
-          500
-        );
+          message: "Room created.",
+          room_id: roomId
+        });
       }
-    }
-    /* =====================================================
-       ROOM DETAILS
-    ===================================================== */
-    const roomMatch =
-      url.pathname.match(
-        /^\/api\/rooms\/(\d+)$/
-      );
-    if (
-      roomMatch &&
-      request.method === "GET"
-    ) {
-      const roomId =
-        Number(roomMatch[1]);
-      try {
+
+
+      /* =========================
+         ROOM DETAILS
+      ========================= */
+
+      const roomMatch =
+        path.match(
+          /^\/api\/rooms\/(\d+)$/
+        );
+
+
+      if (
+        roomMatch &&
+        method === "GET"
+      ) {
+
+        const roomId =
+          Number(roomMatch[1]);
+
+
+        await requireAuth(
+          request,
+          env
+        );
+
+
         const room =
           await env.DB
             .prepare(`
               SELECT
-                rooms.*,
-                users.name AS owner_name,
-                users.username AS owner_username,
-                users.avatar_url AS owner_avatar
-              FROM rooms
-              INNER JOIN users
-                ON users.id = rooms.owner_id
-              WHERE rooms.id = ?
+                r.*,
+                u.name AS owner_name,
+                u.avatar_url AS owner_avatar
+              FROM rooms r
+              LEFT JOIN users u
+                ON u.id = r.owner_id
+              WHERE r.id = ?
               LIMIT 1
             `)
             .bind(roomId)
             .first();
+
+
         if (!room) {
-          return fail(
-            "Room नहीं मिला।",
-            404
-          );
+          return json({
+            success: false,
+            message: "Room नहीं मिला।"
+          }, 404);
         }
+
+
         const seats =
           await env.DB
             .prepare(`
               SELECT
-                room_seats.id,
-                room_seats.room_id,
-                room_seats.seat_number,
-                room_seats.user_id,
-                room_seats.is_muted,
-                room_seats.joined_at,
-                users.name,
-                users.username,
-                users.avatar_url
-              FROM room_seats
-              LEFT JOIN users
-                ON users.id =
-                   room_seats.user_id
-              WHERE room_seats.room_id = ?
-              ORDER BY room_seats.seat_number
+                rs.*,
+                u.name,
+                u.username,
+                u.avatar_url
+              FROM room_seats rs
+              LEFT JOIN users u
+                ON u.id = rs.user_id
+              WHERE rs.room_id = ?
+              ORDER BY rs.seat_number
             `)
             .bind(roomId)
             .all();
-        const members =
-          await env.DB
-            .prepare(`
-              SELECT
-                room_members.user_id,
-                room_members.role,
-                room_members.joined_at,
-                users.name,
-                users.username,
-                users.avatar_url
-              FROM room_members
-              INNER JOIN users
-                ON users.id =
-                   room_members.user_id
-              WHERE room_members.room_id = ?
-                AND room_members.is_inside = 1
-              ORDER BY room_members.joined_at
-            `)
-            .bind(roomId)
-            .all();
+
+
         return json({
           success: true,
           room,
-          seats:
-            seats.results || [],
-          members:
-            members.results || []
+          seats: seats.results || []
         });
-      } catch (e) {
-        return fail(
-          e.message,
-          500
+      }
+
+
+      /* =========================
+         JOIN ROOM
+      ========================= */
+
+      const joinMatch =
+        path.match(
+          /^\/api\/rooms\/(\d+)\/join$/
         );
-      }
-    }
-    /* =====================================================
-       JOIN ROOM
-    ===================================================== */
-    const joinMatch =
-      url.pathname.match(
-        /^\/api\/rooms\/(\d+)\/join$/
-      );
-    if (
-      joinMatch &&
-      request.method === "POST"
-    ) {
-      const auth =
-        await requireUser();
-      if (auth.error) {
-        return auth.error;
-      }
-      const roomId =
-        Number(joinMatch[1]);
-      try {
+
+
+      if (
+        joinMatch &&
+        method === "POST"
+      ) {
+
+        const roomId =
+          Number(joinMatch[1]);
+
+        const user =
+          await requireAuth(
+            request,
+            env
+          );
+
+
         const room =
           await env.DB
             .prepare(`
-              SELECT id, room_type, is_active
+              SELECT id
               FROM rooms
               WHERE id = ?
               LIMIT 1
             `)
             .bind(roomId)
             .first();
-        if (!room || !room.is_active) {
-          return fail(
-            "Room उपलब्ध नहीं है।",
-            404
-          );
+
+
+        if (!room) {
+          return json({
+            success: false,
+            message: "Room नहीं मिला।"
+          }, 404);
         }
+
+
         await env.DB
           .prepare(`
-            INSERT INTO room_members
+            INSERT OR IGNORE INTO room_members
             (
               room_id,
               user_id,
-              role,
-              is_inside,
-              left_at
+              joined_at
             )
-            VALUES (?, ?, ?, 1, NULL)
-            ON CONFLICT(room_id, user_id)
-            DO UPDATE SET
-              is_inside = 1,
-              left_at = NULL
+            VALUES (?, ?, CURRENT_TIMESTAMP)
           `)
           .bind(
             roomId,
-            auth.user.id,
-            Number(room.owner_id) ===
-              Number(auth.user.id)
-              ? "owner"
-              : "member"
+            user.id
           )
           .run();
+
+
         await env.DB
           .prepare(`
-            INSERT INTO room_viewers
+            INSERT OR IGNORE INTO room_viewers
             (
               room_id,
               user_id,
-              is_inside
+              joined_at
             )
-            VALUES (?, ?, 1)
+            VALUES (?, ?, CURRENT_TIMESTAMP)
           `)
           .bind(
             roomId,
-            auth.user.id
+            user.id
           )
           .run();
+
+
         return json({
           success: true,
-          message: "Joined room."
+          message: "Room joined."
         });
-      } catch (e) {
-        return fail(
-          e.message,
-          500
+      }
+
+
+      /* =========================
+         LEAVE ROOM
+      ========================= */
+
+      const leaveMatch =
+        path.match(
+          /^\/api\/rooms\/(\d+)\/leave$/
         );
-      }
-    }
-    /* =====================================================
-       LEAVE ROOM
-    ===================================================== */
-    const leaveMatch =
-      url.pathname.match(
-        /^\/api\/rooms\/(\d+)\/leave$/
-      );
-    if (
-      leaveMatch &&
-      request.method === "POST"
-    ) {
-      const auth =
-        await requireUser();
-      if (auth.error) {
-        return auth.error;
-      }
-      const roomId =
-        Number(leaveMatch[1]);
-      try {
+
+
+      if (
+        leaveMatch &&
+        method === "POST"
+      ) {
+
+        const roomId =
+          Number(leaveMatch[1]);
+
+        const user =
+          await requireAuth(
+            request,
+            env
+          );
+
+
         await env.DB
           .prepare(`
-            UPDATE room_members
-            SET
-              is_inside = 0,
-              left_at = CURRENT_TIMESTAMP
+            DELETE FROM room_viewers
             WHERE room_id = ?
               AND user_id = ?
           `)
           .bind(
             roomId,
-            auth.user.id
+            user.id
           )
           .run();
+
+
         await env.DB
           .prepare(`
-            UPDATE room_viewers
-            SET
-              is_inside = 0,
-              left_at = CURRENT_TIMESTAMP
-            WHERE room_id = ?
-              AND user_id = ?
-              AND is_inside = 1
-          `)
-          .bind(
-            roomId,
-            auth.user.id
-          )
-          .run();
-        await env.DB
-          .prepare(`
-            UPDATE room_seats
-            SET
-              user_id = NULL,
-              is_muted = 0,
-              joined_at = NULL
+            DELETE FROM room_seats
             WHERE room_id = ?
               AND user_id = ?
           `)
           .bind(
             roomId,
-            auth.user.id
+            user.id
           )
           .run();
+
+
         return json({
-          success: true
+          success: true,
+          message: "Room left."
         });
-      } catch (e) {
-        return fail(
-          e.message,
-          500
-        );
       }
-    }
-    /* =====================================================
-       ROOM SEATS
-    ===================================================== */
-    const seatsMatch =
-      url.pathname.match(
-        /^\/api\/rooms\/(\d+)\/seats$/
-      );
-    if (
-      seatsMatch &&
-      request.method === "GET"
-    ) {
-      const roomId =
-        Number(seatsMatch[1]);
-      try {
-        const result =
+
+
+      /* =========================
+         ROOM SEATS
+      ========================= */
+
+      const seatsMatch =
+        path.match(
+          /^\/api\/rooms\/(\d+)\/seats$/
+        );
+
+
+      if (
+        seatsMatch &&
+        method === "GET"
+      ) {
+
+        const roomId =
+          Number(seatsMatch[1]);
+
+
+        await requireAuth(
+          request,
+          env
+        );
+
+
+        const seats =
           await env.DB
             .prepare(`
               SELECT
-                room_seats.*,
-                users.name,
-                users.username,
-                users.avatar_url,
-                CASE
-                  WHEN room_seats.user_id IS NULL
-                  THEN 0
-                  ELSE 1
-                END AS is_occupied,
-                CASE
-                  WHEN room_seats.is_muted = 1
-                  THEN 0
-                  ELSE 1
-                END AS mic_on
-              FROM room_seats
-              LEFT JOIN users
-                ON users.id =
-                   room_seats.user_id
-              WHERE room_seats.room_id = ?
-              ORDER BY room_seats.seat_number
+                rs.*,
+                u.name,
+                u.username,
+                u.avatar_url
+              FROM room_seats rs
+              LEFT JOIN users u
+                ON u.id = rs.user_id
+              WHERE rs.room_id = ?
+              ORDER BY rs.seat_number
             `)
             .bind(roomId)
             .all();
+
+
         return json({
           success: true,
-          seats:
-            result.results || []
+          seats: seats.results || []
         });
-      } catch (e) {
-        return fail(
-          e.message,
-          500
+      }
+
+
+      /* =========================
+         JOIN SEAT
+      ========================= */
+
+      const seatJoinMatch =
+        path.match(
+          /^\/api\/rooms\/(\d+)\/seats\/(\d+)\/join$/
         );
-      }
-    }
-    /* =====================================================
-       JOIN SEAT
-    ===================================================== */
-    const seatJoinMatch =
-      url.pathname.match(
-        /^\/api\/rooms\/(\d+)\/seats\/(\d+)\/join$/
-      );
-    if (
-      seatJoinMatch &&
-      request.method === "POST"
-    ) {
-      const auth =
-        await requireUser();
-      if (auth.error) {
-        return auth.error;
-      }
-      const roomId =
-        Number(seatJoinMatch[1]);
-      const seatNumber =
-        Number(seatJoinMatch[2]);
+
+
       if (
-        seatNumber < 1 ||
-        seatNumber > 8
+        seatJoinMatch &&
+        method === "POST"
       ) {
-        return fail(
-          "Invalid seat."
-        );
-      }
-      try {
-        const member =
+
+        const roomId =
+          Number(seatJoinMatch[1]);
+
+        const seatNumber =
+          Number(seatJoinMatch[2]);
+
+
+        const user =
+          await requireAuth(
+            request,
+            env
+          );
+
+
+        if (
+          seatNumber < 1 ||
+          seatNumber > 8
+        ) {
+          return json({
+            success: false,
+            message: "Invalid seat."
+          }, 400);
+        }
+
+
+        const already =
           await env.DB
             .prepare(`
               SELECT id
-              FROM room_members
+              FROM room_seats
               WHERE room_id = ?
                 AND user_id = ?
-                AND is_inside = 1
               LIMIT 1
             `)
             .bind(
               roomId,
-              auth.user.id
+              user.id
             )
             .first();
-        if (!member) {
-          return fail(
-            "पहले room join करें।"
-          );
+
+
+        if (already) {
+          return json({
+            success: false,
+            message: "आप पहले से एक seat पर हैं।"
+          }, 409);
         }
-        const seat =
+
+
+        const occupied =
           await env.DB
             .prepare(`
-              SELECT
-                id,
-                user_id
+              SELECT id
               FROM room_seats
               WHERE room_id = ?
                 AND seat_number = ?
@@ -929,93 +820,75 @@ export default {
               seatNumber
             )
             .first();
-        if (!seat) {
-          return fail(
-            "Seat नहीं मिली।",
-            404
-          );
+
+
+        if (occupied) {
+          return json({
+            success: false,
+            message: "यह seat अभी occupied है।"
+          }, 409);
         }
-        if (
-          seat.user_id &&
-          Number(seat.user_id) !==
-            Number(auth.user.id)
-        ) {
-          return fail(
-            "यह seat पहले से occupied है।",
-            409
-          );
-        }
-        /* Remove user from another seat */
+
+
         await env.DB
           .prepare(`
-            UPDATE room_seats
-            SET
-              user_id = NULL,
-              is_muted = 0,
-              joined_at = NULL
-            WHERE room_id = ?
-              AND user_id = ?
+            INSERT INTO room_seats
+            (
+              room_id,
+              seat_number,
+              user_id,
+              is_muted,
+              joined_at
+            )
+            VALUES (?, ?, ?, 0, CURRENT_TIMESTAMP)
           `)
           .bind(
             roomId,
-            auth.user.id
+            seatNumber,
+            user.id
           )
           .run();
-        await env.DB
-          .prepare(`
-            UPDATE room_seats
-            SET
-              user_id = ?,
-              is_muted = 1,
-              joined_at = CURRENT_TIMESTAMP
-            WHERE room_id = ?
-              AND seat_number = ?
-          `)
-          .bind(
-            auth.user.id,
-            roomId,
-            seatNumber
-          )
-          .run();
+
+
         return json({
           success: true,
-          seat_number: seatNumber
+          message: "Seat joined."
         });
-      } catch (e) {
-        return fail(
-          e.message,
-          500
+      }
+
+
+      /* =========================
+         LEAVE SEAT
+      ========================= */
+
+      const seatLeaveMatch =
+        path.match(
+          /^\/api\/rooms\/(\d+)\/seats\/(\d+)\/leave$/
         );
-      }
-    }
-    /* =====================================================
-       LEAVE SEAT
-    ===================================================== */
-    const seatLeaveMatch =
-      url.pathname.match(
-        /^\/api\/rooms\/(\d+)\/seats\/(\d+)\/leave$/
-      );
-    if (
-      seatLeaveMatch &&
-      request.method === "POST"
-    ) {
-      const auth =
-        await requireUser();
-      if (auth.error) {
-        return auth.error;
-      }
-      const roomId =
-        Number(seatLeaveMatch[1]);
-      const seatNumber =
-        Number(seatLeaveMatch[2]);
-      try {
+
+
+      if (
+        seatLeaveMatch &&
+        method === "POST"
+      ) {
+
+        const roomId =
+          Number(seatLeaveMatch[1]);
+
+        const seatNumber =
+          Number(seatLeaveMatch[2]);
+
+
+        const user =
+          await requireAuth(
+            request,
+            env
+          );
+
+
         await env.DB
           .prepare(`
-            UPDATE room_seats
-            SET
-              user_id = NULL,
-              is_muted = 0,
-              joined_at = NULL
+            DELETE FROM room_seats
             WHERE room_id = ?
               AND seat_number = ?
               AND user_id = ?
@@ -1023,387 +896,342 @@ export default {
           .bind(
             roomId,
             seatNumber,
-            auth.user.id
+            user.id
           )
           .run();
+
+
         return json({
-          success: true
+          success: true,
+          message: "Seat left."
         });
-      } catch (e) {
-        return fail(
-          e.message,
-          500
+      }
+
+
+      /* =========================
+         MIC
+      ========================= */
+
+      const micMatch =
+        path.match(
+          /^\/api\/rooms\/(\d+)\/seats\/(\d+)\/mic$/
         );
-      }
-    }
-    /* =====================================================
-       MICROPHONE
-    ===================================================== */
-    const micMatch =
-      url.pathname.match(
-        /^\/api\/rooms\/(\d+)\/seats\/(\d+)\/mic$/
-      );
-    if (
-      micMatch &&
-      request.method === "POST"
-    ) {
-      const auth =
-        await requireUser();
-      if (auth.error) {
-        return auth.error;
-      }
-      const roomId =
-        Number(micMatch[1]);
-      const seatNumber =
-        Number(micMatch[2]);
-      const data =
-        await body();
-      const micOn =
-        Boolean(data.mic_on);
-      try {
-        const result =
-          await env.DB
-            .prepare(`
-              UPDATE room_seats
-              SET is_muted = ?
-              WHERE room_id = ?
-                AND seat_number = ?
-                AND user_id = ?
-            `)
-            .bind(
-              micOn ? 0 : 1,
-              roomId,
-              seatNumber,
-              auth.user.id
-            )
-            .run();
-        if (!result.meta.changes) {
-          return fail(
-            "आप इस seat पर नहीं हैं।"
+
+
+      if (
+        micMatch &&
+        method === "POST"
+      ) {
+
+        const roomId =
+          Number(micMatch[1]);
+
+        const seatNumber =
+          Number(micMatch[2]);
+
+
+        const user =
+          await requireAuth(
+            request,
+            env
           );
-        }
+
+
+        const body =
+          await readJSON(request);
+
+
+        const micOn =
+          Boolean(body.mic_on);
+
+
+        await env.DB
+          .prepare(`
+            UPDATE room_seats
+            SET is_muted = ?
+            WHERE room_id = ?
+              AND seat_number = ?
+              AND user_id = ?
+          `)
+          .bind(
+            micOn ? 0 : 1,
+            roomId,
+            seatNumber,
+            user.id
+          )
+          .run();
+
+
         return json({
           success: true,
           mic_on: micOn
         });
-      } catch (e) {
-        return fail(
-          e.message,
-          500
-        );
       }
-    }
-    /* =====================================================
-       ROOM CHAT - GET
-    ===================================================== */
-    const messagesGet =
-      url.pathname.match(
-        /^\/api\/rooms\/(\d+)\/messages$/
-      );
-    if (
-      messagesGet &&
-      request.method === "GET"
-    ) {
-      const roomId =
-        Number(messagesGet[1]);
-      try {
+
+
+      /* =========================
+         CHAT MESSAGE LIST
+      ========================= */
+
+      const messagesMatch =
+        path.match(
+          /^\/api\/rooms\/(\d+)\/messages$/
+        );
+
+
+      if (
+        messagesMatch &&
+        method === "GET"
+      ) {
+
+        const roomId =
+          Number(messagesMatch[1]);
+
+
+        await requireAuth(
+          request,
+          env
+        );
+
+
         const result =
           await env.DB
             .prepare(`
               SELECT
-                room_messages.id,
-                room_messages.room_id,
-                room_messages.user_id,
-                room_messages.message,
-                room_messages.message_type,
-                room_messages.created_at,
-                users.name,
-                users.username,
-                users.avatar_url
-              FROM room_messages
-              INNER JOIN users
-                ON users.id =
-                   room_messages.user_id
-              WHERE room_messages.room_id = ?
-              ORDER BY room_messages.id DESC
+                rm.*,
+                u.name,
+                u.username,
+                u.avatar_url
+              FROM room_messages rm
+              LEFT JOIN users u
+                ON u.id = rm.user_id
+              WHERE rm.room_id = ?
+              ORDER BY rm.id ASC
               LIMIT 100
             `)
             .bind(roomId)
             .all();
-        const messages =
-          (result.results || [])
-            .reverse();
+
+
         return json({
           success: true,
-          messages
+          messages:
+            result.results || []
         });
-      } catch (e) {
-        return fail(
-          e.message,
-          500
-        );
       }
-    }
-    /* =====================================================
-       ROOM CHAT - SEND
-    ===================================================== */
-    if (
-      messagesGet &&
-      request.method === "POST"
-    ) {
-      const auth =
-        await requireUser();
-      if (auth.error) {
-        return auth.error;
-      }
-      const roomId =
-        Number(messagesGet[1]);
-      const data =
-        await body();
-      const message =
-        String(data.message || "")
-          .trim()
-          .slice(0, 500);
-      if (!message) {
-        return fail(
-          "Message खाली नहीं हो सकता।"
-        );
-      }
-      try {
-        const member =
-          await env.DB
-            .prepare(`
-              SELECT id
-              FROM room_members
-              WHERE room_id = ?
-                AND user_id = ?
-                AND is_inside = 1
-              LIMIT 1
-            `)
-            .bind(
-              roomId,
-              auth.user.id
-            )
-            .first();
-        if (!member) {
-          return fail(
-            "Room में join करें।",
-            403
+
+
+      /* =========================
+         SEND CHAT
+      ========================= */
+
+      if (
+        messagesMatch &&
+        method === "POST"
+      ) {
+
+        const roomId =
+          Number(messagesMatch[1]);
+
+
+        const user =
+          await requireAuth(
+            request,
+            env
           );
+
+
+        const body =
+          await readJSON(request);
+
+
+        const message =
+          String(body.message || "")
+            .trim();
+
+
+        if (!message) {
+          return json({
+            success: false,
+            message: "Message खाली है।"
+          }, 400);
         }
-        const result =
-          await env.DB
-            .prepare(`
-              INSERT INTO room_messages
-              (
-                room_id,
-                user_id,
-                message,
-                message_type
-              )
-              VALUES (?, ?, ?, 'text')
-            `)
-            .bind(
-              roomId,
-              auth.user.id,
-              message
+
+
+        if (message.length > 500) {
+          return json({
+            success: false,
+            message: "Message बहुत लंबा है।"
+          }, 400);
+        }
+
+
+        await env.DB
+          .prepare(`
+            INSERT INTO room_messages
+            (
+              room_id,
+              user_id,
+              message,
+              created_at
             )
-            .run();
+            VALUES (?, ?, ?, CURRENT_TIMESTAMP)
+          `)
+          .bind(
+            roomId,
+            user.id,
+            message
+          )
+          .run();
+
+
         return json({
           success: true,
-          message_id:
-            result.meta.last_row_id
+          message: "Message sent."
         });
-      } catch (e) {
-        return fail(
-          e.message,
-          500
+      }
+
+
+      /* =========================
+         REACTION
+      ========================= */
+
+      const reactionMatch =
+        path.match(
+          /^\/api\/rooms\/(\d+)\/reactions$/
         );
-      }
-    }
-    /* =====================================================
-       REACTION
-    ===================================================== */
-    const reactionMatch =
-      url.pathname.match(
-        /^\/api\/rooms\/(\d+)\/reactions$/
-      );
-    if (
-      reactionMatch &&
-      request.method === "POST"
-    ) {
-      const auth =
-        await requireUser();
-      if (auth.error) {
-        return auth.error;
-      }
-      const roomId =
-        Number(reactionMatch[1]);
-      const data =
-        await body();
-      const emoji =
-        String(data.emoji || "❤️")
-          .slice(0, 20);
-      try {
+
+
+      if (
+        reactionMatch &&
+        method === "POST"
+      ) {
+
+        const roomId =
+          Number(reactionMatch[1]);
+
+
+        const user =
+          await requireAuth(
+            request,
+            env
+          );
+
+
+        const body =
+          await readJSON(request);
+
+
+        const emoji =
+          String(body.emoji || "")
+            .trim();
+
+
+        if (!emoji) {
+          return json({
+            success: false,
+            message: "Reaction missing."
+          }, 400);
+        }
+
+
         await env.DB
           .prepare(`
             INSERT INTO room_reactions
             (
               room_id,
               user_id,
-              reaction
+              reaction,
+              created_at
             )
-            VALUES (?, ?, ?)
+            VALUES (?, ?, ?, CURRENT_TIMESTAMP)
           `)
           .bind(
             roomId,
-            auth.user.id,
+            user.id,
             emoji
           )
           .run();
+
+
         return json({
           success: true
         });
-      } catch (e) {
-        return fail(
-          e.message,
-          500
-        );
       }
-    }
-    /* =====================================================
-       MUSIC - LIST
-    ===================================================== */
-    if (
-      url.pathname === "/api/music" &&
-      request.method === "GET"
-    ) {
-      try {
+
+
+      /* =========================
+         MUSIC LIST
+      ========================= */
+
+      if (
+        path === "/api/music" &&
+        method === "GET"
+      ) {
+
+        await requireAuth(
+          request,
+          env
+        );
+
+
         const result =
           await env.DB
             .prepare(`
-              SELECT
-                id,
-                title,
-                artist,
-                audio_url,
-                cover_url
+              SELECT *
               FROM music_tracks
               WHERE is_active = 1
-              ORDER BY title
-              LIMIT 200
+              ORDER BY id DESC
             `)
             .all();
+
+
         return json({
           success: true,
           tracks:
             result.results || []
         });
-      } catch (e) {
-        return fail(
-          e.message,
-          500
+      }
+
+
+      /* =========================
+         ROOM MUSIC
+      ========================= */
+
+      const musicMatch =
+        path.match(
+          /^\/api\/rooms\/(\d+)\/music$/
         );
-      }
-    }
-    /* =====================================================
-       ROOM MUSIC - CURRENT
-    ===================================================== */
-    const musicRoomMatch =
-      url.pathname.match(
-        /^\/api\/rooms\/(\d+)\/music$/
-      );
-    if (
-      musicRoomMatch &&
-      request.method === "GET"
-    ) {
-      const roomId =
-        Number(musicRoomMatch[1]);
-      try {
-        const music =
-          await env.DB
-            .prepare(`
-              SELECT
-                room_music.id,
-                room_music.room_id,
-                room_music.track_id,
-                room_music.is_playing,
-                room_music.started_at,
-                room_music.stopped_at,
-                music_tracks.title,
-                music_tracks.artist,
-                music_tracks.audio_url,
-                music_tracks.cover_url
-              FROM room_music
-              INNER JOIN music_tracks
-                ON music_tracks.id =
-                   room_music.track_id
-              WHERE room_music.room_id = ?
-              ORDER BY room_music.id DESC
-              LIMIT 1
-            `)
-            .bind(roomId)
-            .first();
-        return json({
-          success: true,
-          music: music || null
-        });
-      } catch (e) {
-        return fail(
-          e.message,
-          500
-        );
-      }
-    }
-    /* =====================================================
-       PLAY MUSIC
-    ===================================================== */
-    if (
-      musicRoomMatch &&
-      request.method === "POST"
-    ) {
-      const auth =
-        await requireUser();
-      if (auth.error) {
-        return auth.error;
-      }
-      const roomId =
-        Number(musicRoomMatch[1]);
-      const data =
-        await body();
-      const trackId =
-        Number(data.track_id);
-      if (!trackId) {
-        return fail(
-          "track_id जरूरी है।"
-        );
-      }
-      try {
-        const member =
-          await env.DB
-            .prepare(`
-              SELECT id
-              FROM room_members
-              WHERE room_id = ?
-                AND user_id = ?
-                AND is_inside = 1
-              LIMIT 1
-            `)
-            .bind(
-              roomId,
-              auth.user.id
-            )
-            .first();
-        if (!member) {
-          return fail(
-            "Room join करें।",
-            403
+
+
+      if (
+        musicMatch &&
+        method === "POST"
+      ) {
+
+        const roomId =
+          Number(musicMatch[1]);
+
+
+        const user =
+          await requireAuth(
+            request,
+            env
           );
-        }
+
+
+        const body =
+          await readJSON(request);
+
+
+        const trackId =
+          Number(body.track_id);
+
+
         const track =
           await env.DB
             .prepare(`
-              SELECT id
+              SELECT *
               FROM music_tracks
               WHERE id = ?
                 AND is_active = 1
@@ -1411,155 +1239,113 @@ export default {
             `)
             .bind(trackId)
             .first();
+
+
         if (!track) {
-          return fail(
-            "Music track नहीं मिला।",
-            404
-          );
+          return json({
+            success: false,
+            message: "Music track नहीं मिला।"
+          }, 404);
         }
+
+
         await env.DB
           .prepare(`
-            UPDATE room_music
-            SET
-              is_playing = 0,
-              stopped_at = CURRENT_TIMESTAMP
-            WHERE room_id = ?
-              AND is_playing = 1
-          `)
-          .bind(roomId)
-          .run();
-        const result =
-          await env.DB
-            .prepare(`
-              INSERT INTO room_music
-              (
-                room_id,
-                track_id,
-                started_by,
-                is_playing,
-                started_at
-              )
-              VALUES (?, ?, ?, 1, CURRENT_TIMESTAMP)
-            `)
-            .bind(
-              roomId,
-              trackId,
-              auth.user.id
+            INSERT INTO room_music
+            (
+              room_id,
+              track_id,
+              started_by,
+              started_at
             )
-            .run();
+            VALUES (?, ?, ?, CURRENT_TIMESTAMP)
+          `)
+          .bind(
+            roomId,
+            trackId,
+            user.id
+          )
+          .run();
+
+
         return json({
           success: true,
-          music_id:
-            result.meta.last_row_id
+          track
         });
-      } catch (e) {
-        return fail(
-          e.message,
-          500
+      }
+
+
+      /* =========================
+         GIFTS
+      ========================= */
+
+      if (
+        path === "/api/gifts" &&
+        method === "GET"
+      ) {
+
+        await requireAuth(
+          request,
+          env
         );
-      }
-    }
-    /* =====================================================
-       STOP MUSIC
-    ===================================================== */
-    const stopMusicMatch =
-      url.pathname.match(
-        /^\/api\/rooms\/(\d+)\/music\/stop$/
-      );
-    if (
-      stopMusicMatch &&
-      request.method === "POST"
-    ) {
-      const auth =
-        await requireUser();
-      if (auth.error) {
-        return auth.error;
-      }
-      const roomId =
-        Number(stopMusicMatch[1]);
-      try {
-        await env.DB
-          .prepare(`
-            UPDATE room_music
-            SET
-              is_playing = 0,
-              stopped_at = CURRENT_TIMESTAMP
-            WHERE room_id = ?
-              AND is_playing = 1
-          `)
-          .bind(roomId)
-          .run();
-        return json({
-          success: true
-        });
-      } catch (e) {
-        return fail(
-          e.message,
-          500
-        );
-      }
-    }
-    /* =====================================================
-       GIFTS - LIST
-    ===================================================== */
-    if (
-      url.pathname === "/api/gifts" &&
-      request.method === "GET"
-    ) {
-      try {
+
+
         const result =
           await env.DB
             .prepare(`
-              SELECT
-                id,
-                name,
-                icon_url,
-                coin_cost
+              SELECT *
               FROM gifts
               WHERE is_active = 1
-              ORDER BY coin_cost
+              ORDER BY coin_cost ASC
             `)
             .all();
+
+
         return json({
           success: true,
           gifts:
             result.results || []
         });
-      } catch (e) {
-        return fail(
-          e.message,
-          500
-        );
       }
-    }
-    /* =====================================================
-       SUPPORT TICKET
-    ===================================================== */
-    if (
-      url.pathname === "/api/support" &&
-      request.method === "POST"
-    ) {
-      const auth =
-        await requireUser();
-      if (auth.error) {
-        return auth.error;
-      }
-      const data =
-        await body();
-      const subject =
-        String(data.subject || "")
-          .trim()
-          .slice(0, 150);
-      const message =
-        String(data.message || "")
-          .trim()
-          .slice(0, 2000);
-      if (!subject || !message) {
-        return fail(
-          "Subject और message जरूरी हैं।"
-        );
-      }
-      try {
+
+
+      /* =========================
+         SUPPORT
+      ========================= */
+
+      if (
+        path === "/api/support" &&
+        method === "POST"
+      ) {
+
+        const user =
+          await requireAuth(
+            request,
+            env
+          );
+
+
+        const body =
+          await readJSON(request);
+
+
+        const subject =
+          String(body.subject || "")
+            .trim();
+
+        const message =
+          String(body.message || "")
+            .trim();
+
+
+        if (!subject || !message) {
+          return json({
+            success: false,
+            message: "Subject और message जरूरी हैं।"
+          }, 400);
+        }
+
+
         const result =
           await env.DB
             .prepare(`
@@ -1567,37 +1353,546 @@ export default {
               (
                 user_id,
                 subject,
-                message,
-                status
+                status,
+                created_at
               )
-              VALUES (?, ?, ?, 'open')
+              VALUES (?, ?, 'open', CURRENT_TIMESTAMP)
             `)
             .bind(
-              auth.user.id,
-              subject,
-              message
+              user.id,
+              subject
             )
             .run();
+
+
+        await env.DB
+          .prepare(`
+            INSERT INTO support_messages
+            (
+              ticket_id,
+              user_id,
+              message,
+              created_at
+            )
+            VALUES (?, ?, ?, CURRENT_TIMESTAMP)
+          `)
+          .bind(
+            result.meta.last_row_id,
+            user.id,
+            message
+          )
+          .run();
+
+
         return json({
           success: true,
-          ticket_id:
-            result.meta.last_row_id,
           message:
-            "Support request भेज दी गई है।"
-        }, 201);
-      } catch (e) {
-        return fail(
-          e.message,
-          500
-        );
+            "आपकी support request भेज दी गई है।",
+          ticket_id:
+            result.meta.last_row_id
+        });
       }
+
+
+      /* =========================
+         NOT FOUND
+      ========================= */
+
+      return json({
+        success: false,
+        message: "API endpoint नहीं मिला।"
+      }, 404);
+
+
+    } catch (error) {
+
+      console.error(error);
+
+      return json({
+        success: false,
+        message:
+          error?.message ||
+          "Server error."
+      }, 500);
     }
-    /* =====================================================
-       404
-    ===================================================== */
-    return fail(
-      "API endpoint not found.",
-      404
-    );
   }
 };
+
+
+/* =====================================================
+   DATABASE INITIALIZATION
+===================================================== */
+
+async function initDatabase(env) {
+
+  const statements = [
+
+    `
+    CREATE TABLE IF NOT EXISTS sessions (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      token TEXT NOT NULL UNIQUE,
+      user_id INTEGER NOT NULL,
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )
+    `,
+
+    `
+    CREATE TABLE IF NOT EXISTS rooms (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      owner_id INTEGER NOT NULL,
+      name TEXT NOT NULL,
+      description TEXT DEFAULT '',
+      room_type TEXT NOT NULL DEFAULT 'public',
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )
+    `,
+
+    `
+    CREATE TABLE IF NOT EXISTS room_members (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      room_id INTEGER NOT NULL,
+      user_id INTEGER NOT NULL,
+      joined_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(room_id,user_id)
+    )
+    `,
+
+    `
+    CREATE TABLE IF NOT EXISTS room_viewers (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      room_id INTEGER NOT NULL,
+      user_id INTEGER NOT NULL,
+      joined_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(room_id,user_id)
+    )
+    `,
+
+    `
+    CREATE TABLE IF NOT EXISTS room_seats (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      room_id INTEGER NOT NULL,
+      seat_number INTEGER NOT NULL,
+      user_id INTEGER NOT NULL,
+      is_muted INTEGER NOT NULL DEFAULT 0,
+      joined_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(room_id,seat_number),
+      UNIQUE(room_id,user_id)
+    )
+    `,
+
+    `
+    CREATE TABLE IF NOT EXISTS room_messages (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      room_id INTEGER NOT NULL,
+      user_id INTEGER NOT NULL,
+      message TEXT NOT NULL,
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )
+    `,
+
+    `
+    CREATE TABLE IF NOT EXISTS room_reactions (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      room_id INTEGER NOT NULL,
+      user_id INTEGER NOT NULL,
+      reaction TEXT NOT NULL,
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )
+    `,
+
+    `
+    CREATE TABLE IF NOT EXISTS music_tracks (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      title TEXT NOT NULL,
+      artist TEXT DEFAULT '',
+      audio_url TEXT NOT NULL,
+      is_active INTEGER NOT NULL DEFAULT 1,
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )
+    `,
+
+    `
+    CREATE TABLE IF NOT EXISTS room_music (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      room_id INTEGER NOT NULL,
+      track_id INTEGER NOT NULL,
+      started_by INTEGER NOT NULL,
+      started_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )
+    `,
+
+    `
+    CREATE TABLE IF NOT EXISTS gifts (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      coin_cost INTEGER NOT NULL DEFAULT 0,
+      image_url TEXT DEFAULT '',
+      is_active INTEGER NOT NULL DEFAULT 1
+    )
+    `,
+
+    `
+    CREATE TABLE IF NOT EXISTS gift_transactions (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      room_id INTEGER NOT NULL,
+      sender_id INTEGER NOT NULL,
+      receiver_id INTEGER NOT NULL,
+      gift_id INTEGER NOT NULL,
+      quantity INTEGER NOT NULL DEFAULT 1,
+      coins INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )
+    `,
+
+    `
+    CREATE TABLE IF NOT EXISTS support_tickets (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER NOT NULL,
+      subject TEXT NOT NULL,
+      status TEXT NOT NULL DEFAULT 'open',
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )
+    `,
+
+    `
+    CREATE TABLE IF NOT EXISTS support_messages (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      ticket_id INTEGER NOT NULL,
+      user_id INTEGER NOT NULL,
+      message TEXT NOT NULL,
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )
+    `
+  ];
+
+
+  for (const sql of statements) {
+
+    await env.DB
+      .prepare(sql)
+      .run();
+
+  }
+
+
+  /* Useful indexes */
+
+  const indexes = [
+
+    `
+    CREATE INDEX IF NOT EXISTS
+    idx_sessions_token
+    ON sessions(token)
+    `,
+
+    `
+    CREATE INDEX IF NOT EXISTS
+    idx_room_messages_room
+    ON room_messages(room_id,id)
+    `,
+
+    `
+    CREATE INDEX IF NOT EXISTS
+    idx_room_viewers_room
+    ON room_viewers(room_id)
+    `,
+
+    `
+    CREATE INDEX IF NOT EXISTS
+    idx_room_seats_room
+    ON room_seats(room_id)
+    `
+
+  ];
+
+
+  for (const sql of indexes) {
+
+    await env.DB
+      .prepare(sql)
+      .run();
+
+  }
+
+}
+
+
+/* =====================================================
+   AUTH
+===================================================== */
+
+async function authenticate(request, env) {
+
+  const token =
+    getToken(request);
+
+
+  if (!token) {
+    return null;
+  }
+
+
+  const result =
+    await env.DB
+      .prepare(`
+        SELECT u.*
+        FROM sessions s
+        JOIN users u
+          ON u.id = s.user_id
+        WHERE s.token = ?
+        LIMIT 1
+      `)
+      .bind(token)
+      .first();
+
+
+  return result || null;
+}
+
+
+async function requireAuth(request, env) {
+
+  const user =
+    await authenticate(
+      request,
+      env
+    );
+
+
+  if (!user) {
+    throw new HTTPError(
+      "Login required.",
+      401
+    );
+  }
+
+
+  return user;
+}
+
+
+function getToken(request) {
+
+  const auth =
+    request.headers.get(
+      "Authorization"
+    );
+
+
+  if (
+    auth &&
+    auth.startsWith("Bearer ")
+  ) {
+    return auth.slice(7).trim();
+  }
+
+
+  return null;
+}
+
+
+/* =====================================================
+   PASSWORD
+===================================================== */
+
+async function hashPassword(password) {
+
+  const encoder =
+    new TextEncoder();
+
+
+  const data =
+    encoder.encode(password);
+
+
+  const hash =
+    await crypto.subtle.digest(
+      "SHA-256",
+      data
+    );
+
+
+  return [...new Uint8Array(hash)]
+    .map(
+      byte =>
+        byte
+          .toString(16)
+          .padStart(2, "0")
+    )
+    .join("");
+}
+
+
+async function verifyPassword(
+  password,
+  storedHash
+) {
+
+  const hash =
+    await hashPassword(password);
+
+
+  return hash === storedHash;
+}
+
+
+/* =====================================================
+   USERNAME
+===================================================== */
+
+async function makeUsername(
+  env,
+  name
+) {
+
+  let base =
+    name
+      .toLowerCase()
+      .replace(
+        /[^a-z0-9]/g,
+        ""
+      )
+      .slice(0, 20);
+
+
+  if (!base) {
+    base = "user";
+  }
+
+
+  let username = base;
+
+
+  for (let i = 0; i < 100; i++) {
+
+    const exists =
+      await env.DB
+        .prepare(`
+          SELECT id
+          FROM users
+          WHERE username = ?
+          LIMIT 1
+        `)
+        .bind(username)
+        .first();
+
+
+    if (!exists) {
+      return username;
+    }
+
+
+    username =
+      base +
+      Math.floor(
+        1000 + Math.random() * 9000
+      );
+  }
+
+
+  return (
+    "user" +
+    Date.now()
+  );
+}
+
+
+/* =====================================================
+   PUBLIC USER
+===================================================== */
+
+function publicUser(user) {
+
+  return {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    username: user.username,
+    avatar_url: user.avatar_url || "",
+    bio: user.bio || "",
+    coins: Number(user.coins || 0),
+    is_online:
+      Number(user.is_online || 0)
+  };
+}
+
+
+/* =====================================================
+   JSON
+===================================================== */
+
+function json(
+  data,
+  status = 200
+) {
+
+  return new Response(
+    JSON.stringify(data),
+    {
+      status,
+      headers: {
+        "Content-Type":
+          "application/json; charset=utf-8",
+        ...corsHeaders()
+      }
+    }
+  );
+}
+
+
+function corsHeaders() {
+
+  return {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Headers":
+      "Content-Type, Authorization",
+    "Access-Control-Allow-Methods":
+      "GET, POST, PUT, PATCH, DELETE, OPTIONS",
+    "Cache-Control":
+      "no-store"
+  };
+
+}
+
+
+/* =====================================================
+   REQUEST JSON
+===================================================== */
+
+async function readJSON(request) {
+
+  try {
+
+    return await request.json();
+
+  } catch {
+
+    throw new HTTPError(
+      "Invalid JSON request.",
+      400
+    );
+
+  }
+
+}
+
+
+/* =====================================================
+   HTTP ERROR
+===================================================== */
+
+class HTTPError extends Error {
+
+  constructor(
+    message,
+    status
+  ) {
+
+    super(message);
+
+    this.status =
+      status;
+
+  }
+
+}
