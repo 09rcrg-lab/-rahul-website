@@ -1,89 +1,82 @@
+/* =========================================================
+   RAHUL LIVE COMMUNITY
+   FINAL SCRIPT.JS
+========================================================= */
+
 const API =
   "https://rahulsocialhub-db.09rcrg.workers.dev";
 
-const TOKEN_KEY =
-  "rahul_live_token";
+let authToken =
+  localStorage.getItem("rahul_live_token") || "";
+
+let currentUser =
+  JSON.parse(
+    localStorage.getItem("rahul_live_user") || "null"
+  );
+
+let currentRoom = null;
+
+let currentSeat = null;
+
+let micOn = false;
+
+let roomTimer = null;
 
 
-const state = {
-
-  user: null,
-
-  roomId: null,
-
-  room: null,
-
-  seat: null,
-
-  micOn: false,
-
-  refreshTimer: null,
-
-  currentPage: "login"
-
-};
-
-
-/* =====================================================
-   BASIC HELPERS
-===================================================== */
+/* =========================================================
+   HELPERS
+========================================================= */
 
 function $(id) {
   return document.getElementById(id);
 }
 
 
-function escapeHTML(value) {
+function showPage(page) {
 
-  return String(value ?? "")
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
-}
+  const pages = [
+    "loginPage",
+    "registerPage",
+    "homePage",
+    "roomPage",
+    "supportPage"
+  ];
 
+  pages.forEach(id => {
 
-function getToken() {
-  return localStorage.getItem(TOKEN_KEY) || "";
-}
+    const element = $(id);
 
+    if (!element) return;
 
-function setToken(token) {
-
-  if (token) {
-
-    localStorage.setItem(
-      TOKEN_KEY,
-      token
+    element.classList.toggle(
+      "hidden",
+      id !== page + "Page"
     );
 
-  } else {
+  });
 
-    localStorage.removeItem(
-      TOKEN_KEY
-    );
-  }
 }
 
 
-function showLoading(show = true) {
+function loading(show) {
 
-  const overlay =
+  const element =
     $("loadingOverlay");
 
-  if (!overlay) return;
+  if (!element) return;
 
-  overlay.classList.toggle(
+  element.classList.toggle(
     "hidden",
     !show
   );
+
 }
 
 
-function showMessage(message) {
+function message(text) {
 
-  alert(message);
+  alert(text);
+
 }
 
 
@@ -98,17 +91,12 @@ async function api(
     ...(options.headers || {})
   };
 
-
-  const token =
-    getToken();
-
-
-  if (token) {
+  if (authToken) {
 
     headers.Authorization =
-      `Bearer ${token}`;
-  }
+      `Bearer ${authToken}`;
 
+  }
 
   const response =
     await fetch(
@@ -118,7 +106,6 @@ async function api(
         headers
       }
     );
-
 
   let data;
 
@@ -132,279 +119,241 @@ async function api(
     data = {
       success: false,
       message:
-        "Server ने invalid response दिया।"
+        "Server ने सही response नहीं दिया।"
     };
+
   }
 
-
-  if (!response.ok || data.success === false) {
+  if (!response.ok) {
 
     throw new Error(
       data.message ||
-      `Request failed (${response.status})`
+      "Request failed."
     );
-  }
 
+  }
 
   return data;
+
 }
 
 
-/* =====================================================
-   PAGE CONTROL
-===================================================== */
+/* =========================================================
+   LOCAL USER
+========================================================= */
 
-function hideAllPages() {
+function saveUser(
+  user,
+  token = authToken
+) {
 
-  document
-    .querySelectorAll(".page")
-    .forEach(
-      page => {
-        page.classList.add(
-          "hidden"
-        );
-      }
-    );
+  currentUser =
+    user;
+
+  authToken =
+    token || "";
+
+  localStorage.setItem(
+    "rahul_live_user",
+    JSON.stringify(user)
+  );
+
+  localStorage.setItem(
+    "rahul_live_token",
+    authToken
+  );
+
 }
 
 
-function openPage(id) {
+function clearUser() {
 
-  hideAllPages();
+  currentUser = null;
 
-  const page =
-    $(id);
+  authToken = "";
 
-  if (page) {
+  localStorage.removeItem(
+    "rahul_live_user"
+  );
 
-    page.classList.remove(
-      "hidden"
-    );
-  }
+  localStorage.removeItem(
+    "rahul_live_token"
+  );
+
 }
 
 
-window.showPage =
-  function(page) {
-
-    if (
-      page === "login"
-    ) {
-
-      openPage(
-        "loginPage"
-      );
-
-      state.currentPage =
-        "login";
-
-      return;
-    }
-
-
-    if (
-      page === "register"
-    ) {
-
-      openPage(
-        "registerPage"
-      );
-
-      state.currentPage =
-        "register";
-
-      return;
-    }
-
-
-    if (
-      page === "home"
-    ) {
-
-      openPage(
-        "homePage"
-      );
-
-      state.currentPage =
-        "home";
-
-      loadRooms();
-
-      return;
-    }
-
-
-    if (
-      page === "room"
-    ) {
-
-      openPage(
-        "roomPage"
-      );
-
-      state.currentPage =
-        "room";
-
-      renderRoom();
-
-      return;
-    }
-
-
-    if (
-      page === "support"
-    ) {
-
-      openPage(
-        "supportPage"
-      );
-
-      state.currentPage =
-        "support";
-
-      return;
-    }
-  };
-
-
-/* =====================================================
+/* =========================================================
    USER UI
-===================================================== */
+========================================================= */
 
 function updateUserUI() {
 
-  const user =
-    state.user;
-
-
-  if (!user) return;
+  if (!currentUser) return;
 
 
   document
     .querySelectorAll(
       "[data-user-name]"
     )
-    .forEach(
-      element => {
+    .forEach(element => {
 
-        element.textContent =
-          user.name ||
-          "User";
-      }
-    );
+      element.textContent =
+        currentUser.name ||
+        "User";
+
+    });
 
 
   document
     .querySelectorAll(
       "[data-user-username]"
     )
-    .forEach(
-      element => {
+    .forEach(element => {
 
-        element.textContent =
-          user.username
-            ? "@" + user.username
-            : "";
-      }
-    );
+      element.textContent =
+        currentUser.username
+          ? "@" +
+            currentUser.username
+          : "";
+
+    });
 
 
   document
     .querySelectorAll(
       "[data-user-coins]"
     )
-    .forEach(
-      element => {
+    .forEach(element => {
 
-        element.textContent =
-          Number(user.coins || 0)
-            .toLocaleString("en-IN");
-      }
-    );
+      element.textContent =
+        Number(
+          currentUser.coins || 0
+        ).toLocaleString();
+
+    });
 
 
   document
     .querySelectorAll(
       "[data-user-avatar]"
     )
-    .forEach(
-      element => {
+    .forEach(element => {
 
-        if (
-          user.avatar_url
-        ) {
+      if (
+        currentUser.avatar_url
+      ) {
 
-          element.innerHTML =
-            `<img
-              src="${escapeHTML(user.avatar_url)}"
-              alt=""
-            >`;
+        element.innerHTML = "";
 
-        } else {
+        const img =
+          document.createElement(
+            "img"
+          );
 
-          element.textContent =
-            "👤";
-        }
+        img.src =
+          currentUser.avatar_url;
+
+        img.alt =
+          currentUser.name ||
+          "User";
+
+        element.appendChild(
+          img
+        );
+
+      } else {
+
+        element.textContent =
+          "👤";
+
       }
-    );
+
+    });
+
 }
 
 
-/* =====================================================
-   REGISTER
-===================================================== */
+/* =========================================================
+   LOGIN
+========================================================= */
 
-async function registerUser(
-  event
+async function loginUser(
+  email,
+  password
 ) {
 
-  if (event) {
-    event.preventDefault();
-  }
-
-
-  const name =
-    $("registerName")
-      ?.value
-      .trim();
-
-
-  const email =
-    $("registerEmail")
-      ?.value
-      .trim();
-
-
-  const password =
-    $("registerPassword")
-      ?.value;
-
-
-  if (
-    !name ||
-    !email ||
-    !password
-  ) {
-
-    showMessage(
-      "सभी fields भरें।"
-    );
-
-    return;
-  }
-
+  loading(true);
 
   try {
 
-    showLoading(true);
+    const data =
+      await api(
+        "/api/login",
+        {
+          method: "POST",
+          body:
+            JSON.stringify({
+              email,
+              password
+            })
+        }
+      );
+
+    if (!data.success) {
+
+      throw new Error(
+        data.message ||
+        "Login failed."
+      );
+
+    }
+
+    saveUser(
+      data.user,
+      data.token
+    );
+
+    updateUserUI();
+
+    showPage("home");
+
+    await loadRooms();
+
+  } catch (error) {
+
+    message(
+      error.message
+    );
+
+  } finally {
+
+    loading(false);
+
+  }
+
+}
 
 
-    const result =
+/* =========================================================
+   REGISTER
+========================================================= */
+
+async function registerUser(
+  name,
+  email,
+  password
+) {
+
+  loading(true);
+
+  try {
+
+    const data =
       await api(
         "/api/register",
         {
           method: "POST",
-
           body:
             JSON.stringify({
               name,
@@ -414,426 +363,101 @@ async function registerUser(
         }
       );
 
+    if (!data.success) {
 
-    showMessage(
-      result.message ||
-      "Registration successful."
-    );
+      throw new Error(
+        data.message ||
+        "Registration failed."
+      );
 
-
-    $("registerForm")
-      ?.reset();
-
-
-    openPage(
-      "loginPage"
-    );
-
-
-    state.currentPage =
-      "login";
-
-
-    if ($("loginEmail")) {
-
-      $("loginEmail")
-        .value =
-        email;
     }
 
+    message(
+      "Registration successful. अब Login करें।"
+    );
+
+    showPage("login");
+
+    const emailInput =
+      $("loginEmail");
+
+    if (emailInput) {
+
+      emailInput.value =
+        email;
+
+    }
 
   } catch (error) {
 
-    showMessage(
+    message(
       error.message
     );
 
   } finally {
 
-    showLoading(false);
+    loading(false);
+
   }
+
 }
 
 
-/* =====================================================
-   LOGIN
-===================================================== */
-
-async function loginUser(
-  event
-) {
-
-  if (event) {
-    event.preventDefault();
-  }
-
-
-  const email =
-    $("loginEmail")
-      ?.value
-      .trim();
-
-
-  const password =
-    $("loginPassword")
-      ?.value;
-
-
-  if (
-    !email ||
-    !password
-  ) {
-
-    showMessage(
-      "Email और password भरें।"
-    );
-
-    return;
-  }
-
-
-  try {
-
-    showLoading(true);
-
-
-    const result =
-      await api(
-        "/api/login",
-        {
-          method: "POST",
-
-          body:
-            JSON.stringify({
-              email,
-              password
-            })
-        }
-      );
-
-
-    setToken(
-      result.token
-    );
-
-
-    state.user =
-      result.user ||
-      null;
-
-
-    updateUserUI();
-
-
-    openPage(
-      "homePage"
-    );
-
-
-    state.currentPage =
-      "home";
-
-
-    await loadRooms();
-
-
-  } catch (error) {
-
-    showMessage(
-      error.message
-    );
-
-  } finally {
-
-    showLoading(false);
-  }
-}
-
-
-/* =====================================================
-   CHECK LOGIN
-===================================================== */
-
-async function checkLogin() {
-
-  const token =
-    getToken();
-
-
-  if (!token) {
-
-    openPage(
-      "loginPage"
-    );
-
-    state.currentPage =
-      "login";
-
-    return false;
-  }
-
-
-  try {
-
-    const result =
-      await api(
-        "/api/me"
-      );
-
-
-    state.user =
-      result.user;
-
-
-    updateUserUI();
-
-
-    openPage(
-      "homePage"
-    );
-
-
-    state.currentPage =
-      "home";
-
-
-    await loadRooms();
-
-
-    return true;
-
-
-  } catch {
-
-    setToken("");
-
-
-    openPage(
-      "loginPage"
-    );
-
-
-    state.currentPage =
-      "login";
-
-
-    return false;
-  }
-}
-
-
-/* =====================================================
+/* =========================================================
    LOGOUT
-===================================================== */
+========================================================= */
 
 async function logoutUser() {
 
   try {
 
-    if (getToken()) {
-
-      await api(
-        "/api/logout",
-        {
-          method: "POST"
-        }
-      );
-    }
-
-  } catch {
-    // Local logout will continue.
-  }
-
-
-  stopRoomRefresh();
-
-
-  setToken("");
-
-
-  state.user = null;
-  state.roomId = null;
-  state.room = null;
-  state.seat = null;
-  state.micOn = false;
-
-
-  openPage(
-    "loginPage"
-  );
-
-
-  state.currentPage =
-    "login";
-}
-
-
-/* =====================================================
-   ROOMS
-===================================================== */
-
-async function loadRooms() {
-
-  const container =
-    $("roomsList");
-
-
-  if (!container) return;
-
-
-  if (!getToken()) {
-
-    return;
-  }
-
-
-  try {
-
-    container.innerHTML =
-      `<div class="empty-state">
-        Rooms loading...
-      </div>`;
-
-
-    const result =
-      await api(
-        "/api/rooms"
-      );
-
-
-    const rooms =
-      result.rooms || [];
-
-
-    if (!rooms.length) {
-
-      container.innerHTML =
-        `<div class="empty-state">
-          अभी कोई Live Room नहीं है।
-        </div>`;
-
-      return;
-    }
-
-
-    container.innerHTML =
-      rooms
-        .map(
-          room => {
-
-            return `
-              <div
-                class="room-card"
-              >
-
-                <div
-                  class="room-card-title"
-                >
-                  ${escapeHTML(
-                    room.name
-                  )}
-                </div>
-
-                <div
-                  class="room-card-description"
-                >
-                  ${escapeHTML(
-                    room.description ||
-                    "Live conversation"
-                  )}
-                </div>
-
-                <div
-                  class="room-card-footer"
-                >
-
-                  <span>
-                    👤
-                    ${Number(
-                      room.viewer_count || 0
-                    )}
-                    viewers
-                  </span>
-
-                  <button
-                    type="button"
-                    class="join-room-btn"
-                    onclick="joinRoom(${Number(room.id)})"
-                  >
-                    Join Room
-                  </button>
-
-                </div>
-
-              </div>
-            `;
-          }
-        )
-        .join("");
-
-
-  } catch (error) {
-
-    container.innerHTML =
-      `<div class="empty-state">
-        ${escapeHTML(
-          error.message
-        )}
-      </div>`;
-  }
-}
-
-
-/* =====================================================
-   CREATE ROOM
-===================================================== */
-
-async function createRoom(
-  event
-) {
-
-  event.preventDefault();
-
-
-  const name =
-    $("roomName")
-      ?.value
-      .trim();
-
-
-  const description =
-    $("roomDescription")
-      ?.value
-      .trim();
-
-
-  const roomType =
-    $("roomType")
-      ?.value ||
-      "public";
-
-
-  if (!name) {
-
-    showMessage(
-      "Room का नाम डालें।"
+    await api(
+      "/api/logout",
+      {
+        method: "POST"
+      }
     );
 
-    return;
+  } catch {
+
+    // Local logout continues.
   }
 
 
+  stopRoomPolling();
+
+  currentRoom = null;
+
+  currentSeat = null;
+
+  micOn = false;
+
+  clearUser();
+
+  showPage("login");
+
+}
+
+
+/* =========================================================
+   CREATE ROOM
+========================================================= */
+
+async function createRoom(
+  name,
+  description,
+  roomType
+) {
+
+  loading(true);
+
   try {
 
-    showLoading(true);
-
-
-    const result =
+    const data =
       await api(
         "/api/rooms",
         {
           method: "POST",
-
           body:
             JSON.stringify({
               name,
@@ -844,208 +468,302 @@ async function createRoom(
         }
       );
 
+    if (!data.success) {
 
-    $("createRoomForm")
-      ?.reset();
+      throw new Error(
+        data.message ||
+        "Room create नहीं हुआ।"
+      );
 
+    }
 
-    await joinRoom(
-      result.room_id
+    await openRoom(
+      data.room_id
     );
-
 
   } catch (error) {
 
-    showMessage(
+    message(
       error.message
     );
 
   } finally {
 
-    showLoading(false);
+    loading(false);
+
   }
+
 }
 
 
-/* =====================================================
-   JOIN ROOM
-===================================================== */
+/* =========================================================
+   LOAD ROOMS
+========================================================= */
 
-async function joinRoom(
-  roomId
-) {
+async function loadRooms() {
 
-  if (!roomId) return;
+  const container =
+    $("roomsList");
+
+  if (!container) return;
+
+
+  container.innerHTML =
+    `<div class="empty-state">
+       Rooms loading...
+     </div>`;
 
 
   try {
 
-    showLoading(true);
+    const data =
+      await api(
+        "/api/rooms"
+      );
 
+    const rooms =
+      data.rooms || [];
+
+
+    if (!rooms.length) {
+
+      container.innerHTML =
+        `<div class="empty-state">
+           अभी कोई Live Room नहीं है।
+         </div>`;
+
+      return;
+
+    }
+
+
+    container.innerHTML = "";
+
+
+    rooms.forEach(
+      room => {
+
+        const card =
+          document.createElement(
+            "div"
+          );
+
+        card.className =
+          "room-card";
+
+
+        const title =
+          document.createElement(
+            "strong"
+          );
+
+        title.textContent =
+          room.name;
+
+
+        const description =
+          document.createElement(
+            "p"
+          );
+
+        description.textContent =
+          room.description ||
+          "Live Room";
+
+
+        const viewers =
+          document.createElement(
+            "span"
+          );
+
+        viewers.textContent =
+          "👁️ " +
+          Number(
+            room.viewer_count || 0
+          );
+
+
+        const button =
+          document.createElement(
+            "button"
+          );
+
+        button.type =
+          "button";
+
+        button.className =
+          "primary-btn";
+
+        button.textContent =
+          "Join Room";
+
+
+        button.onclick =
+          () => openRoom(
+            room.id
+          );
+
+
+        card.appendChild(
+          title
+        );
+
+        card.appendChild(
+          description
+        );
+
+        card.appendChild(
+          viewers
+        );
+
+        card.appendChild(
+          button
+        );
+
+
+        container.appendChild(
+          card
+        );
+
+      }
+    );
+
+
+  } catch (error) {
+
+    container.innerHTML =
+      `<div class="empty-state">
+         Rooms load नहीं हो सके।
+       </div>`;
+
+  }
+
+}
+
+
+/* =========================================================
+   OPEN ROOM
+========================================================= */
+
+async function openRoom(
+  roomId
+) {
+
+  loading(true);
+
+  try {
 
     await api(
-      `/api/rooms/${Number(roomId)}/join`,
+      `/api/rooms/${roomId}/join`,
       {
         method: "POST"
       }
     );
 
 
-    state.roomId =
-      Number(roomId);
+    const data =
+      await api(
+        `/api/rooms/${roomId}`
+      );
 
 
-    state.seat =
+    currentRoom =
+      data.room;
+
+
+    currentSeat =
       null;
 
 
-    state.micOn =
+    micOn =
       false;
 
 
-    await loadRoom();
+    showPage("room");
 
 
-    openPage(
-      "roomPage"
+    renderRoomInfo();
+
+    renderSeats(
+      data.seats || []
     );
 
+    await loadMessages();
 
-    state.currentPage =
-      "room";
+    await loadMusic();
+
+    await loadGifts();
 
 
-    startRoomRefresh();
-
+    startRoomPolling();
 
   } catch (error) {
 
-    showMessage(
+    message(
       error.message
     );
 
   } finally {
 
-    showLoading(false);
+    loading(false);
+
   }
+
 }
 
 
-/* =====================================================
-   LOAD ROOM
-===================================================== */
+/* =========================================================
+   ROOM INFO
+========================================================= */
 
-async function loadRoom() {
+function renderRoomInfo() {
 
-  if (!state.roomId) {
-    return;
-  }
-
-
-  const result =
-    await api(
-      `/api/rooms/${state.roomId}`
-    );
-
-
-  state.room =
-    result.room;
-
-
-  renderRoom(
-    result.seats || []
-  );
-
-
-  await loadMessages();
-
-
-  return result;
-}
-
-
-/* =====================================================
-   RENDER ROOM
-===================================================== */
-
-function renderRoom(
-  seats = []
-) {
-
-  const room =
-    state.room;
-
-
-  if (!room) return;
+  if (!currentRoom) return;
 
 
   document
     .querySelectorAll(
       "[data-room-name]"
     )
-    .forEach(
-      element => {
+    .forEach(element => {
 
-        element.textContent =
-          room.name ||
-          "Live Room";
-      }
-    );
+      element.textContent =
+        currentRoom.name ||
+        "Live Room";
+
+    });
 
 
   document
     .querySelectorAll(
       "[data-room-description]"
     )
-    .forEach(
-      element => {
+    .forEach(element => {
 
-        element.textContent =
-          room.description ||
-          "You are included in this room.";
-      }
-    );
+      element.textContent =
+        currentRoom.description ||
+        "You are included in this room.";
 
+    });
 
-  renderSeats(
-    seats
-  );
 }
 
 
-/* =====================================================
+/* =========================================================
    RENDER 8 SEATS
-===================================================== */
+========================================================= */
 
 function renderSeats(
-  occupiedSeats = []
+  seats
 ) {
 
   const container =
     $("voiceSeats");
 
-
   if (!container) return;
 
 
-  const map =
-    new Map();
-
-
-  occupiedSeats.forEach(
-    seat => {
-
-      map.set(
-        Number(seat.seat_number),
-        seat
-      );
-    }
-  );
-
-
-  container.innerHTML =
-    "";
-
+  const seatData = [];
 
   for (
     let number = 1;
@@ -1053,731 +771,568 @@ function renderSeats(
     number++
   ) {
 
-    const seat =
-      map.get(number);
-
-
-    const element =
-      document.createElement(
-        "div"
+    const found =
+      seats.find(
+        seat =>
+          Number(
+            seat.seat_number
+          ) === number
       );
 
 
-    element.className =
-      "voice-seat" +
-      (
-        seat
-          ? " occupied"
-          : ""
-      );
-
-
-    if (seat) {
-
-      const avatar =
-        seat.avatar_url
-          ? `
-            <img
-              src="${escapeHTML(
-                seat.avatar_url
-              )}"
-              alt=""
-            >
-          `
-          : "👤";
-
-
-      const muted =
-        Number(
-          seat.is_muted
-        ) === 1;
-
-
-      element.innerHTML = `
-
-        <div
-          class="voice-seat-avatar"
-        >
-
-          ${avatar}
-
-          <div
-            class="seat-mic"
-          >
-            ${muted ? "🔇" : "🎙️"}
-          </div>
-
-        </div>
-
-
-        <div
-          class="voice-seat-name"
-        >
-          ${escapeHTML(
-            seat.name ||
-            seat.username ||
-            "User"
-          )}
-        </div>
-
-
-        <div
-          class="voice-seat-number"
-        >
-          Seat ${number}
-        </div>
-
-      `;
-
-
-      if (
-        state.user &&
-        Number(seat.user_id) ===
-        Number(state.user.id)
-      ) {
-
-        state.seat =
-          number;
-
-        state.micOn =
-          !muted;
+    seatData.push(
+      found || {
+        seat_number:
+          number,
+        user_id:
+          null,
+        is_muted:
+          1
       }
-
-
-    } else {
-
-      element.innerHTML = `
-
-        <button
-          type="button"
-          class="empty-seat-btn"
-          onclick="joinSeat(${number})"
-        >
-          +
-        </button>
-
-        <div
-          class="voice-seat-avatar"
-        >
-          👤
-        </div>
-
-        <div
-          class="voice-seat-name"
-        >
-          Empty
-        </div>
-
-        <div
-          class="voice-seat-number"
-        >
-          Seat ${number}
-        </div>
-
-      `;
-    }
-
-
-    container.appendChild(
-      element
     );
+
   }
 
 
-  updateMicButton();
+  container.innerHTML = "";
+
+
+  seatData.forEach(
+    seat => {
+
+      const card =
+        document.createElement(
+          "div"
+        );
+
+      card.className =
+        "voice-seat";
+
+
+      const avatar =
+        document.createElement(
+          "div"
+        );
+
+      avatar.className =
+        "voice-seat-avatar";
+
+
+      const name =
+        document.createElement(
+          "div"
+        );
+
+      name.className =
+        "voice-seat-name";
+
+
+      const number =
+        document.createElement(
+          "div"
+        );
+
+      number.className =
+        "voice-seat-number";
+
+      number.textContent =
+        `Seat ${seat.seat_number}`;
+
+
+      if (seat.user_id) {
+
+        if (
+          seat.avatar_url
+        ) {
+
+          const img =
+            document.createElement(
+              "img"
+            );
+
+          img.src =
+            seat.avatar_url;
+
+          img.alt =
+            seat.name ||
+            "User";
+
+          avatar.appendChild(
+            img
+          );
+
+        } else {
+
+          avatar.textContent =
+            "👤";
+
+        }
+
+
+        name.textContent =
+          seat.name ||
+          seat.username ||
+          "User";
+
+
+        if (
+          Number(
+            seat.user_id
+          ) ===
+          Number(
+            currentUser?.id
+          )
+        ) {
+
+          currentSeat =
+            Number(
+              seat.seat_number
+            );
+
+        }
+
+
+        const micStatus =
+          document.createElement(
+            "span"
+          );
+
+        micStatus.className =
+          "seat-mic-status";
+
+        micStatus.textContent =
+          Number(
+            seat.is_muted
+          ) === 1
+            ? "🔇"
+            : "🎙️";
+
+
+        card.appendChild(
+          avatar
+        );
+
+        card.appendChild(
+          name
+        );
+
+        card.appendChild(
+          micStatus
+        );
+
+        card.appendChild(
+          number
+        );
+
+
+      } else {
+
+        avatar.textContent =
+          "👤";
+
+        name.textContent =
+          "Empty";
+
+
+        const joinButton =
+          document.createElement(
+            "button"
+          );
+
+        joinButton.type =
+          "button";
+
+        joinButton.className =
+          "empty-seat-btn";
+
+        joinButton.textContent =
+          "+";
+
+        joinButton.onclick =
+          () =>
+            joinSeat(
+              seat.seat_number
+            );
+
+
+        card.appendChild(
+          joinButton
+        );
+
+        card.appendChild(
+          avatar
+        );
+
+        card.appendChild(
+          name
+        );
+
+        card.appendChild(
+          number
+        );
+
+      }
+
+
+      container.appendChild(
+        card
+      );
+
+    }
+  );
+
 }
 
 
-/* =====================================================
+/* =========================================================
    JOIN SEAT
-===================================================== */
+========================================================= */
 
 async function joinSeat(
   seatNumber
 ) {
 
-  if (!state.roomId) {
+  if (!currentRoom) return;
+
+
+  if (currentSeat) {
+
+    message(
+      "पहले अपनी current seat छोड़ें।"
+    );
+
     return;
+
   }
 
 
   try {
 
-    showLoading(true);
-
-
-    const result =
+    const data =
       await api(
-        `/api/rooms/${state.roomId}/seats/${Number(seatNumber)}/join`,
+        `/api/rooms/${currentRoom.id}/seats/${seatNumber}/join`,
         {
           method: "POST"
         }
       );
 
 
-    state.seat =
+    if (!data.success) {
+
+      throw new Error(
+        data.message ||
+        "Seat join नहीं हुई।"
+      );
+
+    }
+
+
+    currentSeat =
       Number(
-        result.seat_number ||
         seatNumber
       );
 
-
-    state.micOn =
+    micOn =
       false;
 
 
     await refreshRoom();
 
-
   } catch (error) {
 
-    showMessage(
+    message(
       error.message
     );
 
-  } finally {
-
-    showLoading(false);
   }
+
 }
 
 
-/* =====================================================
+/* =========================================================
    LEAVE SEAT
-===================================================== */
+========================================================= */
 
 async function leaveMySeat() {
 
   if (
-    !state.roomId ||
-    !state.seat
+    !currentRoom ||
+    !currentSeat
   ) {
+
+    message(
+      "आप किसी seat पर नहीं हैं।"
+    );
+
     return;
+
   }
 
 
   try {
 
     await api(
-      `/api/rooms/${state.roomId}/seats/${state.seat}/leave`,
+      `/api/rooms/${currentRoom.id}/seats/${currentSeat}/leave`,
       {
         method: "POST"
       }
     );
 
 
-    state.seat =
+    currentSeat =
       null;
 
-    state.micOn =
+    micOn =
       false;
 
 
     await refreshRoom();
 
-
   } catch (error) {
 
-    showMessage(
+    message(
       error.message
     );
+
   }
+
 }
 
 
-/* =====================================================
-   MIC STATE
-===================================================== */
+/* =========================================================
+   MIC
+========================================================= */
 
-async function setMicState(
-  micOn
-) {
+async function toggleMic() {
 
   if (
-    !state.roomId ||
-    !state.seat
+    !currentRoom ||
+    !currentSeat
   ) {
 
-    showMessage(
-      "पहले एक seat join करें।"
+    message(
+      "पहले किसी voice seat पर join करें।"
     );
 
     return;
+
   }
+
+
+  const newState =
+    !micOn;
 
 
   try {
 
-    await api(
-      `/api/rooms/${state.roomId}/seats/${state.seat}/mic`,
-      {
-        method: "POST",
-
-        body:
-          JSON.stringify({
-            mic_on:
-              Boolean(micOn)
-          })
-      }
-    );
-
-
-    state.micOn =
-      Boolean(micOn);
-
-
-    updateMicButton();
-
-
-    await refreshRoom();
-
-
-  } catch (error) {
-
-    showMessage(
-      error.message
-    );
-  }
-}
-
-
-function updateMicButton() {
-
-  const button =
-    $("micButton");
-
-
-  if (!button) return;
-
-
-  button.dataset.micOn =
-    String(
-      state.micOn
-    );
-
-
-  button.innerHTML =
-    state.micOn
-      ? "🔊<span>Mic ON</span>"
-      : "🎙️<span>Mic</span>";
-}
-
-
-window.setMicState =
-  setMicState;
-
-
-/* =====================================================
-   TOGGLE MIC
-===================================================== */
-
-window.toggleMic =
-  async function() {
-
-    if (!state.seat) {
-
-      showMessage(
-        "पहले खाली seat पर + दबाकर seat join करें।"
-      );
-
-      return;
-    }
-
-
-    await setMicState(
-      !state.micOn
-    );
-  };
-
-
-/* =====================================================
-   LEAVE ROOM
-===================================================== */
-
-async function leaveRoom() {
-
-  if (!state.roomId) {
-
-    openPage(
-      "homePage"
-    );
-
-    return;
-  }
-
-
-  try {
-
-    showLoading(true);
-
-
-    if (state.seat) {
-
-      try {
-
-        await api(
-          `/api/rooms/${state.roomId}/seats/${state.seat}/leave`,
-          {
-            method: "POST"
-          }
-        );
-
-      } catch {}
-    }
-
-
-    await api(
-      `/api/rooms/${state.roomId}/leave`,
-      {
-        method: "POST"
-      }
-    );
-
-
-  } catch (error) {
-
-    console.error(
-      error
-    );
-
-  } finally {
-
-    stopRoomRefresh();
-
-
-    state.roomId =
-      null;
-
-    state.room =
-      null;
-
-    state.seat =
-      null;
-
-    state.micOn =
-      false;
-
-
-    closePanels();
-
-
-    showLoading(false);
-
-
-    openPage(
-      "homePage"
-    );
-
-
-    state.currentPage =
-      "home";
-
-
-    await loadRooms();
-  }
-}
-
-
-window.leaveRoom =
-  leaveRoom;
-
-
-/* =====================================================
-   REFRESH ROOM
-===================================================== */
-
-async function refreshRoom() {
-
-  if (!state.roomId) {
-    return;
-  }
-
-
-  try {
-
-    const result =
+    const data =
       await api(
-        `/api/rooms/${state.roomId}`
+        `/api/rooms/${currentRoom.id}/seats/${currentSeat}/mic`,
+        {
+          method: "POST",
+          body:
+            JSON.stringify({
+              mic_on:
+                newState
+            })
+        }
       );
 
 
-    state.room =
-      result.room;
+    micOn =
+      Boolean(
+        data.mic_on
+      );
 
 
-    renderRoom(
-      result.seats || []
-    );
+    const button =
+      $("micButton");
 
+    if (button) {
+
+      button.classList.toggle(
+        "active",
+        micOn
+      );
+
+    }
+
+
+    await refreshRoom();
 
   } catch (error) {
 
-    console.error(
-      "Room refresh:",
-      error
+    message(
+      error.message
     );
+
   }
+
 }
 
 
-/* =====================================================
-   ROOM AUTO REFRESH
-===================================================== */
-
-function startRoomRefresh() {
-
-  stopRoomRefresh();
-
-
-  state.refreshTimer =
-    setInterval(
-      async () => {
-
-        if (
-          state.currentPage ===
-          "room" &&
-          state.roomId
-        ) {
-
-          await refreshRoom();
-
-          await loadMessages();
-        }
-
-      },
-      3000
-    );
-}
-
-
-function stopRoomRefresh() {
-
-  if (
-    state.refreshTimer
-  ) {
-
-    clearInterval(
-      state.refreshTimer
-    );
-
-    state.refreshTimer =
-      null;
-  }
-}
-
-
-/* =====================================================
-   CHAT LOAD
-===================================================== */
+/* =========================================================
+   LOAD MESSAGES
+========================================================= */
 
 async function loadMessages() {
 
-  if (!state.roomId) {
-    return;
-  }
+  if (!currentRoom) return;
 
 
   const container =
     $("roomMessages");
 
-
-  if (!container) {
-    return;
-  }
+  if (!container) return;
 
 
   try {
 
-    const result =
+    const data =
       await api(
-        `/api/rooms/${state.roomId}/messages`
+        `/api/rooms/${currentRoom.id}/messages`
       );
 
 
     const messages =
-      result.messages || [];
+      data.messages || [];
 
 
     if (!messages.length) {
 
       container.innerHTML =
         `<div class="empty-chat">
-          Chat शुरू करें...
-        </div>`;
+           Chat शुरू करें...
+         </div>`;
 
       return;
+
     }
 
 
-    container.innerHTML =
-      messages
-        .map(
-          message => {
-
-            const avatar =
-              message.avatar_url
-                ? `
-                  <img
-                    src="${escapeHTML(
-                      message.avatar_url
-                    )}"
-                    alt=""
-                  >
-                `
-                : "👤";
+    container.innerHTML = "";
 
 
-            return `
+    messages.forEach(
+      item => {
 
-              <div
-                class="chat-message"
-              >
+        const row =
+          document.createElement(
+            "div"
+          );
 
-                <div
-                  class="chat-avatar"
-                >
-                  ${avatar}
-                </div>
+        row.className =
+          "chat-message";
 
-                <div
-                  class="chat-content"
-                >
 
-                  <div
-                    class="chat-name"
-                  >
-                    ${escapeHTML(
-                      message.name ||
-                      message.username ||
-                      "User"
-                    )}
-                  </div>
+        const name =
+          document.createElement(
+            "strong"
+          );
 
-                  <div
-                    class="chat-text"
-                  >
-                    ${escapeHTML(
-                      message.message
-                    )}
-                  </div>
+        name.textContent =
+          item.name ||
+          item.username ||
+          "User";
 
-                </div>
 
-              </div>
+        const text =
+          document.createElement(
+            "span"
+          );
 
-            `;
-          }
-        )
-        .join("");
+        text.textContent =
+          item.message;
+
+
+        row.appendChild(
+          name
+        );
+
+        row.appendChild(
+          text
+        );
+
+
+        container.appendChild(
+          row
+        );
+
+      }
+    );
 
 
     container.scrollTop =
       container.scrollHeight;
 
 
-  } catch (error) {
+  } catch {
 
-    console.error(
-      "Messages:",
-      error
-    );
+    // Polling error silently ignored.
   }
+
 }
 
 
-/* =====================================================
-   SEND CHAT MESSAGE
-===================================================== */
+/* =========================================================
+   SEND MESSAGE
+========================================================= */
 
-async function sendChatMessage(
-  event
+async function sendMessage(
+  text
 ) {
 
-  event.preventDefault();
-
-
-  if (!state.roomId) {
-    return;
-  }
-
-
-  const input =
-    $("roomMessage");
-
-
-  const message =
-    input
-      ?.value
-      .trim();
-
-
-  if (!message) {
-    return;
-  }
+  if (
+    !currentRoom ||
+    !text.trim()
+  ) return;
 
 
   try {
 
-    input.disabled =
-      true;
-
-
     await api(
-      `/api/rooms/${state.roomId}/messages`,
+      `/api/rooms/${currentRoom.id}/messages`,
       {
         method: "POST",
-
         body:
           JSON.stringify({
-            message
+            message:
+              text.trim()
           })
       }
     );
 
 
-    input.value =
-      "";
-
-
     await loadMessages();
-
 
   } catch (error) {
 
-    showMessage(
+    message(
       error.message
     );
 
-  } finally {
-
-    input.disabled =
-      false;
-
-    input.focus();
   }
+
 }
 
 
-/* =====================================================
-   REACTIONS
-===================================================== */
+/* =========================================================
+   REACTION
+========================================================= */
 
 async function sendReaction(
   emoji
 ) {
 
-  if (!state.roomId) {
-    return;
-  }
+  if (!currentRoom) return;
 
 
   try {
 
     await api(
-      `/api/rooms/${state.roomId}/reactions`,
+      `/api/rooms/${currentRoom.id}/reactions`,
       {
         method: "POST",
-
         body:
           JSON.stringify({
             emoji
@@ -1786,420 +1341,377 @@ async function sendReaction(
     );
 
 
+    showFloatingReaction(
+      emoji
+    );
+
   } catch (error) {
 
-    console.error(
-      "Reaction:",
-      error
+    message(
+      error.message
     );
+
   }
+
 }
 
 
-window.sendReaction =
-  sendReaction;
+/* =========================================================
+   FLOATING REACTION
+========================================================= */
+
+function showFloatingReaction(
+  emoji
+) {
+
+  const element =
+    document.createElement(
+      "div"
+    );
+
+  element.className =
+    "floating-reaction";
+
+  element.textContent =
+    emoji;
 
 
-/* =====================================================
+  document.body.appendChild(
+    element
+  );
+
+
+  setTimeout(
+    () => element.remove(),
+    1500
+  );
+
+}
+
+
+/* =========================================================
    MUSIC
-===================================================== */
+========================================================= */
 
 async function loadMusic() {
 
   const container =
     $("musicList");
 
-
-  if (!container) {
-    return;
-  }
+  if (!container) return;
 
 
   try {
 
-    const result =
+    const data =
       await api(
         "/api/music"
       );
 
 
     const tracks =
-      result.tracks || [];
+      data.tracks || [];
 
 
     if (!tracks.length) {
 
       container.innerHTML =
         `<div class="empty-state">
-          अभी Music उपलब्ध नहीं है।
-        </div>`;
+           अभी कोई music track उपलब्ध नहीं है।
+         </div>`;
 
       return;
+
     }
 
 
-    container.innerHTML =
-      tracks
-        .map(
-          track => {
-
-            return `
-
-              <div
-                class="music-item"
-              >
-
-                <div
-                  class="music-item-info"
-                >
-
-                  <div
-                    class="music-item-title"
-                  >
-                    ${escapeHTML(
-                      track.title
-                    )}
-                  </div>
-
-                  <div
-                    class="music-item-artist"
-                  >
-                    ${escapeHTML(
-                      track.artist ||
-                      "Unknown Artist"
-                    )}
-                  </div>
-
-                </div>
-
-                <button
-                  type="button"
-                  class="music-play-btn"
-                  onclick="playRoomMusic(${Number(track.id)})"
-                >
-                  ▶
-                </button>
-
-              </div>
-
-            `;
-          }
-        )
-        .join("");
+    container.innerHTML = "";
 
 
-  } catch (error) {
+    tracks.forEach(
+      track => {
+
+        const item =
+          document.createElement(
+            "div"
+          );
+
+        item.className =
+          "music-item";
+
+
+        const title =
+          document.createElement(
+            "strong"
+          );
+
+        title.textContent =
+          track.title;
+
+
+        const artist =
+          document.createElement(
+            "small"
+          );
+
+        artist.textContent =
+          track.artist || "";
+
+
+        const button =
+          document.createElement(
+            "button"
+          );
+
+        button.type =
+          "button";
+
+        button.textContent =
+          "Play";
+
+
+        button.onclick =
+          () =>
+            playMusic(
+              track
+            );
+
+
+        item.appendChild(
+          title
+        );
+
+        item.appendChild(
+          artist
+        );
+
+        item.appendChild(
+          button
+        );
+
+
+        container.appendChild(
+          item
+        );
+
+      }
+    );
+
+
+  } catch {
 
     container.innerHTML =
       `<div class="empty-state">
-        ${escapeHTML(
-          error.message
-        )}
-      </div>`;
+         Music load नहीं हुआ।
+       </div>`;
+
   }
+
 }
 
 
-async function playRoomMusic(
-  trackId
+/* =========================================================
+   PLAY MUSIC
+========================================================= */
+
+async function playMusic(
+  track
 ) {
 
-  if (!state.roomId) {
-    return;
-  }
+  if (!currentRoom) return;
 
 
   try {
 
-    const result =
-      await api(
-        `/api/rooms/${state.roomId}/music`,
-        {
-          method: "POST",
+    await api(
+      `/api/rooms/${currentRoom.id}/music`,
+      {
+        method: "POST",
+        body:
+          JSON.stringify({
+            track_id:
+              track.id
+          })
+      }
+    );
 
-          body:
-            JSON.stringify({
-              track_id:
-                Number(trackId)
-            })
-        }
-      );
-
-
-    const track =
-      result.track;
-
-
-    /*
-      अगर audio_url उपलब्ध है,
-      तो browser में music चलाने की कोशिश।
-    */
 
     if (
-      track &&
       track.audio_url
     ) {
 
-      const audio =
-        new Audio(
-          track.audio_url
+      let audio =
+        document.getElementById(
+          "roomAudio"
         );
 
-      audio.play()
-        .catch(
-          () => {}
+
+      if (!audio) {
+
+        audio =
+          document.createElement(
+            "audio"
+          );
+
+        audio.id =
+          "roomAudio";
+
+        audio.controls =
+          true;
+
+        audio.style.width =
+          "100%";
+
+        document.body.appendChild(
+          audio
         );
+
+      }
+
+
+      audio.src =
+        track.audio_url;
+
+      await audio.play();
+
+    } else {
+
+      message(
+        "इस music की audio file उपलब्ध नहीं है।"
+      );
+
     }
-
-
-    showMessage(
-      `Music selected: ${track.title}`
-    );
-
 
   } catch (error) {
 
-    showMessage(
+    message(
       error.message
     );
+
   }
+
 }
 
 
-window.loadMusic =
-  loadMusic;
-
-window.playRoomMusic =
-  playRoomMusic;
-
-
-/* =====================================================
+/* =========================================================
    GIFTS
-===================================================== */
+========================================================= */
 
 async function loadGifts() {
 
   const container =
     $("giftList");
 
-
-  if (!container) {
-    return;
-  }
+  if (!container) return;
 
 
   try {
 
-    const result =
+    const data =
       await api(
         "/api/gifts"
       );
 
 
     const gifts =
-      result.gifts || [];
+      data.gifts || [];
 
 
     if (!gifts.length) {
 
       container.innerHTML =
         `<div class="empty-state">
-          अभी Gifts उपलब्ध नहीं हैं।
-        </div>`;
+           अभी कोई gift उपलब्ध नहीं है।
+         </div>`;
 
       return;
+
     }
 
 
-    container.innerHTML =
-      gifts
-        .map(
-          gift => {
-
-            const image =
-              gift.image_url
-                ? `
-                  <img
-                    src="${escapeHTML(
-                      gift.image_url
-                    )}"
-                    alt=""
-                    style="
-                      width:42px;
-                      height:42px;
-                      object-fit:contain;
-                    "
-                  >
-                `
-                : "🎁";
+    container.innerHTML = "";
 
 
-            return `
+    gifts.forEach(
+      gift => {
 
-              <button
-                type="button"
-                class="gift-item"
-                onclick="sendGift(${Number(gift.id)})"
-              >
+        const item =
+          document.createElement(
+            "button"
+          );
 
-                <div
-                  class="gift-image"
-                >
-                  ${image}
-                </div>
+        item.type =
+          "button";
 
-                <div
-                  class="gift-name"
-                >
-                  ${escapeHTML(
-                    gift.name
-                  )}
-                </div>
-
-                <div
-                  class="gift-cost"
-                >
-                  🪙
-                  ${Number(
-                    gift.coin_cost || 0
-                  )}
-                </div>
-
-              </button>
-
-            `;
-          }
-        )
-        .join("");
+        item.className =
+          "gift-item";
 
 
-  } catch (error) {
+        item.innerHTML =
+          `
+            <span>
+              🎁
+            </span>
+
+            <strong>
+              ${escapeHTML(
+                gift.name
+              )}
+            </strong>
+
+            <small>
+              🪙 ${Number(
+                gift.coin_cost || 0
+              )}
+            </small>
+          `;
+
+
+        item.onclick =
+          () =>
+            sendGift(
+              gift
+            );
+
+
+        container.appendChild(
+          item
+        );
+
+      }
+    );
+
+
+  } catch {
 
     container.innerHTML =
       `<div class="empty-state">
-        ${escapeHTML(
-          error.message
-        )}
-      </div>`;
+         Gifts load नहीं हुए।
+       </div>`;
+
   }
+
 }
 
 
-/*
-  Gift transaction endpoint अभी
-  worker में अलग endpoint नहीं है।
-  इसलिए UI में gift उपलब्ध होने के
-  बाद अगला backend step जोड़ा जा सकता है।
-*/
+/* =========================================================
+   SEND GIFT
+========================================================= */
 
 async function sendGift(
-  giftId
+  gift
 ) {
 
-  showMessage(
-    "Gift चुना गया। Gift transaction API अगले backend step में जोड़ा जाएगा।"
+  message(
+    `${gift.name} gift selected.`
   );
+
 }
 
 
-window.loadGifts =
-  loadGifts;
-
-window.sendGift =
-  sendGift;
-
-
-/* =====================================================
-   SUPPORT
-===================================================== */
-
-async function submitSupport(
-  event
-) {
-
-  event.preventDefault();
-
-
-  const subject =
-    $("supportSubject")
-      ?.value
-      .trim();
-
-
-  const message =
-    $("supportMessage")
-      ?.value
-      .trim();
-
-
-  if (
-    !subject ||
-    !message
-  ) {
-
-    showMessage(
-      "Subject और message भरें।"
-    );
-
-    return;
-  }
-
-
-  try {
-
-    showLoading(true);
-
-
-    const result =
-      await api(
-        "/api/support",
-        {
-          method: "POST",
-
-          body:
-            JSON.stringify({
-              subject,
-              message
-            })
-        }
-      );
-
-
-    showMessage(
-      result.message ||
-      "Help request भेज दी गई।"
-    );
-
-
-    $("supportForm")
-      ?.reset();
-
-
-    openPage(
-      "homePage"
-    );
-
-
-    state.currentPage =
-      "home";
-
-
-  } catch (error) {
-
-    showMessage(
-      error.message
-    );
-
-  } finally {
-
-    showLoading(false);
-  }
-}
-
-
-/* =====================================================
+/* =========================================================
    PANELS
-===================================================== */
+========================================================= */
 
 function closePanels() {
 
@@ -2219,9 +1731,12 @@ function closePanels() {
         element.classList.add(
           "hidden"
         );
+
       }
+
     }
   );
+
 }
 
 
@@ -2229,13 +1744,17 @@ function openMusicPanel() {
 
   closePanels();
 
+  const panel =
+    $("musicPanel");
 
-  $("musicPanel")
-    ?.classList
-    .remove("hidden");
+  if (panel) {
 
+    panel.classList.remove(
+      "hidden"
+    );
 
-  loadMusic();
+  }
+
 }
 
 
@@ -2243,13 +1762,17 @@ function openGiftPanel() {
 
   closePanels();
 
+  const panel =
+    $("giftPanel");
 
-  $("giftPanel")
-    ?.classList
-    .remove("hidden");
+  if (panel) {
 
+    panel.classList.remove(
+      "hidden"
+    );
 
-  loadGifts();
+  }
+
 }
 
 
@@ -2257,15 +1780,571 @@ function openInvitePanel() {
 
   closePanels();
 
+  const panel =
+    $("invitePanel");
 
-  $("invitePanel")
-    ?.classList
-    .remove("hidden");
+  if (panel) {
+
+    panel.classList.remove(
+      "hidden"
+    );
+
+  }
+
 }
 
 
-window.closePanels =
-  closePanels;
+/* =========================================================
+   LEAVE ROOM
+========================================================= */
+
+async function leaveRoom() {
+
+  if (!currentRoom) {
+
+    showPage("home");
+
+    return;
+
+  }
+
+
+  try {
+
+    await api(
+      `/api/rooms/${currentRoom.id}/leave`,
+      {
+        method: "POST"
+      }
+    );
+
+  } catch {
+
+    // Continue leaving locally.
+  }
+
+
+  stopRoomPolling();
+
+  closePanels();
+
+  currentRoom = null;
+
+  currentSeat = null;
+
+  micOn = false;
+
+  showPage("home");
+
+  await loadRooms();
+
+}
+
+
+/* =========================================================
+   ROOM REFRESH
+========================================================= */
+
+async function refreshRoom() {
+
+  if (!currentRoom) return;
+
+
+  try {
+
+    const data =
+      await api(
+        `/api/rooms/${currentRoom.id}`
+      );
+
+
+    currentRoom =
+      data.room;
+
+
+    renderRoomInfo();
+
+    renderSeats(
+      data.seats || []
+    );
+
+  } catch {
+
+    // Ignore temporary refresh errors.
+  }
+
+}
+
+
+/* =========================================================
+   ROOM POLLING
+========================================================= */
+
+function startRoomPolling() {
+
+  stopRoomPolling();
+
+
+  roomTimer =
+    setInterval(
+      async () => {
+
+        if (!currentRoom)
+          return;
+
+
+        await refreshRoom();
+
+        await loadMessages();
+
+      },
+      3000
+    );
+
+}
+
+
+function stopRoomPolling() {
+
+  if (roomTimer) {
+
+    clearInterval(
+      roomTimer
+    );
+
+    roomTimer =
+      null;
+
+  }
+
+}
+
+
+/* =========================================================
+   SUPPORT
+========================================================= */
+
+async function sendSupport(
+  subject,
+  messageText
+) {
+
+  loading(true);
+
+  try {
+
+    const data =
+      await api(
+        "/api/support",
+        {
+          method: "POST",
+          body:
+            JSON.stringify({
+              subject,
+              message:
+                messageText
+            })
+        }
+      );
+
+
+    if (!data.success) {
+
+      throw new Error(
+        data.message ||
+        "Support request failed."
+      );
+
+    }
+
+
+    message(
+      "Support request भेज दी गई।"
+    );
+
+
+    $("supportSubject").value =
+      "";
+
+    $("supportMessage").value =
+      "";
+
+
+    showPage("home");
+
+
+  } catch (error) {
+
+    message(
+      error.message
+    );
+
+  } finally {
+
+    loading(false);
+
+  }
+
+}
+
+
+/* =========================================================
+   SUPPORT BACK
+========================================================= */
+
+function goBackFromSupport() {
+
+  if (currentRoom) {
+
+    showPage("room");
+
+  } else {
+
+    showPage("home");
+
+  }
+
+}
+
+
+/* =========================================================
+   ESCAPE HTML
+========================================================= */
+
+function escapeHTML(
+  value
+) {
+
+  return String(value)
+    .replaceAll(
+      "&",
+      "&amp;"
+    )
+    .replaceAll(
+      "<",
+      "&lt;"
+    )
+    .replaceAll(
+      ">",
+      "&gt;"
+    )
+    .replaceAll(
+      '"',
+      "&quot;"
+    )
+    .replaceAll(
+      "'",
+      "&#039;"
+    );
+
+}
+
+
+/* =========================================================
+   FORM EVENTS
+========================================================= */
+
+document.addEventListener(
+  "DOMContentLoaded",
+  () => {
+
+
+    /* LOGIN */
+
+    const loginForm =
+      $("loginForm");
+
+
+    if (loginForm) {
+
+      loginForm.addEventListener(
+        "submit",
+        event => {
+
+          event.preventDefault();
+
+
+          const email =
+            $("loginEmail")
+              ?.value
+              .trim();
+
+
+          const password =
+            $("loginPassword")
+              ?.value;
+
+
+          loginUser(
+            email,
+            password
+          );
+
+        }
+      );
+
+    }
+
+
+    /* REGISTER */
+
+    const registerForm =
+      $("registerForm");
+
+
+    if (registerForm) {
+
+      registerForm.addEventListener(
+        "submit",
+        event => {
+
+          event.preventDefault();
+
+
+          const name =
+            $("registerName")
+              ?.value
+              .trim();
+
+
+          const email =
+            $("registerEmail")
+              ?.value
+              .trim();
+
+
+          const password =
+            $("registerPassword")
+              ?.value;
+
+
+          registerUser(
+            name,
+            email,
+            password
+          );
+
+        }
+      );
+
+    }
+
+
+    /* CREATE ROOM */
+
+    const createRoomForm =
+      $("createRoomForm");
+
+
+    if (createRoomForm) {
+
+      createRoomForm.addEventListener(
+        "submit",
+        event => {
+
+          event.preventDefault();
+
+
+          const name =
+            $("roomName")
+              ?.value
+              .trim();
+
+
+          const description =
+            $("roomDescription")
+              ?.value
+              .trim();
+
+
+          const roomType =
+            $("roomType")
+              ?.value ||
+            "public";
+
+
+          createRoom(
+            name,
+            description,
+            roomType
+          );
+
+        }
+      );
+
+    }
+
+
+    /* CHAT */
+
+    const chatForm =
+      $("roomChatForm");
+
+
+    if (chatForm) {
+
+      chatForm.addEventListener(
+        "submit",
+        event => {
+
+          event.preventDefault();
+
+
+          const input =
+            $("roomMessage");
+
+
+          if (!input) return;
+
+
+          const text =
+            input.value.trim();
+
+
+          if (!text) return;
+
+
+          input.value =
+            "";
+
+
+          sendMessage(
+            text
+          );
+
+        }
+      );
+
+    }
+
+
+    /* SUPPORT */
+
+    const supportForm =
+      $("supportForm");
+
+
+    if (supportForm) {
+
+      supportForm.addEventListener(
+        "submit",
+        event => {
+
+          event.preventDefault();
+
+
+          const subject =
+            $("supportSubject")
+              ?.value
+              .trim();
+
+
+          const messageText =
+            $("supportMessage")
+              ?.value
+              .trim();
+
+
+          sendSupport(
+            subject,
+            messageText
+          );
+
+        }
+      );
+
+    }
+
+
+    /* ESC KEY */
+
+    document.addEventListener(
+      "keydown",
+      event => {
+
+        if (
+          event.key ===
+          "Escape"
+        ) {
+
+          closePanels();
+
+        }
+
+      }
+    );
+
+
+    /* INITIAL PAGE */
+
+    if (authToken && currentUser) {
+
+      updateUserUI();
+
+      showPage("home");
+
+      loadRooms();
+
+    } else {
+
+      showPage("login");
+
+    }
+
+  }
+);
+
+
+/* =========================================================
+   PAGE CLOSE
+========================================================= */
+
+window.addEventListener(
+  "beforeunload",
+  () => {
+
+    stopRoomPolling();
+
+  }
+);
+
+
+/* =========================================================
+   GLOBAL FUNCTIONS
+========================================================= */
+
+window.showPage =
+  showPage;
+
+window.loginUser =
+  loginUser;
+
+window.registerUser =
+  registerUser;
+
+window.logoutUser =
+  logoutUser;
+
+window.createRoom =
+  createRoom;
+
+window.loadRooms =
+  loadRooms;
+
+window.openRoom =
+  openRoom;
+
+window.joinSeat =
+  joinSeat;
+
+window.leaveMySeat =
+  leaveMySeat;
+
+window.toggleMic =
+  toggleMic;
+
+window.sendReaction =
+  sendReaction;
 
 window.openMusicPanel =
   openMusicPanel;
@@ -2276,155 +2355,11 @@ window.openGiftPanel =
 window.openInvitePanel =
   openInvitePanel;
 
+window.closePanels =
+  closePanels;
 
-/* =====================================================
-   SUPPORT PAGE
-===================================================== */
-
-function goBackFromSupport() {
-
-  closePanels();
-
-
-  if (
-    state.roomId &&
-    state.currentPage ===
-    "support"
-  ) {
-
-    openPage(
-      "roomPage"
-    );
-
-    state.currentPage =
-      "room";
-
-    return;
-  }
-
-
-  openPage(
-    "homePage"
-  );
-
-  state.currentPage =
-    "home";
-}
-
+window.leaveRoom =
+  leaveRoom;
 
 window.goBackFromSupport =
   goBackFromSupport;
-
-
-/* =====================================================
-   EVENT LISTENERS
-===================================================== */
-
-document.addEventListener(
-  "DOMContentLoaded",
-  () => {
-
-
-    /* Login */
-
-    $("loginForm")
-      ?.addEventListener(
-        "submit",
-        loginUser
-      );
-
-
-    /* Register */
-
-    $("registerForm")
-      ?.addEventListener(
-        "submit",
-        registerUser
-      );
-
-
-    /* Create Room */
-
-    $("createRoomForm")
-      ?.addEventListener(
-        "submit",
-        createRoom
-      );
-
-
-    /* Chat */
-
-    $("roomChatForm")
-      ?.addEventListener(
-        "submit",
-        sendChatMessage
-      );
-
-
-    /* Support */
-
-    $("supportForm")
-      ?.addEventListener(
-        "submit",
-        submitSupport
-      );
-
-
-    /* Initial authentication */
-
-    checkLogin();
-
-  }
-);
-
-
-/* =====================================================
-   CLEANUP
-===================================================== */
-
-window.addEventListener(
-  "beforeunload",
-  () => {
-
-    stopRoomRefresh();
-
-  }
-);
-
-
-/* =====================================================
-   GLOBALS
-===================================================== */
-
-window.state =
-  state;
-
-window.loadRooms =
-  loadRooms;
-
-window.createRoom =
-  createRoom;
-
-window.joinRoom =
-  joinRoom;
-
-window.joinSeat =
-  joinSeat;
-
-window.leaveMySeat =
-  leaveMySeat;
-
-window.loadMessages =
-  loadMessages;
-
-window.sendChatMessage =
-  sendChatMessage;
-
-window.loginUser =
-  loginUser;
-
-window.registerUser =
-  registerUser;
-
-window.logoutUser =
-  logoutUser;
