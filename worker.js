@@ -1,335 +1,383 @@
 export default {
-
   async fetch(request, env) {
-
-    const url = new URL(request.url);
-
     const corsHeaders = {
       "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "GET, POST, PUT, PATCH, DELETE, OPTIONS",
+      "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,OPTIONS",
       "Access-Control-Allow-Headers": "Content-Type, Authorization"
     };
-
     if (request.method === "OPTIONS") {
       return new Response(null, {
         status: 204,
         headers: corsHeaders
       });
     }
-
-
-    /* =====================================================
-       RESPONSE HELPERS
-       ===================================================== */
-
-    function json(data, status = 200) {
-
-      return new Response(
-        JSON.stringify(data),
-        {
-          status,
-          headers: {
-            ...corsHeaders,
-            "Content-Type": "application/json; charset=utf-8"
+    try {
+      const url = new URL(request.url);
+      const path = url.pathname;
+      /* =====================================================
+         RESPONSE HELPERS
+         ===================================================== */
+      function json(data, status = 200) {
+        return new Response(
+          JSON.stringify(data),
+          {
+            status,
+            headers: {
+              "Content-Type": "application/json; charset=UTF-8",
+              ...corsHeaders
+            }
           }
-        }
-      );
-    }
-
-
-    async function body(request) {
-
-      try {
-        return await request.json();
-      } catch {
-        return null;
+        );
       }
-
-    }
-
-
-    /* =====================================================
-       HOME
-       ===================================================== */
-
-    if (url.pathname === "/") {
-
-      return json({
-        success: true,
-        service: "Rahul Live API",
-        status: "running"
-      });
-
-    }
-
-
-    /* =====================================================
-       API TEST
-       ===================================================== */
-
-    if (
-      url.pathname === "/api/test" &&
-      request.method === "GET"
-    ) {
-
-      try {
-
-        const result = await env.DB
-          .prepare(`
-            SELECT name
-            FROM sqlite_master
-            WHERE type = 'table'
-            ORDER BY name
-          `)
-          .all();
-
+      function error(message, status = 400) {
+        return json({
+          success: false,
+          message
+        }, status);
+      }
+      async function body() {
+        try {
+          return await request.json();
+        } catch {
+          return {};
+        }
+      }
+      /* =====================================================
+         PASSWORD HASH
+         ===================================================== */
+      const encoder =
+        new TextEncoder();
+      function bytesToHex(bytes) {
+        return [...new Uint8Array(bytes)]
+          .map(
+            b => b.toString(16).padStart(2, "0")
+          )
+          .join("");
+      }
+      async function hashPassword(password) {
+        const salt =
+          crypto.randomUUID();
+        const key =
+          await crypto.subtle.importKey(
+            "raw",
+            encoder.encode(password),
+            "PBKDF2",
+            false,
+            ["deriveBits"]
+          );
+        const bits =
+          await crypto.subtle.deriveBits(
+            {
+              name: "PBKDF2",
+              salt: encoder.encode(salt),
+              iterations: 100000,
+              hash: "SHA-256"
+            },
+            key,
+            256
+          );
+        return `${salt}:${bytesToHex(bits)}`;
+      }
+      async function verifyPassword(
+        password,
+        stored
+      ) {
+        if (!stored || !stored.includes(":")) {
+          return false;
+        }
+        const [
+          salt,
+          originalHash
+        ] = stored.split(":");
+        const key =
+          await crypto.subtle.importKey(
+            "raw",
+            encoder.encode(password),
+            "PBKDF2",
+            false,
+            ["deriveBits"]
+          );
+        const bits =
+          await crypto.subtle.deriveBits(
+            {
+              name: "PBKDF2",
+              salt: encoder.encode(salt),
+              iterations: 100000,
+              hash: "SHA-256"
+            },
+            key,
+            256
+          );
+        return (
+          bytesToHex(bits) ===
+          originalHash
+        );
+      }
+      /* =====================================================
+         SESSION TOKEN
+         ===================================================== */
+      async function createToken() {
+        const bytes =
+          crypto.getRandomValues(
+            new Uint8Array(32)
+          );
+        return bytesToHex(bytes);
+      }
+      async function hashToken(token) {
+        const digest =
+          await crypto.subtle.digest(
+            "SHA-256",
+            encoder.encode(token)
+          );
+        return bytesToHex(digest);
+      }
+      /* =====================================================
+         AUTHENTICATED USER
+         ===================================================== */
+      async function getUser() {
+        const authorization =
+          request.headers.get(
+            "Authorization"
+          );
+        if (!authorization) {
+          return null;
+        }
+        if (
+          !authorization
+            .toLowerCase()
+            .startsWith("bearer ")
+        ) {
+          return null;
+        }
+        const token =
+          authorization
+            .slice(7)
+            .trim();
+        if (!token) {
+          return null;
+        }
+        const tokenHash =
+          await hashToken(token);
+        const result =
+          await env.DB
+            .prepare(`
+              SELECT
+                u.id,
+                u.name,
+                u.email,
+                u.username,
+                u.avatar_url,
+                u.bio,
+                u.coins,
+                u.is_online
+              FROM sessions s
+              INNER JOIN users u
+                ON u.id = s.user_id
+              WHERE s.token_hash = ?
+                AND s.expires_at > CURRENT_TIMESTAMP
+              LIMIT 1
+            `)
+            .bind(tokenHash)
+            .first();
+        return result || null;
+      }
+      /* =====================================================
+         HOME
+         ===================================================== */
+      if (path === "/" && request.method === "GET") {
+        return json({
+          success: true,
+          service: "Rahul Live API",
+          status: "running"
+        });
+      }
+      /* =====================================================
+         API TEST
+         ===================================================== */
+      if (
+        path === "/api/test" &&
+        request.method === "GET"
+      ) {
+        const result =
+          await env.DB
+            .prepare(`
+              SELECT name
+              FROM sqlite_master
+              WHERE type = 'table'
+              ORDER BY name
+            `)
+            .all();
         return json({
           success: true,
           database: "connected",
-          tables: result.results
+          tables: result.results || []
         });
-
-      } catch (error) {
-
-        return json({
-          success: false,
-          error: error.message
-        }, 500);
-
       }
-
-    }
-
-
-    /* =====================================================
-       REGISTER
-       ===================================================== */
-
-    if (
-      url.pathname === "/api/register" &&
-      request.method === "POST"
-    ) {
-
-      const data = await body(request);
-
-      if (!data) {
-        return json({
-          success: false,
-          message: "Invalid JSON"
-        }, 400);
-      }
-
-      const name =
-        String(data.name || "").trim();
-
-      const email =
-        String(data.email || "").trim().toLowerCase();
-
-      const password =
-        String(data.password || "");
-
-      if (!name || !email || !password) {
-
-        return json({
-          success: false,
-          message: "Name, email and password are required."
-        }, 400);
-
-      }
-
-      if (password.length < 6) {
-
-        return json({
-          success: false,
-          message: "Password must contain at least 6 characters."
-        }, 400);
-
-      }
-
-
-      try {
-
-        const existing = await env.DB
-          .prepare(`
-            SELECT id
-            FROM users
-            WHERE email = ?
-            LIMIT 1
-          `)
-          .bind(email)
-          .first();
-
-        if (existing) {
-
-          return json({
-            success: false,
-            message: "Email already registered."
-          }, 409);
-
+      /* =====================================================
+         REGISTER
+         ===================================================== */
+      if (
+        path === "/api/register" &&
+        request.method === "POST"
+      ) {
+        const data =
+          await body();
+        const name =
+          String(data.name || "").trim();
+        const email =
+          String(data.email || "")
+            .trim()
+            .toLowerCase();
+        const password =
+          String(data.password || "");
+        if (!name) {
+          return error(
+            "Name जरूरी है।"
+          );
         }
-
-
-        /*
-          Password hashing will be handled securely in the
-          authentication layer. Plain password is NOT stored.
-        */
-
+        if (!email) {
+          return error(
+            "Email जरूरी है।"
+          );
+        }
+        if (
+          password.length < 6
+        ) {
+          return error(
+            "Password कम से कम 6 characters का होना चाहिए।"
+          );
+        }
+        const existing =
+          await env.DB
+            .prepare(`
+              SELECT id
+              FROM users
+              WHERE email = ?
+              LIMIT 1
+            `)
+            .bind(email)
+            .first();
+        if (existing) {
+          return error(
+            "यह email पहले से registered है।",
+            409
+          );
+        }
         const passwordHash =
           await hashPassword(password);
-
-
-        const username =
-          await generateUsername(env.DB, name);
-
-
-        const result = await env.DB
-          .prepare(`
-            INSERT INTO users
-            (
+        const usernameBase =
+          email
+            .split("@")[0]
+            .replace(
+              /[^a-zA-Z0-9_]/g,
+              ""
+            )
+            .slice(0, 25) ||
+          `user${Date.now()}`;
+        let username =
+          usernameBase;
+        let counter = 1;
+        while (true) {
+          const check =
+            await env.DB
+              .prepare(`
+                SELECT id
+                FROM users
+                WHERE username = ?
+                LIMIT 1
+              `)
+              .bind(username)
+              .first();
+          if (!check) {
+            break;
+          }
+          username =
+            `${usernameBase}${counter}`;
+          counter++;
+        }
+        const result =
+          await env.DB
+            .prepare(`
+              INSERT INTO users
+              (
+                name,
+                email,
+                password_hash,
+                username,
+                coins,
+                is_online
+              )
+              VALUES (?, ?, ?, ?, 0, 0)
+            `)
+            .bind(
               name,
               email,
-              password_hash,
+              passwordHash,
               username
             )
-            VALUES (?, ?, ?, ?)
-          `)
-          .bind(
-            name,
-            email,
-            passwordHash,
-            username
-          )
-          .run();
-
-
+            .run();
+        if (!result.success) {
+          return error(
+            "Account create नहीं हुआ।",
+            500
+          );
+        }
         return json({
           success: true,
-          message: "Registration successful.",
-          user: {
-            id: result.meta.last_row_id,
-            name,
-            email,
-            username
-          }
+          message: "Registration successful."
         }, 201);
-
-
-      } catch (error) {
-
-        return json({
-          success: false,
-          message: "Registration failed.",
-          error: error.message
-        }, 500);
-
       }
-
-    }
-
-
-    /* =====================================================
-       LOGIN
-       ===================================================== */
-
-    if (
-      url.pathname === "/api/login" &&
-      request.method === "POST"
-    ) {
-
-      const data = await body(request);
-
-      if (!data) {
-
-        return json({
-          success: false,
-          message: "Invalid JSON"
-        }, 400);
-
-      }
-
-      const email =
-        String(data.email || "")
-          .trim()
-          .toLowerCase();
-
-      const password =
-        String(data.password || "");
-
-
-      if (!email || !password) {
-
-        return json({
-          success: false,
-          message: "Email and password are required."
-        }, 400);
-
-      }
-
-
-      try {
-
-        const user = await env.DB
-          .prepare(`
-            SELECT
-              id,
-              name,
-              email,
-              password_hash,
-              username,
-              avatar_url,
-              bio,
-              coins
-            FROM users
-            WHERE email = ?
-            LIMIT 1
-          `)
-          .bind(email)
-          .first();
-
-
-        if (!user) {
-
-          return json({
-            success: false,
-            message: "Invalid email or password."
-          }, 401);
-
+      /* =====================================================
+         LOGIN
+         ===================================================== */
+      if (
+        path === "/api/login" &&
+        request.method === "POST"
+      ) {
+        const data =
+          await body();
+        const email =
+          String(data.email || "")
+            .trim()
+            .toLowerCase();
+        const password =
+          String(data.password || "");
+        if (!email || !password) {
+          return error(
+            "Email और password दोनों जरूरी हैं।"
+          );
         }
-
-
+        const user =
+          await env.DB
+            .prepare(`
+              SELECT *
+              FROM users
+              WHERE email = ?
+              LIMIT 1
+            `)
+            .bind(email)
+            .first();
+        if (!user) {
+          return error(
+            "Email या password गलत है।",
+            401
+          );
+        }
         const valid =
           await verifyPassword(
             password,
             user.password_hash
           );
-
-
         if (!valid) {
-
-          return json({
-            success: false,
-            message: "Invalid email or password."
-          }, 401);
-
+          return error(
+            "Email या password गलत है।",
+            401
+          );
         }
-
-
         const token =
-          crypto.randomUUID() +
-          "-" +
-          crypto.randomUUID();
-
-
+          await createToken();
         const tokenHash =
-          await sha256(token);
-
-
-        const expiresAt =
-          new Date(
-            Date.now() + 1000 * 60 * 60 * 24 * 30
-          ).toISOString();
-
-
+          await hashToken(token);
         await env.DB
           .prepare(`
             INSERT INTO sessions
@@ -338,16 +386,17 @@ export default {
               token_hash,
               expires_at
             )
-            VALUES (?, ?, ?)
+            VALUES (
+              ?,
+              ?,
+              datetime('now', '+30 days')
+            )
           `)
           .bind(
             user.id,
-            tokenHash,
-            expiresAt
+            tokenHash
           )
           .run();
-
-
         await env.DB
           .prepare(`
             UPDATE users
@@ -358,8 +407,6 @@ export default {
           `)
           .bind(user.id)
           .run();
-
-
         return json({
           success: true,
           message: "Login successful.",
@@ -371,394 +418,239 @@ export default {
             username: user.username,
             avatar_url: user.avatar_url,
             bio: user.bio,
-            coins: user.coins
+            coins: user.coins,
+            is_online: 1
           }
         });
-
-
-      } catch (error) {
-
-        return json({
-          success: false,
-          message: "Login failed.",
-          error: error.message
-        }, 500);
-
       }
-
-    }
-
-
-    /* =====================================================
-       CURRENT USER
-       ===================================================== */
-
-    if (
-      url.pathname === "/api/me" &&
-      request.method === "GET"
-    ) {
-
-      const user = await authenticate(
-        request,
-        env.DB
-      );
-
-
-      if (!user) {
-
-        return json({
-          success: false,
-          message: "Unauthorized."
-        }, 401);
-
-      }
-
-
-      return json({
-        success: true,
-        user
-      });
-
-    }
-
-
-    /* =====================================================
-       LOGOUT
-       ===================================================== */
-
-    if (
-      url.pathname === "/api/logout" &&
-      request.method === "POST"
-    ) {
-
-      const token =
-        getToken(request);
-
-
-      if (token) {
-
-        const tokenHash =
-          await sha256(token);
-
-        await env.DB
-          .prepare(`
-            DELETE FROM sessions
-            WHERE token_hash = ?
-          `)
-          .bind(tokenHash)
-          .run();
-
-      }
-
-
-      return json({
-        success: true,
-        message: "Logged out."
-      });
-
-    }
-
-
-    /* =====================================================
-       GET ROOMS
-       ===================================================== */
-
-    if (
-      url.pathname === "/api/rooms" &&
-      request.method === "GET"
-    ) {
-
-      try {
-
-        const result = await env.DB
-          .prepare(`
-            SELECT
-              r.id,
-              r.owner_id,
-              r.name,
-              r.description,
-              r.room_type,
-              r.cover_url,
-              r.is_active,
-              r.created_at,
-              u.name AS owner_name,
-              u.username AS owner_username,
-              u.avatar_url AS owner_avatar
-            FROM rooms r
-            JOIN users u
-              ON u.id = r.owner_id
-            WHERE r.is_active = 1
-            ORDER BY r.created_at DESC
-          `)
-          .all();
-
-
+      /* =====================================================
+         CURRENT USER
+         ===================================================== */
+      if (
+        path === "/api/me" &&
+        request.method === "GET"
+      ) {
+        const user =
+          await getUser();
+        if (!user) {
+          return error(
+            "Authentication required.",
+            401
+          );
+        }
         return json({
           success: true,
-          rooms: result.results
+          user
         });
-
-
-      } catch (error) {
-
-        return json({
-          success: false,
-          error: error.message
-        }, 500);
-
       }
-
-    }
-
-
-    /* =====================================================
-       CREATE ROOM
-       ===================================================== */
-
-    if (
-      url.pathname === "/api/rooms" &&
-      request.method === "POST"
-    ) {
-
-      const user =
-        await authenticate(request, env.DB);
-
-
-      if (!user) {
-
+      /* =====================================================
+         LOGOUT
+         ===================================================== */
+      if (
+        path === "/api/logout" &&
+        request.method === "POST"
+      ) {
+        const user =
+          await getUser();
+        const authorization =
+          request.headers.get(
+            "Authorization"
+          );
+        if (authorization) {
+          const token =
+            authorization
+              .slice(7)
+              .trim();
+          if (token) {
+            const tokenHash =
+              await hashToken(token);
+            await env.DB
+              .prepare(`
+                DELETE FROM sessions
+                WHERE token_hash = ?
+              `)
+              .bind(tokenHash)
+              .run();
+          }
+        }
+        if (user) {
+          await env.DB
+            .prepare(`
+              UPDATE users
+              SET
+                is_online = 0,
+                updated_at = CURRENT_TIMESTAMP
+              WHERE id = ?
+            `)
+            .bind(user.id)
+            .run();
+        }
         return json({
-          success: false,
-          message: "Login required."
-        }, 401);
-
+          success: true,
+          message: "Logout successful."
+        });
       }
-
-
-      const data =
-        await body(request);
-
-
-      const name =
-        String(data?.name || "").trim();
-
-      const description =
-        String(data?.description || "").trim();
-
-      const roomType =
-        data?.room_type === "private"
-          ? "private"
-          : "public";
-
-
-      if (!name) {
-
+      /* =====================================================
+         GET ROOMS
+         ===================================================== */
+      if (
+        path === "/api/rooms" &&
+        request.method === "GET"
+      ) {
+        const result =
+          await env.DB
+            .prepare(`
+              SELECT
+                r.id,
+                r.owner_id,
+                r.name,
+                r.description,
+                r.room_type,
+                r.cover_url,
+                r.is_active,
+                r.created_at,
+                u.name AS owner_name,
+                u.username AS owner_username,
+                (
+                  SELECT COUNT(*)
+                  FROM room_viewers rv
+                  WHERE rv.room_id = r.id
+                    AND rv.is_inside = 1
+                ) AS viewer_count
+              FROM rooms r
+              INNER JOIN users u
+                ON u.id = r.owner_id
+              WHERE r.is_active = 1
+              ORDER BY r.created_at DESC
+            `)
+            .all();
         return json({
-          success: false,
-          message: "Room name is required."
-        }, 400);
-
+          success: true,
+          rooms: result.results || []
+        });
       }
-
-
-      try {
-
-        const result = await env.DB
-          .prepare(`
-            INSERT INTO rooms
-            (
-              owner_id,
+      /* =====================================================
+         CREATE ROOM
+         ===================================================== */
+      if (
+        path === "/api/rooms" &&
+        request.method === "POST"
+      ) {
+        const user =
+          await getUser();
+        if (!user) {
+          return error(
+            "Login required.",
+            401
+          );
+        }
+        const data =
+          await body();
+        const name =
+          String(data.name || "").trim();
+        const description =
+          String(
+            data.description || ""
+          ).trim();
+        const roomType =
+          data.room_type === "private"
+            ? "private"
+            : "public";
+        if (!name) {
+          return error(
+            "Room name जरूरी है।"
+          );
+        }
+        const result =
+          await env.DB
+            .prepare(`
+              INSERT INTO rooms
+              (
+                owner_id,
+                name,
+                description,
+                room_type
+              )
+              VALUES (?, ?, ?, ?)
+            `)
+            .bind(
+              user.id,
               name,
               description,
-              room_type
+              roomType
             )
-            VALUES (?, ?, ?, ?)
-          `)
-          .bind(
-            user.id,
-            name,
-            description,
-            roomType
-          )
-          .run();
-
-
-        const roomId =
-          result.meta.last_row_id;
-
-
-        /*
-          Create 8 numbered voice seats.
-        */
-
-        const seatStatements = [];
-
-        for (
-          let seat = 1;
-          seat <= 8;
-          seat++
-        ) {
-
-          seatStatements.push(
-            env.DB
-              .prepare(`
-                INSERT INTO room_seats
-                (
-                  room_id,
-                  seat_number
-                )
-                VALUES (?, ?)
-              `)
-              .bind(
-                roomId,
-                seat
-              )
+            .run();
+        if (!result.success) {
+          return error(
+            "Room create नहीं हुआ।",
+            500
           );
-
         }
-
-
-        await env.DB.batch(
-          seatStatements
-        );
-
-
+        const roomId =
+          result.meta?.last_row_id;
         /*
-          Owner becomes first room member.
+          Owner को room member बनाया जा रहा है।
         */
-
         await env.DB
           .prepare(`
             INSERT INTO room_members
             (
               room_id,
               user_id,
-              role
+              role,
+              is_inside
             )
-            VALUES (?, ?, 'owner')
+            VALUES (?, ?, 'owner', 1)
           `)
           .bind(
             roomId,
             user.id
           )
           .run();
-
-
         return json({
           success: true,
           message: "Room created.",
           room_id: roomId
         }, 201);
-
-
-      } catch (error) {
-
-        return json({
-          success: false,
-          message: "Room creation failed.",
-          error: error.message
-        }, 500);
-
       }
-
-    }
-
-
-    /* =====================================================
-       JOIN ROOM
-       ===================================================== */
-
-    if (
-      url.pathname.match(
-        /^\/api\/rooms\/\d+\/join$/
-      ) &&
-      request.method === "POST"
-    ) {
-
-      const user =
-        await authenticate(request, env.DB);
-
-
-      if (!user) {
-
-        return json({
-          success: false,
-          message: "Login required."
-        }, 401);
-
-      }
-
-
-      const roomId =
-        Number(
-          url.pathname.split("/")[3]
+      /* =====================================================
+         JOIN ROOM
+         ===================================================== */
+      const joinMatch =
+        path.match(
+          /^\/api\/rooms\/(\d+)\/join$/
         );
-
-
-      try {
-
-        const room = await env.DB
-          .prepare(`
-            SELECT
-              id,
-              owner_id,
-              room_type,
-              is_active
-            FROM rooms
-            WHERE id = ?
-            LIMIT 1
-          `)
-          .bind(roomId)
-          .first();
-
-
-        if (!room || !room.is_active) {
-
-          return json({
-            success: false,
-            message: "Room not found."
-          }, 404);
-
+      if (
+        joinMatch &&
+        request.method === "POST"
+      ) {
+        const roomId =
+          Number(joinMatch[1]);
+        const user =
+          await getUser();
+        if (!user) {
+          return error(
+            "Login required.",
+            401
+          );
         }
-
-
-        if (room.room_type === "private") {
-
-          const friend = await env.DB
+        const room =
+          await env.DB
             .prepare(`
-              SELECT id
-              FROM friendships
-              WHERE status = 'accepted'
-              AND (
-                (requester_id = ? AND receiver_id = ?)
-                OR
-                (requester_id = ? AND receiver_id = ?)
-              )
+              SELECT *
+              FROM rooms
+              WHERE id = ?
+                AND is_active = 1
               LIMIT 1
             `)
-            .bind(
-              user.id,
-              room.owner_id,
-              room.owner_id,
-              user.id
-            )
+            .bind(roomId)
             .first();
-
-
-          if (
-            user.id !== room.owner_id &&
-            !friend
-          ) {
-
-            return json({
-              success: false,
-              message: "Private room access denied."
-            }, 403);
-
-          }
-
+        if (!room) {
+          return error(
+            "Room नहीं मिला।",
+            404
+          );
         }
-
-
         await env.DB
           .prepare(`
             INSERT INTO room_members
@@ -769,7 +661,6 @@ export default {
               is_inside
             )
             VALUES (?, ?, 'member', 1)
-
             ON CONFLICT(room_id, user_id)
             DO UPDATE SET
               is_inside = 1,
@@ -780,8 +671,6 @@ export default {
             user.id
           )
           .run();
-
-
         await env.DB
           .prepare(`
             INSERT INTO room_viewers
@@ -797,541 +686,218 @@ export default {
             user.id
           )
           .run();
-
-
         return json({
           success: true,
-          message: "Joined room.",
-          room_id: roomId
+          message: "Room joined.",
+          room
         });
-
-
-      } catch (error) {
-
-        return json({
-          success: false,
-          error: error.message
-        }, 500);
-
       }
-
-    }
-
-
-    /* =====================================================
-       LEAVE ROOM
-       ===================================================== */
-
-    if (
-      url.pathname.match(
-        /^\/api\/rooms\/\d+\/leave$/
-      ) &&
-      request.method === "POST"
-    ) {
-
-      const user =
-        await authenticate(request, env.DB);
-
-
-      if (!user) {
-
-        return json({
-          success: false,
-          message: "Login required."
-        }, 401);
-
-      }
-
-
-      const roomId =
-        Number(
-          url.pathname.split("/")[3]
+      /* =====================================================
+         LEAVE ROOM
+         ===================================================== */
+      const leaveMatch =
+        path.match(
+          /^\/api\/rooms\/(\d+)\/leave$/
         );
-
-
-      await env.DB
-        .prepare(`
-          UPDATE room_members
-          SET
-            is_inside = 0,
-            left_at = CURRENT_TIMESTAMP
-          WHERE room_id = ?
-          AND user_id = ?
-        `)
-        .bind(
-          roomId,
-          user.id
-        )
-        .run();
-
-
-      await env.DB
-        .prepare(`
-          UPDATE room_viewers
-          SET
-            is_inside = 0,
-            left_at = CURRENT_TIMESTAMP
-          WHERE room_id = ?
-          AND user_id = ?
-          AND is_inside = 1
-        `)
-        .bind(
-          roomId,
-          user.id
-        )
-        .run();
-
-
-      /*
-        Release voice seat if user was sitting.
-      */
-
-      await env.DB
-        .prepare(`
-          UPDATE room_seats
-          SET
-            user_id = NULL,
-            is_muted = 0,
-            joined_at = NULL
-          WHERE room_id = ?
-          AND user_id = ?
-        `)
-        .bind(
-          roomId,
-          user.id
-        )
-        .run();
-
-
-      return json({
-        success: true,
-        message: "Left room."
-      });
-
-    }
-
-
-    /* =====================================================
-       ROOM CHAT
-       ===================================================== */
-
-    if (
-      url.pathname.match(
-        /^\/api\/rooms\/\d+\/messages$/
-      ) &&
-      request.method === "GET"
-    ) {
-
-      const roomId =
-        Number(
-          url.pathname.split("/")[3]
-        );
-
-
-      try {
-
-        const result = await env.DB
+      if (
+        leaveMatch &&
+        request.method === "POST"
+      ) {
+        const roomId =
+          Number(leaveMatch[1]);
+        const user =
+          await getUser();
+        if (!user) {
+          return error(
+            "Login required.",
+            401
+          );
+        }
+        await env.DB
           .prepare(`
-            SELECT
-              m.id,
-              m.room_id,
-              m.user_id,
-              m.message,
-              m.message_type,
-              m.created_at,
-              u.name,
-              u.username,
-              u.avatar_url
-            FROM room_messages m
-            JOIN users u
-              ON u.id = m.user_id
-            WHERE m.room_id = ?
-            ORDER BY m.id DESC
-            LIMIT 100
-          `)
-          .bind(roomId)
-          .all();
-
-
-        return json({
-          success: true,
-          messages: result.results.reverse()
-        });
-
-
-      } catch (error) {
-
-        return json({
-          success: false,
-          error: error.message
-        }, 500);
-
-      }
-
-    }
-
-
-    if (
-      url.pathname.match(
-        /^\/api\/rooms\/\d+\/messages$/
-      ) &&
-      request.method === "POST"
-    ) {
-
-      const user =
-        await authenticate(request, env.DB);
-
-
-      if (!user) {
-
-        return json({
-          success: false,
-          message: "Login required."
-        }, 401);
-
-      }
-
-
-      const roomId =
-        Number(
-          url.pathname.split("/")[3]
-        );
-
-
-      const data =
-        await body(request);
-
-
-      const message =
-        String(data?.message || "").trim();
-
-
-      if (!message) {
-
-        return json({
-          success: false,
-          message: "Message cannot be empty."
-        }, 400);
-
-      }
-
-
-      if (message.length > 2000) {
-
-        return json({
-          success: false,
-          message: "Message is too long."
-        }, 400);
-
-      }
-
-
-      try {
-
-        const member = await env.DB
-          .prepare(`
-            SELECT id
-            FROM room_members
+            UPDATE room_members
+            SET
+              is_inside = 0,
+              left_at = CURRENT_TIMESTAMP
             WHERE room_id = ?
-            AND user_id = ?
-            AND is_inside = 1
-            LIMIT 1
+              AND user_id = ?
           `)
           .bind(
             roomId,
             user.id
           )
-          .first();
-
-
-        if (!member) {
-
-          return json({
-            success: false,
-            message: "Join the room first."
-          }, 403);
-
-        }
-
-
-        const result = await env.DB
+          .run();
+        await env.DB
           .prepare(`
-            INSERT INTO room_messages
-            (
-              room_id,
-              user_id,
-              message
-            )
-            VALUES (?, ?, ?)
+            UPDATE room_viewers
+            SET
+              is_inside = 0,
+              left_at = CURRENT_TIMESTAMP
+            WHERE room_id = ?
+              AND user_id = ?
+              AND is_inside = 1
           `)
           .bind(
             roomId,
-            user.id,
-            message
+            user.id
           )
           .run();
-
-
         return json({
           success: true,
-          message_id: result.meta.last_row_id
-        }, 201);
-
-
-      } catch (error) {
-
-        return json({
-          success: false,
-          error: error.message
-        }, 500);
-
+          message: "Room left."
+        });
       }
-
+      /* =====================================================
+         GET ROOM MESSAGES
+         ===================================================== */
+      const messagesGetMatch =
+        path.match(
+          /^\/api\/rooms\/(\d+)\/messages$/
+        );
+      if (
+        messagesGetMatch &&
+        request.method === "GET"
+      ) {
+        const roomId =
+          Number(messagesGetMatch[1]);
+        const result =
+          await env.DB
+            .prepare(`
+              SELECT
+                rm.id,
+                rm.room_id,
+                rm.user_id,
+                rm.message,
+                rm.message_type,
+                rm.created_at,
+                u.name,
+                u.username,
+                u.avatar_url
+              FROM room_messages rm
+              INNER JOIN users u
+                ON u.id = rm.user_id
+              WHERE rm.room_id = ?
+              ORDER BY rm.id ASC
+              LIMIT 200
+            `)
+            .bind(roomId)
+            .all();
+        return json({
+          success: true,
+          messages: result.results || []
+        });
+      }
+      /* =====================================================
+         SEND ROOM MESSAGE
+         ===================================================== */
+      const messagesPostMatch =
+        path.match(
+          /^\/api\/rooms\/(\d+)\/messages$/
+        );
+      if (
+        messagesPostMatch &&
+        request.method === "POST"
+      ) {
+        const roomId =
+          Number(messagesPostMatch[1]);
+        const user =
+          await getUser();
+        if (!user) {
+          return error(
+            "Login required.",
+            401
+          );
+        }
+        const data =
+          await body();
+        const message =
+          String(data.message || "")
+            .trim();
+        if (!message) {
+          return error(
+            "Message खाली नहीं हो सकता।"
+          );
+        }
+        if (message.length > 2000) {
+          return error(
+            "Message बहुत लंबा है।"
+          );
+        }
+        const member =
+          await env.DB
+            .prepare(`
+              SELECT id
+              FROM room_members
+              WHERE room_id = ?
+                AND user_id = ?
+                AND is_inside = 1
+              LIMIT 1
+            `)
+            .bind(
+              roomId,
+              user.id
+            )
+            .first();
+        if (!member) {
+          return error(
+            "पहले room join करें।",
+            403
+          );
+        }
+        const result =
+          await env.DB
+            .prepare(`
+              INSERT INTO room_messages
+              (
+                room_id,
+                user_id,
+                message,
+                message_type
+              )
+              VALUES (?, ?, ?, 'text')
+            `)
+            .bind(
+              roomId,
+              user.id,
+              message
+            )
+            .run();
+        return json({
+          success: true,
+          message_id:
+            result.meta?.last_row_id
+        }, 201);
+      }
+      /* =====================================================
+         NOT FOUND
+         ===================================================== */
+      return error(
+        "API endpoint नहीं मिला।",
+        404
+      );
+    } catch (err) {
+      console.error(
+        "Rahul Live API Error:",
+        err
+      );
+      return new Response(
+        JSON.stringify({
+          success: false,
+          message:
+            "Server error.",
+          error:
+            String(err?.message || err)
+        }),
+        {
+          status: 500,
+          headers: {
+            "Content-Type":
+              "application/json; charset=UTF-8",
+            "Access-Control-Allow-Origin":
+              "*"
+          }
+        }
+      );
     }
-
-
-    /* =====================================================
-       UNKNOWN API
-       ===================================================== */
-
-    return json({
-      success: false,
-      message: "API endpoint not found."
-    }, 404);
-
   }
 };
-
-
-/* =========================================================
-   AUTHENTICATION
-   ========================================================= */
-
-async function authenticate(request, db) {
-
-  const token =
-    getToken(request);
-
-  if (!token) {
-    return null;
-  }
-
-
-  const tokenHash =
-    await sha256(token);
-
-
-  const row = await db
-    .prepare(`
-      SELECT
-        u.id,
-        u.name,
-        u.email,
-        u.username,
-        u.avatar_url,
-        u.bio,
-        u.coins,
-        s.expires_at
-      FROM sessions s
-      JOIN users u
-        ON u.id = s.user_id
-      WHERE s.token_hash = ?
-      LIMIT 1
-    `)
-    .bind(tokenHash)
-    .first();
-
-
-  if (!row) {
-    return null;
-  }
-
-
-  if (
-    new Date(row.expires_at).getTime()
-    <= Date.now()
-  ) {
-
-    await db
-      .prepare(`
-        DELETE FROM sessions
-        WHERE token_hash = ?
-      `)
-      .bind(tokenHash)
-      .run();
-
-    return null;
-  }
-
-
-  return {
-    id: row.id,
-    name: row.name,
-    email: row.email,
-    username: row.username,
-    avatar_url: row.avatar_url,
-    bio: row.bio,
-    coins: row.coins
-  };
-
-}
-
-
-/* =========================================================
-   TOKEN
-   ========================================================= */
-
-function getToken(request) {
-
-  const header =
-    request.headers.get("Authorization");
-
-  if (!header) {
-    return null;
-  }
-
-  if (
-    !header.startsWith("Bearer ")
-  ) {
-    return null;
-  }
-
-  return header.slice(7).trim();
-}
-
-
-/* =========================================================
-   PASSWORD HASH
-   ========================================================= */
-
-async function hashPassword(password) {
-
-  const salt =
-    crypto.randomUUID();
-
-  const hash =
-    await sha256(
-      `${salt}:${password}`
-    );
-
-  return `${salt}:${hash}`;
-}
-
-
-async function verifyPassword(
-  password,
-  stored
-) {
-
-  const separator =
-    stored.indexOf(":");
-
-  if (separator === -1) {
-    return false;
-  }
-
-  const salt =
-    stored.slice(0, separator);
-
-  const originalHash =
-    stored.slice(separator + 1);
-
-  const checkHash =
-    await sha256(
-      `${salt}:${password}`
-    );
-
-  return checkHash === originalHash;
-}
-
-
-/* =========================================================
-   SHA-256
-   ========================================================= */
-
-async function sha256(value) {
-
-  const data =
-    new TextEncoder().encode(value);
-
-  const hashBuffer =
-    await crypto.subtle.digest(
-      "SHA-256",
-      data
-    );
-
-  const hashArray =
-    Array.from(
-      new Uint8Array(hashBuffer)
-    );
-
-  return hashArray
-    .map(
-      byte =>
-        byte
-          .toString(16)
-          .padStart(2, "0")
-    )
-    .join("");
-}
-
-
-/* =========================================================
-   USERNAME
-   ========================================================= */
-
-async function generateUsername(
-  db,
-  name
-) {
-
-  let base =
-    name
-      .toLowerCase()
-      .replace(
-        /[^a-z0-9]/g,
-        ""
-      )
-      .slice(0, 15);
-
-
-  if (!base) {
-    base = "user";
-  }
-
-
-  let username = base;
-
-
-  for (let i = 0; i < 100; i++) {
-
-    const existing =
-      await db
-        .prepare(`
-          SELECT id
-          FROM users
-          WHERE username = ?
-          LIMIT 1
-        `)
-        .bind(username)
-        .first();
-
-
-    if (!existing) {
-      return username;
-    }
-
-
-    username =
-      `${base}${Math.floor(
-        1000 + Math.random() * 9000
-      )}`;
-
-  }
-
-
-  return (
-    `user${Date.now()}`
-  );
-
-}
