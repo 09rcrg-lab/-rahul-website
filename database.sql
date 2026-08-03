@@ -1,697 +1,459 @@
--- =========================================================
--- RAHUL LIVE DATABASE
--- =========================================================
-
 PRAGMA foreign_keys = ON;
 
-
--- =========================================================
+-- =====================================================
 -- USERS
--- =========================================================
+-- =====================================================
 
 CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-
     name TEXT NOT NULL,
-
     email TEXT NOT NULL UNIQUE,
-
     password_hash TEXT NOT NULL,
-
     username TEXT UNIQUE,
-
-    avatar_url TEXT,
-
+    avatar_url TEXT DEFAULT '',
     bio TEXT DEFAULT '',
-
     coins INTEGER NOT NULL DEFAULT 0,
-
     is_online INTEGER NOT NULL DEFAULT 0,
-
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
     updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 
--- =========================================================
--- LOGIN SESSIONS
--- =========================================================
+-- =====================================================
+-- SESSIONS
+-- =====================================================
 
 CREATE TABLE IF NOT EXISTS sessions (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-
+    token TEXT NOT NULL UNIQUE,
     user_id INTEGER NOT NULL,
-
-    token_hash TEXT NOT NULL UNIQUE,
-
-    expires_at TEXT NOT NULL,
-
-    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    FOREIGN KEY (user_id)
-        REFERENCES users(id)
-        ON DELETE CASCADE
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-
 CREATE INDEX IF NOT EXISTS idx_sessions_token
-ON sessions(token_hash);
-
+ON sessions(token);
 
 CREATE INDEX IF NOT EXISTS idx_sessions_user
 ON sessions(user_id);
 
 
--- =========================================================
+-- =====================================================
 -- ROOMS
--- =========================================================
+-- =====================================================
 
 CREATE TABLE IF NOT EXISTS rooms (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-
     owner_id INTEGER NOT NULL,
-
     name TEXT NOT NULL,
-
     description TEXT DEFAULT '',
-
     room_type TEXT NOT NULL DEFAULT 'public',
-
-    cover_url TEXT,
-
-    is_active INTEGER NOT NULL DEFAULT 1,
-
-    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    FOREIGN KEY (owner_id)
-        REFERENCES users(id)
-        ON DELETE CASCADE
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
-
 
 CREATE INDEX IF NOT EXISTS idx_rooms_owner
 ON rooms(owner_id);
 
+CREATE INDEX IF NOT EXISTS idx_rooms_created
+ON rooms(created_at);
 
-CREATE INDEX IF NOT EXISTS idx_rooms_active
-ON rooms(is_active);
 
-
--- =========================================================
+-- =====================================================
 -- ROOM MEMBERS
--- =========================================================
+-- =====================================================
 
 CREATE TABLE IF NOT EXISTS room_members (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-
     room_id INTEGER NOT NULL,
-
     user_id INTEGER NOT NULL,
-
-    role TEXT NOT NULL DEFAULT 'member',
-
     joined_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    left_at TEXT,
-
-    is_inside INTEGER NOT NULL DEFAULT 1,
-
-    FOREIGN KEY (room_id)
-        REFERENCES rooms(id)
-        ON DELETE CASCADE,
-
-    FOREIGN KEY (user_id)
-        REFERENCES users(id)
-        ON DELETE CASCADE,
-
     UNIQUE(room_id, user_id)
 );
 
-
 CREATE INDEX IF NOT EXISTS idx_room_members_room
 ON room_members(room_id);
-
 
 CREATE INDEX IF NOT EXISTS idx_room_members_user
 ON room_members(user_id);
 
 
--- =========================================================
--- VOICE SEATS
--- =========================================================
+-- =====================================================
+-- ROOM VIEWERS
+-- =====================================================
+
+CREATE TABLE IF NOT EXISTS room_viewers (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    room_id INTEGER NOT NULL,
+    user_id INTEGER NOT NULL,
+    joined_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(room_id, user_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_room_viewers_room
+ON room_viewers(room_id);
+
+CREATE INDEX IF NOT EXISTS idx_room_viewers_user
+ON room_viewers(user_id);
+
+
+-- =====================================================
+-- 8 VOICE SEATS
+-- =====================================================
 
 CREATE TABLE IF NOT EXISTS room_seats (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-
     room_id INTEGER NOT NULL,
-
     seat_number INTEGER NOT NULL,
-
-    user_id INTEGER,
-
+    user_id INTEGER NOT NULL,
     is_muted INTEGER NOT NULL DEFAULT 0,
+    joined_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    joined_at TEXT,
-
-    FOREIGN KEY (room_id)
-        REFERENCES rooms(id)
-        ON DELETE CASCADE,
-
-    FOREIGN KEY (user_id)
-        REFERENCES users(id)
-        ON DELETE SET NULL,
-
-    UNIQUE(room_id, seat_number)
+    UNIQUE(room_id, seat_number),
+    UNIQUE(room_id, user_id)
 );
-
 
 CREATE INDEX IF NOT EXISTS idx_room_seats_room
 ON room_seats(room_id);
 
-
--- =========================================================
--- FRIENDS
--- =========================================================
-
-CREATE TABLE IF NOT EXISTS friendships (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-
-    requester_id INTEGER NOT NULL,
-
-    receiver_id INTEGER NOT NULL,
-
-    status TEXT NOT NULL DEFAULT 'pending',
-
-    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    FOREIGN KEY (requester_id)
-        REFERENCES users(id)
-        ON DELETE CASCADE,
-
-    FOREIGN KEY (receiver_id)
-        REFERENCES users(id)
-        ON DELETE CASCADE,
-
-    UNIQUE(requester_id, receiver_id)
-);
+CREATE INDEX IF NOT EXISTS idx_room_seats_user
+ON room_seats(user_id);
 
 
-CREATE INDEX IF NOT EXISTS idx_friendships_requester
-ON friendships(requester_id);
-
-
-CREATE INDEX IF NOT EXISTS idx_friendships_receiver
-ON friendships(receiver_id);
-
-
--- =========================================================
--- PRIVATE ROOM INVITATIONS
--- =========================================================
-
-CREATE TABLE IF NOT EXISTS room_invitations (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-
-    room_id INTEGER NOT NULL,
-
-    sender_id INTEGER NOT NULL,
-
-    receiver_id INTEGER NOT NULL,
-
-    status TEXT NOT NULL DEFAULT 'pending',
-
-    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    FOREIGN KEY (room_id)
-        REFERENCES rooms(id)
-        ON DELETE CASCADE,
-
-    FOREIGN KEY (sender_id)
-        REFERENCES users(id)
-        ON DELETE CASCADE,
-
-    FOREIGN KEY (receiver_id)
-        REFERENCES users(id)
-        ON DELETE CASCADE
-);
-
-
-CREATE INDEX IF NOT EXISTS idx_room_invitations_receiver
-ON room_invitations(receiver_id);
-
-
--- =========================================================
+-- =====================================================
 -- ROOM CHAT
--- =========================================================
+-- =====================================================
 
 CREATE TABLE IF NOT EXISTS room_messages (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-
     room_id INTEGER NOT NULL,
-
     user_id INTEGER NOT NULL,
-
     message TEXT NOT NULL,
-
-    message_type TEXT NOT NULL DEFAULT 'text',
-
-    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    FOREIGN KEY (room_id)
-        REFERENCES rooms(id)
-        ON DELETE CASCADE,
-
-    FOREIGN KEY (user_id)
-        REFERENCES users(id)
-        ON DELETE CASCADE
-);
-
-
-CREATE INDEX IF NOT EXISTS idx_room_messages_room
-ON room_messages(room_id);
-
-
-CREATE INDEX IF NOT EXISTS idx_room_messages_created
-ON room_messages(created_at);
-
-
--- =========================================================
--- ROOM REACTIONS
--- =========================================================
-
-CREATE TABLE IF NOT EXISTS room_reactions (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-
-    room_id INTEGER NOT NULL,
-
-    user_id INTEGER NOT NULL,
-
-    reaction TEXT NOT NULL,
-
-    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    FOREIGN KEY (room_id)
-        REFERENCES rooms(id)
-        ON DELETE CASCADE,
-
-    FOREIGN KEY (user_id)
-        REFERENCES users(id)
-        ON DELETE CASCADE
-);
-
-
--- =========================================================
--- GIFTS
--- =========================================================
-
-CREATE TABLE IF NOT EXISTS gifts (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-
-    name TEXT NOT NULL,
-
-    icon_url TEXT,
-
-    coin_cost INTEGER NOT NULL,
-
-    is_active INTEGER NOT NULL DEFAULT 1,
-
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE INDEX IF NOT EXISTS idx_room_messages_room
+ON room_messages(room_id, id);
 
--- =========================================================
--- SENT GIFTS
--- =========================================================
+CREATE INDEX IF NOT EXISTS idx_room_messages_user
+ON room_messages(user_id);
+
+
+-- =====================================================
+-- ROOM REACTIONS
+-- =====================================================
+
+CREATE TABLE IF NOT EXISTS room_reactions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    room_id INTEGER NOT NULL,
+    user_id INTEGER NOT NULL,
+    reaction TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_room_reactions_room
+ON room_reactions(room_id);
+
+
+-- =====================================================
+-- MUSIC
+-- =====================================================
+
+CREATE TABLE IF NOT EXISTS music_tracks (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    artist TEXT DEFAULT '',
+    audio_url TEXT NOT NULL,
+    is_active INTEGER NOT NULL DEFAULT 1,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_music_active
+ON music_tracks(is_active);
+
+
+-- =====================================================
+-- ROOM MUSIC
+-- =====================================================
+
+CREATE TABLE IF NOT EXISTS room_music (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    room_id INTEGER NOT NULL,
+    track_id INTEGER NOT NULL,
+    started_by INTEGER NOT NULL,
+    started_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_room_music_room
+ON room_music(room_id);
+
+
+-- =====================================================
+-- GIFTS
+-- =====================================================
+
+CREATE TABLE IF NOT EXISTS gifts (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    coin_cost INTEGER NOT NULL DEFAULT 0,
+    image_url TEXT DEFAULT '',
+    is_active INTEGER NOT NULL DEFAULT 1
+);
+
+CREATE INDEX IF NOT EXISTS idx_gifts_active
+ON gifts(is_active);
+
+
+-- =====================================================
+-- GIFT TRANSACTIONS
+-- =====================================================
 
 CREATE TABLE IF NOT EXISTS gift_transactions (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-
     room_id INTEGER NOT NULL,
-
     sender_id INTEGER NOT NULL,
-
     receiver_id INTEGER NOT NULL,
-
     gift_id INTEGER NOT NULL,
-
     quantity INTEGER NOT NULL DEFAULT 1,
-
-    total_coins INTEGER NOT NULL,
-
-    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    FOREIGN KEY (room_id)
-        REFERENCES rooms(id)
-        ON DELETE CASCADE,
-
-    FOREIGN KEY (sender_id)
-        REFERENCES users(id)
-        ON DELETE CASCADE,
-
-    FOREIGN KEY (receiver_id)
-        REFERENCES users(id)
-        ON DELETE CASCADE,
-
-    FOREIGN KEY (gift_id)
-        REFERENCES gifts(id)
-        ON DELETE RESTRICT
+    coins INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
-
 
 CREATE INDEX IF NOT EXISTS idx_gift_transactions_room
 ON gift_transactions(room_id);
 
+CREATE INDEX IF NOT EXISTS idx_gift_transactions_sender
+ON gift_transactions(sender_id);
 
--- =========================================================
--- WALLET TRANSACTIONS
--- =========================================================
+CREATE INDEX IF NOT EXISTS idx_gift_transactions_receiver
+ON gift_transactions(receiver_id);
+
+
+-- =====================================================
+-- WALLET
+-- =====================================================
 
 CREATE TABLE IF NOT EXISTS wallet_transactions (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-
     user_id INTEGER NOT NULL,
-
+    amount INTEGER NOT NULL DEFAULT 0,
     transaction_type TEXT NOT NULL,
-
-    amount INTEGER NOT NULL,
-
-    balance_after INTEGER NOT NULL,
-
     reference_id INTEGER,
-
     description TEXT DEFAULT '',
-
-    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    FOREIGN KEY (user_id)
-        REFERENCES users(id)
-        ON DELETE CASCADE
-);
-
-
-CREATE INDEX IF NOT EXISTS idx_wallet_transactions_user
-ON wallet_transactions(user_id);
-
-
--- =========================================================
--- MUSIC PLAYLISTS
--- =========================================================
-
-CREATE TABLE IF NOT EXISTS playlists (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-
-    user_id INTEGER NOT NULL,
-
-    name TEXT NOT NULL,
-
-    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    FOREIGN KEY (user_id)
-        REFERENCES users(id)
-        ON DELETE CASCADE
-);
-
-
--- =========================================================
--- MUSIC TRACKS
--- =========================================================
-
-CREATE TABLE IF NOT EXISTS music_tracks (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-
-    title TEXT NOT NULL,
-
-    artist TEXT DEFAULT '',
-
-    audio_url TEXT NOT NULL,
-
-    cover_url TEXT,
-
-    is_active INTEGER NOT NULL DEFAULT 1,
-
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-
--- =========================================================
--- PLAYLIST TRACKS
--- =========================================================
-
-CREATE TABLE IF NOT EXISTS playlist_tracks (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-
-    playlist_id INTEGER NOT NULL,
-
-    track_id INTEGER NOT NULL,
-
-    position INTEGER NOT NULL DEFAULT 0,
-
-    FOREIGN KEY (playlist_id)
-        REFERENCES playlists(id)
-        ON DELETE CASCADE,
-
-    FOREIGN KEY (track_id)
-        REFERENCES music_tracks(id)
-        ON DELETE CASCADE,
-
-    UNIQUE(playlist_id, track_id)
-);
+CREATE INDEX IF NOT EXISTS idx_wallet_user
+ON wallet_transactions(user_id);
 
 
--- =========================================================
--- ROOM MUSIC
--- =========================================================
-
-CREATE TABLE IF NOT EXISTS room_music (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-
-    room_id INTEGER NOT NULL,
-
-    track_id INTEGER NOT NULL,
-
-    started_by INTEGER NOT NULL,
-
-    is_playing INTEGER NOT NULL DEFAULT 1,
-
-    started_at TEXT,
-
-    stopped_at TEXT,
-
-    FOREIGN KEY (room_id)
-        REFERENCES rooms(id)
-        ON DELETE CASCADE,
-
-    FOREIGN KEY (track_id)
-        REFERENCES music_tracks(id)
-        ON DELETE CASCADE,
-
-    FOREIGN KEY (started_by)
-        REFERENCES users(id)
-        ON DELETE CASCADE
-);
-
-
--- =========================================================
--- SUPPORT TICKETS
--- =========================================================
+-- =====================================================
+-- SUPPORT / PERSONAL HELP
+-- =====================================================
 
 CREATE TABLE IF NOT EXISTS support_tickets (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-
     user_id INTEGER NOT NULL,
-
     subject TEXT NOT NULL,
-
-    message TEXT NOT NULL,
-
     status TEXT NOT NULL DEFAULT 'open',
-
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    FOREIGN KEY (user_id)
-        REFERENCES users(id)
-        ON DELETE CASCADE
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-
-CREATE INDEX IF NOT EXISTS idx_support_user
+CREATE INDEX IF NOT EXISTS idx_support_tickets_user
 ON support_tickets(user_id);
 
+CREATE INDEX IF NOT EXISTS idx_support_tickets_status
+ON support_tickets(status);
 
--- =========================================================
--- SUPPORT MESSAGES
--- =========================================================
 
 CREATE TABLE IF NOT EXISTS support_messages (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-
     ticket_id INTEGER NOT NULL,
-
-    sender_id INTEGER,
-
+    user_id INTEGER NOT NULL,
     message TEXT NOT NULL,
-
-    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    FOREIGN KEY (ticket_id)
-        REFERENCES support_tickets(id)
-        ON DELETE CASCADE,
-
-    FOREIGN KEY (sender_id)
-        REFERENCES users(id)
-        ON DELETE SET NULL
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE INDEX IF NOT EXISTS idx_support_messages_ticket
+ON support_messages(ticket_id);
 
--- =========================================================
--- REPORTS
--- =========================================================
 
-CREATE TABLE IF NOT EXISTS reports (
+-- =====================================================
+-- FRIENDSHIPS
+-- =====================================================
+
+CREATE TABLE IF NOT EXISTS friendships (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-
-    reporter_id INTEGER NOT NULL,
-
-    reported_user_id INTEGER,
-
-    room_id INTEGER,
-
-    reason TEXT NOT NULL,
-
-    details TEXT DEFAULT '',
-
-    status TEXT NOT NULL DEFAULT 'open',
-
+    user_id INTEGER NOT NULL,
+    friend_id INTEGER NOT NULL,
+    status TEXT NOT NULL DEFAULT 'pending',
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    FOREIGN KEY (reporter_id)
-        REFERENCES users(id)
-        ON DELETE CASCADE,
-
-    FOREIGN KEY (reported_user_id)
-        REFERENCES users(id)
-        ON DELETE SET NULL,
-
-    FOREIGN KEY (room_id)
-        REFERENCES rooms(id)
-        ON DELETE SET NULL
+    UNIQUE(user_id, friend_id)
 );
 
+CREATE INDEX IF NOT EXISTS idx_friendships_user
+ON friendships(user_id);
 
--- =========================================================
--- BLOCKED USERS
--- =========================================================
+CREATE INDEX IF NOT EXISTS idx_friendships_friend
+ON friendships(friend_id);
 
-CREATE TABLE IF NOT EXISTS blocked_users (
+
+-- =====================================================
+-- ROOM INVITATIONS
+-- =====================================================
+
+CREATE TABLE IF NOT EXISTS room_invitations (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-
-    blocker_id INTEGER NOT NULL,
-
-    blocked_id INTEGER NOT NULL,
-
-    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    FOREIGN KEY (blocker_id)
-        REFERENCES users(id)
-        ON DELETE CASCADE,
-
-    FOREIGN KEY (blocked_id)
-        REFERENCES users(id)
-        ON DELETE CASCADE,
-
-    UNIQUE(blocker_id, blocked_id)
+    room_id INTEGER NOT NULL,
+    sender_id INTEGER NOT NULL,
+    receiver_id INTEGER NOT NULL,
+    status TEXT NOT NULL DEFAULT 'pending',
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE INDEX IF NOT EXISTS idx_room_invites_receiver
+ON room_invitations(receiver_id);
 
--- =========================================================
+CREATE INDEX IF NOT EXISTS idx_room_invites_room
+ON room_invitations(room_id);
+
+
+-- =====================================================
 -- NOTIFICATIONS
--- =========================================================
+-- =====================================================
 
 CREATE TABLE IF NOT EXISTS notifications (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-
     user_id INTEGER NOT NULL,
-
     type TEXT NOT NULL,
-
     title TEXT NOT NULL,
-
-    message TEXT NOT NULL,
-
-    reference_id INTEGER,
-
+    message TEXT DEFAULT '',
     is_read INTEGER NOT NULL DEFAULT 0,
-
-    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    FOREIGN KEY (user_id)
-        REFERENCES users(id)
-        ON DELETE CASCADE
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
-
 
 CREATE INDEX IF NOT EXISTS idx_notifications_user
 ON notifications(user_id);
 
+CREATE INDEX IF NOT EXISTS idx_notifications_unread
+ON notifications(user_id, is_read);
 
--- =========================================================
--- ROOM VIEWERS
--- =========================================================
 
-CREATE TABLE IF NOT EXISTS room_viewers (
+-- =====================================================
+-- BLOCKED USERS
+-- =====================================================
+
+CREATE TABLE IF NOT EXISTS blocked_users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-
-    room_id INTEGER NOT NULL,
-
     user_id INTEGER NOT NULL,
+    blocked_user_id INTEGER NOT NULL,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    joined_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    left_at TEXT,
-
-    is_inside INTEGER NOT NULL DEFAULT 1,
-
-    FOREIGN KEY (room_id)
-        REFERENCES rooms(id)
-        ON DELETE CASCADE,
-
-    FOREIGN KEY (user_id)
-        REFERENCES users(id)
-        ON DELETE CASCADE
+    UNIQUE(user_id, blocked_user_id)
 );
 
 
--- =========================================================
--- BASIC GIFT DATA
--- =========================================================
+-- =====================================================
+-- REPORTS
+-- =====================================================
 
-INSERT OR IGNORE INTO gifts
-(id, name, icon_url, coin_cost)
-VALUES
-(1, 'Heart', '❤️', 10);
-
-INSERT OR IGNORE INTO gifts
-(id, name, icon_url, coin_cost)
-VALUES
-(2, 'Rose', '🌹', 50);
-
-INSERT OR IGNORE INTO gifts
-(id, name, icon_url, coin_cost)
-VALUES
-(3, 'Diamond', '💎', 100);
-
-INSERT OR IGNORE INTO gifts
-(id, name, icon_url, coin_cost)
-VALUES
-(4, 'Crown', '👑', 500);
+CREATE TABLE IF NOT EXISTS reports (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    reporter_id INTEGER NOT NULL,
+    reported_user_id INTEGER,
+    room_id INTEGER,
+    reason TEXT NOT NULL,
+    details TEXT DEFAULT '',
+    status TEXT NOT NULL DEFAULT 'open',
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
 
 
--- =========================================================
+-- =====================================================
+-- USER IDENTITY
+-- =====================================================
+
+CREATE TABLE IF NOT EXISTS user_identity (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL UNIQUE,
+    identity_type TEXT,
+    identity_value TEXT,
+    verified INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+
+-- =====================================================
+-- LIVE ROOM SETTINGS
+-- =====================================================
+
+CREATE TABLE IF NOT EXISTS live_room_settings (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    room_id INTEGER NOT NULL UNIQUE,
+    max_seats INTEGER NOT NULL DEFAULT 8,
+    chat_enabled INTEGER NOT NULL DEFAULT 1,
+    reactions_enabled INTEGER NOT NULL DEFAULT 1,
+    music_enabled INTEGER NOT NULL DEFAULT 1,
+    gifts_enabled INTEGER NOT NULL DEFAULT 1,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+
+-- =====================================================
+-- LIVE ROOMS
+-- =====================================================
+
+CREATE TABLE IF NOT EXISTS live_rooms (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    room_id INTEGER NOT NULL UNIQUE,
+    status TEXT NOT NULL DEFAULT 'live',
+    started_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    ended_at TEXT
+);
+
+
+-- =====================================================
+-- LIVE VIEWERS
+-- =====================================================
+
+CREATE TABLE IF NOT EXISTS live_viewers (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    room_id INTEGER NOT NULL,
+    user_id INTEGER NOT NULL,
+    joined_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    left_at TEXT
+);
+
+
+-- =====================================================
+-- LIVE MESSAGES
+-- =====================================================
+
+CREATE TABLE IF NOT EXISTS live_messages (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    room_id INTEGER NOT NULL,
+    user_id INTEGER NOT NULL,
+    message TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+
+-- =====================================================
+-- LIVE MODERATION
+-- =====================================================
+
+CREATE TABLE IF NOT EXISTS live_moderation (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    room_id INTEGER NOT NULL,
+    user_id INTEGER NOT NULL,
+    moderator_id INTEGER NOT NULL,
+    action TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+
+-- =====================================================
 -- DONE
--- =========================================================
+-- =====================================================
+
+PRAGMA foreign_keys = ON;
