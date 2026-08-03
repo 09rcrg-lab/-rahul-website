@@ -1,28 +1,19 @@
+/* =========================================================
+   RAHUL LIVE COMMUNITY
+   FINAL STYLE.CSS
+========================================================= */
+
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
-:root {
-  --bg: #050505;
-  --card: #101010;
-  --card2: #171717;
-  --border: #292929;
-  --text: #ffffff;
-  --muted: #9b9b9b;
-  --green: #00ff88;
-  --green2: #00c96b;
-  --red: #ff3d55;
-  --gold: #ffd34d;
+html {
+  scroll-behavior: smooth;
 }
 
-html,
 body {
-  width: 100%;
-  min-height: 100%;
-  background: var(--bg);
-  color: var(--text);
   font-family:
     -apple-system,
     BlinkMacSystemFont,
@@ -30,9 +21,16 @@ body {
     Roboto,
     Arial,
     sans-serif;
-}
 
-body {
+  background:
+    radial-gradient(
+      circle at top,
+      #17251d 0%,
+      #080b09 38%,
+      #030504 100%
+    );
+
+  color: #fff;
   min-height: 100vh;
   overflow-x: hidden;
 }
@@ -45,519 +43,470 @@ select {
 }
 
 button {
-  border: 0;
   cursor: pointer;
+  border: 0;
 }
 
 input,
 textarea,
 select {
   width: 100%;
-  background: #0b0b0b;
-  color: #fff;
-  border: 1px solid var(--border);
-  border-radius: 14px;
   outline: none;
 }
 
-input:focus,
-textarea:focus,
-select:focus {
-  border-color: var(--green);
-  box-shadow:
-    0 0 0 2px rgba(0, 255, 136, 0.08);
-}
 
-input {
-  height: 52px;
-  padding: 0 16px;
-}
-
-textarea {
-  min-height: 110px;
-  padding: 15px;
-  resize: vertical;
-}
-
-select {
-  height: 52px;
-  padding: 0 14px;
-}
+/* =========================================================
+   COMMON
+========================================================= */
 
 .hidden {
   display: none !important;
 }
 
-.page {
+.primary-btn,
+button.primary-btn {
+  background: #19d66b;
+  color: #03150a;
+  border-radius: 12px;
+  padding: 12px 18px;
+  font-weight: 800;
+  transition: .2s ease;
+}
+
+.primary-btn:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.08);
+}
+
+.primary-btn:active {
+  transform: scale(.97);
+}
+
+.secondary-btn {
+  background: #151b17;
+  color: #fff;
+  border: 1px solid #29352e;
+  border-radius: 12px;
+  padding: 11px 16px;
+}
+
+.danger-btn {
+  background: #321719;
+  color: #ff8585;
+  border: 1px solid #633033;
+  border-radius: 12px;
+  padding: 11px 16px;
+}
+
+.empty-state,
+.empty-chat {
+  padding: 25px;
+  text-align: center;
+  color: #89968d;
+}
+
+
+/* =========================================================
+   PAGE CONTAINERS
+========================================================= */
+
+#loginPage,
+#registerPage,
+#homePage,
+#roomPage,
+#supportPage {
   width: 100%;
   min-height: 100vh;
 }
 
+.page-container {
+  width: min(1100px, 100%);
+  margin: auto;
+  padding: 20px;
+}
 
-/* =====================================================
-   AUTH
-===================================================== */
+
+/* =========================================================
+   LOGIN / REGISTER
+========================================================= */
 
 .auth-page {
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 22px;
-  background:
-    radial-gradient(
-      circle at top,
-      rgba(0, 255, 136, 0.10),
-      transparent 35%
-    ),
-    #050505;
+  padding: 20px;
 }
 
 .auth-card {
-  width: 100%;
-  max-width: 430px;
-  padding: 30px 22px;
-  border: 1px solid var(--border);
+  width: min(430px, 100%);
+  background: rgba(11, 17, 13, .94);
+  border: 1px solid #26362b;
   border-radius: 24px;
-  background:
-    linear-gradient(
-      145deg,
-      #141414,
-      #080808
-    );
+  padding: 28px;
   box-shadow:
-    0 25px 80px rgba(0, 0, 0, 0.55);
+    0 25px 80px rgba(0, 0, 0, .55),
+    0 0 30px rgba(25, 214, 107, .06);
 }
 
-.logo {
-  color: var(--green);
-  font-size: 29px;
-  font-weight: 900;
+.auth-logo {
   text-align: center;
-  letter-spacing: -1px;
-  text-shadow:
-    0 0 18px rgba(0, 255, 136, 0.35);
+  margin-bottom: 24px;
 }
 
-.auth-card h1 {
-  margin-top: 18px;
-  text-align: center;
-  font-size: 27px;
+.auth-logo h1 {
+  font-size: 28px;
+  color: #19d66b;
 }
 
-.auth-card p {
-  margin: 8px 0 25px;
-  text-align: center;
-  color: var(--muted);
+.auth-logo p {
+  color: #8d9a92;
+  margin-top: 6px;
 }
 
-.auth-card form {
-  display: grid;
-  gap: 13px;
+.form-group {
+  margin-bottom: 15px;
 }
 
-.primary-btn {
-  min-height: 52px;
-  padding: 0 20px;
-  border-radius: 14px;
-  color: #00170d;
-  background:
-    linear-gradient(
-      135deg,
-      var(--green),
-      var(--green2)
-    );
-  font-weight: 900;
-  box-shadow:
-    0 8px 25px rgba(0, 255, 136, 0.14);
-}
-
-.primary-btn:active {
-  transform: scale(0.98);
-}
-
-.link-btn {
+.form-group label {
   display: block;
-  margin: 19px auto 0;
-  background: transparent;
-  color: var(--green);
-  font-weight: 700;
+  color: #aab7af;
+  font-size: 13px;
+  margin-bottom: 7px;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+  background: #0b100d;
+  color: #fff;
+  border: 1px solid #26362b;
+  border-radius: 12px;
+  padding: 13px 14px;
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+  border-color: #19d66b;
+  box-shadow: 0 0 0 3px rgba(25, 214, 107, .08);
+}
+
+.auth-card .primary-btn {
+  width: 100%;
+  margin-top: 6px;
 }
 
 
-/* =====================================================
+/* =========================================================
    TOP BAR
-===================================================== */
+========================================================= */
 
 .topbar {
   position: sticky;
   top: 0;
-  z-index: 20;
-  min-height: 68px;
+  z-index: 100;
+  background: rgba(4, 8, 6, .9);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid #1c281f;
+}
+
+.topbar-inner {
+  width: min(1100px, 100%);
+  min-height: 64px;
+  margin: auto;
+  padding: 10px 18px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding:
-    10px
-    15px
-    10px
-    15px;
-  border-bottom: 1px solid var(--border);
-  background:
-    rgba(5, 5, 5, 0.94);
-  backdrop-filter: blur(16px);
+  gap: 12px;
 }
 
 .brand {
-  color: var(--green);
-  font-size: 20px;
+  color: #19d66b;
   font-weight: 900;
-}
-
-.brand-subtitle {
-  color: var(--muted);
-  font-size: 11px;
-  margin-top: 2px;
-}
-
-.logout-btn {
-  padding: 9px 14px;
-  border-radius: 10px;
-  color: #fff;
-  background: #191919;
-  border: 1px solid var(--border);
-}
-
-
-/* =====================================================
-   HOME
-===================================================== */
-
-.home-container {
-  width: 100%;
-  max-width: 700px;
-  margin: auto;
-  padding: 16px;
-}
-
-.profile-mini {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 13px;
-  margin-bottom: 14px;
-  border: 1px solid var(--border);
-  border-radius: 18px;
-  background: var(--card);
-}
-
-.profile-avatar {
-  width: 46px;
-  height: 46px;
-  flex: 0 0 46px;
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-  overflow: hidden;
-  background: #202020;
-  border: 2px solid var(--green);
-}
-
-.profile-avatar img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.profile-mini strong {
-  display: block;
-}
-
-.profile-mini small {
-  display: block;
-  margin-top: 3px;
-  color: var(--muted);
-}
-
-.coins {
-  margin-left: auto;
-  padding: 7px 10px;
-  border-radius: 10px;
-  background: #181818;
-  color: var(--gold);
-  font-weight: 800;
-}
-
-.section-card {
-  margin-bottom: 14px;
-  padding: 17px;
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  background:
-    linear-gradient(
-      145deg,
-      #121212,
-      #090909
-    );
-}
-
-.section-card h2 {
   font-size: 19px;
 }
 
-.section-card p {
-  margin: 6px 0 15px;
-  color: var(--muted);
-  line-height: 1.45;
-}
-
-#createRoomForm {
-  display: grid;
-  gap: 11px;
-}
-
-.section-heading {
+.topbar-actions {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  margin-bottom: 13px;
+  gap: 8px;
 }
 
-.small-btn {
-  padding: 7px 11px;
-  border-radius: 9px;
-  color: var(--green);
-  background: #101a15;
-  border: 1px solid #173b29;
+
+/* =========================================================
+   HOME
+========================================================= */
+
+.home-header {
+  padding: 28px 0;
 }
 
-.rooms-list {
+.home-header h1 {
+  font-size: clamp(25px, 6vw, 38px);
+  margin-bottom: 7px;
+}
+
+.home-header p {
+  color: #8c9991;
+}
+
+.rooms-section {
+  padding-bottom: 40px;
+}
+
+.rooms-section h2 {
+  margin-bottom: 15px;
+}
+
+#roomsList {
   display: grid;
-  gap: 10px;
+  grid-template-columns:
+    repeat(
+      auto-fit,
+      minmax(250px, 1fr)
+    );
+  gap: 14px;
 }
 
 .room-card {
-  padding: 14px;
-  border-radius: 15px;
-  background: #151515;
-  border: 1px solid var(--border);
+  background:
+    linear-gradient(
+      145deg,
+      #111912,
+      #080c09
+    );
+
+  border: 1px solid #26352b;
+  border-radius: 18px;
+  padding: 18px;
+  min-height: 160px;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
 }
 
-.room-card-title {
-  font-size: 16px;
-  font-weight: 800;
+.room-card strong {
+  font-size: 18px;
 }
 
-.room-card-description {
-  margin-top: 5px;
-  color: var(--muted);
+.room-card p {
+  color: #87938c;
+  min-height: 35px;
+}
+
+.room-card span {
+  color: #9aa69f;
   font-size: 13px;
 }
 
-.room-card-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  margin-top: 13px;
-}
-
-.join-room-btn {
-  padding: 9px 14px;
-  border-radius: 10px;
-  color: #00170d;
-  background: var(--green);
-  font-weight: 800;
-}
-
-.empty-state {
-  padding: 25px 10px;
-  text-align: center;
-  color: var(--muted);
-}
-
-.help-card {
-  border-color: #303030;
+.room-card button {
+  margin-top: auto;
 }
 
 
-/* =====================================================
-   ROOM HEADER
-===================================================== */
+/* =========================================================
+   ROOM PAGE
+========================================================= */
 
-.room-page {
+#roomPage {
   background:
     radial-gradient(
-      circle at top,
-      rgba(0, 255, 136, 0.07),
-      transparent 32%
-    ),
-    #050505;
+      circle at 50% 0%,
+      #15261c,
+      #050806 50%
+    );
 }
+
+.live-room {
+  width: min(1100px, 100%);
+  margin: auto;
+  min-height: 100vh;
+  padding-bottom: 120px;
+}
+
+
+/* =========================================================
+   ROOM HEADER
+========================================================= */
 
 .room-header {
   position: sticky;
   top: 0;
-  z-index: 30;
-  min-height: 65px;
+  z-index: 50;
+
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 8px 12px;
-  border-bottom: 1px solid var(--border);
+  justify-content: space-between;
+
+  gap: 10px;
+  padding: 12px 15px;
+
   background:
-    rgba(5, 5, 5, 0.96);
-  backdrop-filter: blur(15px);
+    rgba(4, 8, 6, .92);
+
+  backdrop-filter: blur(18px);
+
+  border-bottom:
+    1px solid #1d2b22;
 }
 
-.back-btn,
-.help-icon-btn {
-  width: 42px;
-  height: 42px;
-  display: grid;
-  place-items: center;
-  border-radius: 12px;
-  color: #fff;
-  background: #151515;
-  border: 1px solid var(--border);
-}
-
-.room-header-info {
-  flex: 1;
+.room-title {
   min-width: 0;
 }
 
-.room-header-info strong {
-  display: block;
+.room-title h1 {
+  font-size: 18px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.room-header-info small {
-  display: block;
+.room-title p {
+  color: #7f8c84;
+  font-size: 12px;
   margin-top: 3px;
-  color: var(--muted);
-  font-size: 11px;
+}
+
+.room-header-actions {
+  display: flex;
+  gap: 7px;
 }
 
 
-/* =====================================================
-   ROOM INFO
-===================================================== */
-
-.room-info {
-  padding: 16px;
-  max-width: 800px;
-  margin: auto;
-}
+/* =========================================================
+   LIVE BADGE
+========================================================= */
 
 .live-badge {
-  width: max-content;
-  padding: 5px 9px;
-  margin-bottom: 7px;
-  border-radius: 8px;
-  color: #00170d;
-  background: var(--green);
-  font-size: 10px;
-  font-weight: 900;
-}
-
-.room-info h2 {
-  font-size: 23px;
-}
-
-.room-info p {
-  margin-top: 4px;
-  color: var(--muted);
-}
-
-
-/* =====================================================
-   VOICE SEATS
-===================================================== */
-
-.voice-section {
-  width: 100%;
-  max-width: 800px;
-  margin: auto;
-  padding: 0 14px 15px;
-}
-
-.section-title-row {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  justify-content: space-between;
-  margin-bottom: 12px;
+  gap: 5px;
+
+  background: #281012;
+  color: #ff7070;
+
+  border: 1px solid #5a252a;
+  border-radius: 999px;
+
+  padding: 5px 9px;
+  font-size: 11px;
+  font-weight: 800;
 }
 
-.section-title-row h3 {
-  font-size: 17px;
+.live-badge::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #ff4d5a;
 }
 
-.section-title-row span {
-  color: var(--muted);
-  font-size: 12px;
+
+/* =========================================================
+   VOICE SEATS
+========================================================= */
+
+.voice-seat-area {
+  padding: 18px 14px 12px;
+}
+
+.voice-seat-area h2 {
+  font-size: 15px;
+  color: #a7b4ac;
+  margin-bottom: 13px;
 }
 
 
 /*
-  8 fixed voice seats.
-  Mobile: 2 columns.
-  Larger screen: 4 columns.
+  8 fixed seats:
+  4 columns on larger phones,
+  2 columns on very small screens.
 */
 
-.voice-seats {
+#voiceSeats {
   display: grid;
   grid-template-columns:
-    repeat(2, minmax(0, 1fr));
-  gap: 11px;
+    repeat(4, minmax(0, 1fr));
+  gap: 13px;
 }
 
+
+/* Individual seat */
+
 .voice-seat {
-  position: relative;
-  min-height: 145px;
-  padding: 14px 8px 10px;
+  min-height: 142px;
+
+  background:
+    linear-gradient(
+      180deg,
+      #101711,
+      #080c09
+    );
+
+  border:
+    1px solid #27372c;
+
+  border-radius: 18px;
+
+  padding: 11px 7px;
+
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  border: 1px solid #292929;
-  border-radius: 20px;
+
+  position: relative;
+
+  box-shadow:
+    inset 0 1px 0
+    rgba(255,255,255,.02);
+}
+
+
+/* Seat number */
+
+.voice-seat-number {
+  position: absolute;
+  left: 7px;
+  top: 7px;
+
+  color: #647169;
+  font-size: 9px;
+  font-weight: 700;
+}
+
+
+/* Avatar */
+
+.voice-seat-avatar {
+  width: 66px;
+  height: 66px;
+
+  border-radius: 50%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
   background:
     radial-gradient(
-      circle at 50% 20%,
-      rgba(255,255,255,0.045),
-      transparent 50%
-    ),
-    #101010;
+      circle,
+      #26382c,
+      #101711
+    );
+
+  border:
+    2px solid #344c3b;
+
+  color: #69776e;
+
+  font-size: 27px;
+
   overflow: hidden;
-}
 
-.voice-seat.occupied {
-  border-color:
-    rgba(0, 255, 136, 0.48);
-  box-shadow:
-    inset 0 0 25px
-    rgba(0, 255, 136, 0.035);
-}
-
-.voice-seat-avatar {
-  position: relative;
-  width: 68px;
-  height: 68px;
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-  overflow: hidden;
-  background: #202020;
-  border: 3px solid #363636;
-  font-size: 25px;
-}
-
-.voice-seat.occupied
-.voice-seat-avatar {
-  border-color: var(--green);
+  margin-bottom: 8px;
 }
 
 .voice-seat-avatar img {
@@ -566,514 +515,811 @@ select {
   object-fit: cover;
 }
 
-.seat-mic {
-  position: absolute;
-  right: -2px;
-  bottom: -2px;
-  width: 23px;
-  height: 23px;
-  display: grid;
-  place-items: center;
-  border-radius: 50%;
-  background: #242424;
-  border: 2px solid #101010;
-  font-size: 11px;
-}
+
+/* User name */
 
 .voice-seat-name {
-  width: 100%;
-  margin-top: 8px;
-  text-align: center;
+  max-width: 100%;
+
+  color: #e5ebe7;
+
+  font-size: 12px;
+  font-weight: 700;
+
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  font-size: 13px;
-  font-weight: 800;
+
+  text-align: center;
 }
 
-.voice-seat-number {
-  margin-top: 3px;
-  color: var(--muted);
-  font-size: 10px;
-}
+
+/* Empty seat */
 
 .empty-seat-btn {
   position: absolute;
-  top: 9px;
-  right: 9px;
-  width: 31px;
-  height: 31px;
-  display: grid;
-  place-items: center;
+
+  right: 7px;
+  top: 7px;
+
+  width: 24px;
+  height: 24px;
+
   border-radius: 50%;
-  color: #000;
-  background: var(--green);
-  font-size: 21px;
+
+  background: #19d66b;
+  color: #03150a;
+
+  font-size: 18px;
   font-weight: 900;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.empty-seat-label {
-  color: var(--muted);
+.voice-seat:has(.empty-seat-btn) {
+  border-style: dashed;
+  border-color: #2d4937;
+}
+
+
+/* Mic status */
+
+.seat-mic-status {
+  margin-top: 5px;
+  font-size: 12px;
+}
+
+
+/* =========================================================
+   ACTIVE SEAT
+========================================================= */
+
+.voice-seat.active,
+.voice-seat:has(.seat-mic-status) {
+  border-color: #285b3b;
+}
+
+
+/* =========================================================
+   CHAT
+========================================================= */
+
+.room-chat {
+  margin: 8px 14px 0;
+
+  background:
+    rgba(10, 15, 12, .86);
+
+  border:
+    1px solid #202e25;
+
+  border-radius: 18px;
+
+  overflow: hidden;
+}
+
+.room-chat-header {
+  padding: 12px 14px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  border-bottom:
+    1px solid #202e25;
+}
+
+.room-chat-header h2 {
+  font-size: 15px;
+}
+
+.room-chat-live {
+  color: #19d66b;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+#roomMessages {
+  height: 270px;
+  overflow-y: auto;
+  padding: 12px;
+}
+
+
+/* Chat message */
+
+.chat-message {
+  padding: 8px 10px;
+  margin-bottom: 5px;
+
+  border-radius: 10px;
+
+  background: #0f1611;
+
+  line-height: 1.4;
+}
+
+.chat-message strong {
+  color: #19d66b;
+  margin-right: 7px;
+  font-size: 12px;
+}
+
+.chat-message span {
+  color: #d7ded9;
   font-size: 13px;
 }
 
 
-/* =====================================================
-   CHAT
-===================================================== */
+/* Chat form */
 
-.chat-section {
-  width: 100%;
-  max-width: 800px;
-  margin: auto;
-  padding: 0 14px 110px;
+#roomChatForm {
+  display: flex;
+  gap: 7px;
+  padding: 10px;
+
+  border-top:
+    1px solid #202e25;
 }
 
-.chat-header {
-  padding: 12px 2px;
-  border-bottom: 1px solid var(--border);
+#roomChatForm input,
+#roomMessage {
+  flex: 1;
+
+  min-width: 0;
+
+  background: #070b08;
+  color: #fff;
+
+  border:
+    1px solid #29382f;
+
+  border-radius: 11px;
+
+  padding: 11px 12px;
 }
 
-.chat-header strong {
+#roomChatForm button {
+  background: #19d66b;
+  color: #03150a;
+
+  border-radius: 11px;
+
+  padding: 0 15px;
+
+  font-weight: 900;
+}
+
+
+/* =========================================================
+   BOTTOM ROOM CONTROLS
+========================================================= */
+
+.room-controls {
+  position: fixed;
+  left: 50%;
+  bottom: 0;
+
+  transform: translateX(-50%);
+
+  width: min(1100px, 100%);
+
+  z-index: 80;
+
+  display: grid;
+  grid-template-columns:
+    repeat(5, 1fr);
+
+  gap: 7px;
+
+  padding:
+    10px 12px
+    calc(10px + env(safe-area-inset-bottom));
+
+  background:
+    rgba(4, 7, 5, .94);
+
+  backdrop-filter: blur(18px);
+
+  border-top:
+    1px solid #1d2a21;
+}
+
+.room-control-btn {
+  min-height: 48px;
+
+  background: #101711;
+
+  color: #dbe4de;
+
+  border:
+    1px solid #26352b;
+
+  border-radius: 13px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.room-control-btn:active {
+  transform: scale(.96);
+}
+
+.room-control-btn.active {
+  background: #153d25;
+  border-color: #19d66b;
+  color: #19d66b;
+}
+
+.room-control-btn.danger {
+  background: #321719;
+  border-color: #5a2c30;
+  color: #ff8a8a;
+}
+
+
+/* =========================================================
+   MIC BUTTON
+========================================================= */
+
+#micButton.active {
+  background: #153d25;
+  color: #19d66b;
+  border-color: #19d66b;
+}
+
+
+/* =========================================================
+   PANELS
+========================================================= */
+
+#musicPanel,
+#giftPanel,
+#invitePanel {
+  position: fixed;
+
+  left: 50%;
+  bottom: 78px;
+
+  transform: translateX(-50%);
+
+  width:
+    min(
+      500px,
+      calc(100% - 24px)
+    );
+
+  max-height: 65vh;
+
+  overflow-y: auto;
+
+  z-index: 90;
+
+  background:
+    #0b100d;
+
+  border:
+    1px solid #2a3a30;
+
+  border-radius: 20px;
+
+  padding: 16px;
+
+  box-shadow:
+    0 25px 80px
+    rgba(0,0,0,.65);
+}
+
+.panel-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  margin-bottom: 13px;
+}
+
+.panel-title h3 {
   font-size: 17px;
 }
 
-.chat-header small {
-  margin-left: 7px;
-  color: var(--green);
-}
-
-.room-messages {
-  min-height: 190px;
-  max-height: 390px;
-  padding: 10px 2px;
-  overflow-y: auto;
-}
-
-.chat-message {
-  display: flex;
-  gap: 9px;
-  margin-bottom: 12px;
-}
-
-.chat-avatar {
+.panel-close {
   width: 34px;
   height: 34px;
-  flex: 0 0 34px;
-  display: grid;
-  place-items: center;
-  overflow: hidden;
+
   border-radius: 50%;
-  background: #202020;
+
+  background: #182019;
+  color: #fff;
+
+  font-size: 18px;
 }
 
-.chat-avatar img {
+
+/* =========================================================
+   MUSIC
+========================================================= */
+
+#musicList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.music-item {
+  display: grid;
+
+  grid-template-columns:
+    1fr auto;
+
+  gap: 3px 10px;
+
+  padding: 11px;
+
+  background: #111812;
+
+  border:
+    1px solid #253229;
+
+  border-radius: 12px;
+}
+
+.music-item strong {
+  grid-column: 1;
+}
+
+.music-item small {
+  grid-column: 1;
+  color: #7e8c83;
+}
+
+.music-item button {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+
+  align-self: center;
+
+  background: #19d66b;
+  color: #03150a;
+
+  border-radius: 9px;
+
+  padding: 7px 12px;
+
+  font-weight: 800;
+}
+
+
+/* =========================================================
+   GIFTS
+========================================================= */
+
+#giftList {
+  display: grid;
+
+  grid-template-columns:
+    repeat(3, 1fr);
+
+  gap: 9px;
+}
+
+.gift-item {
+  min-height: 92px;
+
+  background: #111812;
+  color: #fff;
+
+  border:
+    1px solid #26352b;
+
+  border-radius: 14px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  gap: 4px;
+}
+
+.gift-item span {
+  font-size: 26px;
+}
+
+.gift-item strong {
+  font-size: 12px;
+}
+
+.gift-item small {
+  color: #d4a940;
+}
+
+
+/* =========================================================
+   INVITE
+========================================================= */
+
+.invite-box {
+  background: #111812;
+  border: 1px solid #27362d;
+  border-radius: 14px;
+  padding: 14px;
+}
+
+.invite-link {
+  margin-top: 10px;
+
+  background: #070b08;
+  border: 1px solid #26352b;
+  border-radius: 10px;
+
+  padding: 11px;
+
+  word-break: break-all;
+
+  color: #19d66b;
+}
+
+
+/* =========================================================
+   FLOATING REACTIONS
+========================================================= */
+
+.floating-reaction {
+  position: fixed;
+
+  left: 50%;
+  bottom: 120px;
+
+  transform:
+    translateX(-50%);
+
+  z-index: 200;
+
+  font-size: 42px;
+
+  pointer-events: none;
+
+  animation:
+    reactionFloat
+    1.5s ease-out
+    forwards;
+}
+
+@keyframes reactionFloat {
+
+  0% {
+    opacity: 0;
+    transform:
+      translate(-50%, 30px)
+      scale(.6);
+  }
+
+  20% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+    transform:
+      translate(-50%, -180px)
+      scale(1.2);
+  }
+
+}
+
+
+/* =========================================================
+   LOADING
+========================================================= */
+
+#loadingOverlay {
+  position: fixed;
+
+  inset: 0;
+
+  z-index: 999;
+
+  background:
+    rgba(0,0,0,.72);
+
+  backdrop-filter:
+    blur(7px);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loading-box {
+  background: #0c120e;
+
+  border:
+    1px solid #2b3b31;
+
+  border-radius: 18px;
+
+  padding: 25px;
+
+  text-align: center;
+}
+
+.loading-spinner {
+  width: 35px;
+  height: 35px;
+
+  border:
+    3px solid #24352a;
+
+  border-top-color:
+    #19d66b;
+
+  border-radius: 50%;
+
+  animation:
+    spin .8s linear infinite;
+
+  margin: 0 auto 12px;
+}
+
+@keyframes spin {
+
+  to {
+    transform: rotate(360deg);
+  }
+
+}
+
+
+/* =========================================================
+   SUPPORT
+========================================================= */
+
+.support-card {
+  width: min(600px, 100%);
+  margin: 30px auto;
+
+  background: #0c120e;
+
+  border:
+    1px solid #26362b;
+
+  border-radius: 20px;
+
+  padding: 20px;
+}
+
+.support-card h1 {
+  margin-bottom: 18px;
+}
+
+.support-card textarea {
+  min-height: 150px;
+  resize: vertical;
+}
+
+
+/* =========================================================
+   USER PROFILE
+========================================================= */
+
+.user-profile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.user-avatar {
+  width: 42px;
+  height: 42px;
+
+  border-radius: 50%;
+
+  background: #18251c;
+
+  border:
+    1px solid #304534;
+
+  overflow: hidden;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.user-avatar img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-.chat-content {
-  min-width: 0;
-  padding: 8px 11px;
-  border-radius: 13px;
-  background: #151515;
+.user-info strong {
+  display: block;
 }
 
-.chat-name {
-  color: var(--green);
-  font-size: 11px;
-  font-weight: 800;
-}
-
-.chat-text {
-  margin-top: 3px;
-  color: #eee;
-  line-height: 1.4;
-  word-break: break-word;
-}
-
-.empty-chat {
-  padding: 45px 10px;
-  text-align: center;
-  color: var(--muted);
-}
-
-.reaction-bar {
-  display: flex;
-  gap: 7px;
-  padding: 7px 0;
-  overflow-x: auto;
-}
-
-.reaction-bar button {
-  width: 39px;
-  height: 39px;
-  flex: 0 0 39px;
-  border-radius: 12px;
-  background: #151515;
-  border: 1px solid var(--border);
-  font-size: 18px;
-}
-
-.chat-input-row {
-  display: flex;
-  gap: 8px;
-  padding-top: 7px;
-}
-
-.chat-input-row input {
-  flex: 1;
-  min-width: 0;
-}
-
-.send-btn {
-  min-width: 66px;
-  border-radius: 13px;
-  color: #00170d;
-  background: var(--green);
-  font-weight: 900;
+.user-info small {
+  color: #7e8b83;
 }
 
 
-/* =====================================================
-   ROOM CONTROLS
-===================================================== */
+/* =========================================================
+   SCROLLBARS
+========================================================= */
 
-.room-controls {
-  position: fixed;
-  z-index: 25;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  display: flex;
-  align-items: center;
-  justify-content: space-around;
-  gap: 4px;
-  padding:
-    9px
-    8px
-    calc(9px + env(safe-area-inset-bottom));
-  border-top: 1px solid var(--border);
-  background:
-    rgba(8, 8, 8, 0.96);
-  backdrop-filter: blur(18px);
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
 }
 
-.control-btn {
-  min-width: 55px;
-  padding: 6px 5px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 3px;
-  border-radius: 12px;
-  color: #fff;
-  background: transparent;
-  font-size: 19px;
+::-webkit-scrollbar-track {
+  background: #070b08;
 }
 
-.control-btn span {
-  color: var(--muted);
-  font-size: 9px;
-}
-
-.control-btn:active {
-  background: #181818;
-}
-
-.leave-control {
-  color: var(--red);
+::-webkit-scrollbar-thumb {
+  background: #29372e;
+  border-radius: 20px;
 }
 
 
-/* =====================================================
-   BOTTOM PANELS
-===================================================== */
+/* =========================================================
+   RESPONSIVE
+========================================================= */
 
-.bottom-panel {
-  position: fixed;
-  z-index: 50;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  max-height: 70vh;
-  padding:
-    13px
-    15px
-    calc(15px + env(safe-area-inset-bottom));
-  overflow-y: auto;
-  border-top:
-    1px solid var(--border);
-  border-radius:
-    22px
-    22px
-    0
-    0;
-  background:
-    #101010;
-  box-shadow:
-    0 -20px 70px
-    rgba(0,0,0,0.65);
-}
+@media (max-width: 600px) {
 
-.panel-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding-bottom: 13px;
-  border-bottom: 1px solid var(--border);
-}
-
-.panel-header button {
-  width: 34px;
-  height: 34px;
-  border-radius: 10px;
-  color: #fff;
-  background: #1c1c1c;
-}
-
-.panel-list {
-  display: grid;
-  gap: 9px;
-  margin-top: 12px;
-}
-
-.music-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 12px;
-  border-radius: 13px;
-  background: #171717;
-}
-
-.music-item-info {
-  min-width: 0;
-}
-
-.music-item-title {
-  font-weight: 800;
-}
-
-.music-item-artist {
-  margin-top: 3px;
-  color: var(--muted);
-  font-size: 11px;
-}
-
-.music-play-btn {
-  padding: 8px 12px;
-  border-radius: 9px;
-  color: #00170d;
-  background: var(--green);
-  font-weight: 800;
-}
-
-.gift-grid {
-  display: grid;
-  grid-template-columns:
-    repeat(4, 1fr);
-  gap: 9px;
-  margin-top: 12px;
-}
-
-.gift-item {
-  padding: 12px 5px;
-  text-align: center;
-  border-radius: 13px;
-  background: #171717;
-  border: 1px solid var(--border);
-}
-
-.gift-image {
-  width: 42px;
-  height: 42px;
-  margin: auto;
-  display: grid;
-  place-items: center;
-  font-size: 26px;
-}
-
-.gift-name {
-  margin-top: 5px;
-  font-size: 11px;
-  font-weight: 800;
-}
-
-.gift-cost {
-  margin-top: 3px;
-  color: var(--gold);
-  font-size: 10px;
-}
-
-.invite-empty {
-  padding: 30px 10px;
-  color: var(--muted);
-  text-align: center;
-  line-height: 1.5;
-}
-
-
-/* =====================================================
-   SUPPORT
-===================================================== */
-
-.support-container {
-  width: 100%;
-  max-width: 650px;
-  margin: auto;
-  padding: 18px;
-}
-
-.support-card {
-  padding: 22px;
-  border-radius: 22px;
-  background: #111;
-  border: 1px solid var(--border);
-}
-
-.support-icon {
-  font-size: 42px;
-}
-
-.support-card h1 {
-  margin-top: 10px;
-  font-size: 25px;
-}
-
-.support-card p {
-  margin: 8px 0 20px;
-  color: var(--muted);
-  line-height: 1.5;
-}
-
-#supportForm {
-  display: grid;
-  gap: 11px;
-}
-
-
-/* =====================================================
-   LOADING
-===================================================== */
-
-.loading-overlay {
-  position: fixed;
-  z-index: 999;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 13px;
-  color: #fff;
-  background:
-    rgba(0,0,0,0.82);
-  backdrop-filter: blur(5px);
-}
-
-.loader {
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  border:
-    3px solid #303030;
-  border-top-color:
-    var(--green);
-  animation:
-    spin 0.8s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-
-/* =====================================================
-   TABLET / DESKTOP
-===================================================== */
-
-@media (min-width: 650px) {
-
-  .home-container,
-  .room-info,
-  .voice-section,
-  .chat-section {
-    max-width: 850px;
+  .page-container {
+    padding: 14px;
   }
 
-  .voice-seats {
+  .auth-card {
+    padding: 22px 17px;
+    border-radius: 20px;
+  }
+
+  .topbar-inner {
+    padding: 9px 12px;
+  }
+
+  .room-header {
+    padding: 10px 11px;
+  }
+
+  #voiceSeats {
     grid-template-columns:
       repeat(4, minmax(0, 1fr));
-  }
 
-  .voice-seat {
-    min-height: 160px;
-  }
-
-  .chat-section {
-    padding-bottom: 115px;
-  }
-
-}
-
-
-/* =====================================================
-   SMALL PHONES
-===================================================== */
-
-@media (max-width: 360px) {
-
-  .voice-seats {
     gap: 7px;
   }
 
   .voice-seat {
-    min-height: 130px;
+    min-height: 125px;
+    border-radius: 15px;
   }
 
   .voice-seat-avatar {
-    width: 59px;
-    height: 59px;
+    width: 55px;
+    height: 55px;
+    font-size: 22px;
   }
 
-  .control-btn {
-    min-width: 48px;
+  .voice-seat-name {
+    font-size: 10px;
   }
 
-  .control-btn span {
-    font-size: 8px;
+  .room-chat {
+    margin-left: 9px;
+    margin-right: 9px;
+  }
+
+  #roomMessages {
+    height: 245px;
+  }
+
+  .room-controls {
+    gap: 5px;
+    padding-left: 7px;
+    padding-right: 7px;
+  }
+
+  .room-control-btn {
+    min-height: 46px;
+    padding: 5px 2px;
+    font-size: 10px;
+  }
+
+  #giftList {
+    grid-template-columns:
+      repeat(3, 1fr);
   }
 
 }
 
 
-/* =====================================================
-   SAFE AREA
-===================================================== */
+@media (max-width: 390px) {
+
+  #voiceSeats {
+    grid-template-columns:
+      repeat(2, 1fr);
+
+    gap: 9px;
+  }
+
+  .voice-seat {
+    min-height: 135px;
+  }
+
+  .voice-seat-avatar {
+    width: 62px;
+    height: 62px;
+  }
+
+  .room-control-btn {
+    font-size: 9px;
+  }
+
+}
+
+
+/* =========================================================
+   IPHONE SAFE AREA
+========================================================= */
 
 @supports (
-  padding: env(safe-area-inset-bottom)
+  padding:
+  max(
+    0px
+  )
 ) {
 
   .room-controls {
     padding-bottom:
-      calc(
-        9px +
-        env(safe-area-inset-bottom)
+      max(
+        10px,
+        env(
+          safe-area-inset-bottom
+        )
       );
   }
 
-  .bottom-panel {
-    padding-bottom:
-      calc(
-        15px +
-        env(safe-area-inset-bottom)
-      );
+}
+
+
+/* =========================================================
+   ACCESSIBILITY
+========================================================= */
+
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline:
+    2px solid #19d66b;
+
+  outline-offset: 2px;
+}
+
+
+/* =========================================================
+   REDUCED MOTION
+========================================================= */
+
+@media (
+  prefers-reduced-motion: reduce
+) {
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: .01ms !important;
   }
 
 }
