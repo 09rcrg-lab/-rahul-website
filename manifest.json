@@ -1,22 +1,11 @@
 {
-  "name": "Rahul Live",
+  "name": "Rahul Live Voice Rooms",
   "short_name": "Rahul Live",
-  "description": "Rahul Live - LIVE Social Chat",
+  "description": "Live voice chat rooms",
   "start_url": "./",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#ffffff",
+  "background_color": "#090712",
+  "theme_color": "#120727",
   "orientation": "portrait",
-  "icons": [
-    {
-      "src": "icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png"
-    },
-    {
-      "src": "icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png"
-    }
-  ]
+  "icons": []
 }
