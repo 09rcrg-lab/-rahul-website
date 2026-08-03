@@ -1,1191 +1,1046 @@
-const API = "https://rahulsocialhub-db.09rcrg.workers.dev";
+document.addEventListener("DOMContentLoaded", () => {
 
-let currentUser = null;
-let currentRoom = null;
-let chatTimer = null;
-let viewerTimer = null;
+  const $ = (id) => document.getElementById(id);
 
+  /* ================= ELEMENTS ================= */
 
-/* ================= HELPERS ================= */
+  const loginScreen = $("loginScreen");
+  const registerScreen = $("registerScreen");
+  const homeScreen = $("homeScreen");
+  const liveRoomScreen = $("liveRoomScreen");
 
-function $(id) {
-  return document.getElementById(id);
-}
+  const giftPanel = $("giftPanel");
+  const membersPanel = $("membersPanel");
+  const createRoomPanel = $("createRoomPanel");
+  const profilePanel = $("profilePanel");
 
-function show(id) {
-  const el = $(id);
-  if (el) el.classList.remove("hidden");
-}
+  const toast = $("toast");
 
-function hide(id) {
-  const el = $(id);
-  if (el) el.classList.add("hidden");
-}
+  let currentUser = JSON.parse(
+    localStorage.getItem("rahulLiveUser") || "null"
+  );
 
-function toast(message) {
-  const el = $("toast");
+  let currentRoom = null;
+  let microphoneOn = true;
+  let soundOn = true;
+  let handRaised = false;
 
-  if (!el) {
-    alert(message);
-    return;
+  /* ================= TOAST ================= */
+
+  function showToast(message) {
+    toast.textContent = message;
+    toast.classList.add("show");
+
+    setTimeout(() => {
+      toast.classList.remove("show");
+    }, 2200);
   }
 
-  el.textContent = message;
-  el.classList.remove("hidden");
+  /* ================= SCREEN ================= */
 
-  setTimeout(() => {
-    el.classList.add("hidden");
-  }, 2500);
-}
+  function showScreen(screen) {
 
-async function api(path, options = {}) {
-
-  try {
-
-    const response = await fetch(API + path, {
-      headers: {
-        "Content-Type": "application/json"
-      },
-      ...options
+    [
+      loginScreen,
+      registerScreen,
+      homeScreen,
+      liveRoomScreen
+    ].forEach((el) => {
+      if (el) el.classList.add("hidden");
     });
 
-    const data = await response.json();
-
-    return data;
-
-  } catch (error) {
-
-    console.error(error);
-
-    return {
-      success: false,
-      message: "Server से connection नहीं हो पाया"
-    };
-
+    screen.classList.remove("hidden");
   }
 
-}
+  /* ================= LOGIN ================= */
 
+  function loginUser() {
 
-/* ================= AUTH SCREEN ================= */
+    const username = $("loginUsername").value.trim();
+    const password = $("loginPassword").value;
 
-function showLogin() {
-  show("loginForm");
-  hide("registerForm");
-  $("authMessage").textContent = "";
-}
+    if (!username || !password) {
+      showToast("Username aur password bharo");
+      return;
+    }
 
-function showRegister() {
-  hide("loginForm");
-  show("registerForm");
-  $("authMessage").textContent = "";
-}
+    const savedUser = JSON.parse(
+      localStorage.getItem("rahulLiveRegisteredUser") || "null"
+    );
 
+    if (
+      savedUser &&
+      savedUser.username === username &&
+      savedUser.password === password
+    ) {
 
-/* ================= REGISTER ================= */
+      currentUser = {
+        username: savedUser.username,
+        email: savedUser.email
+      };
 
-async function registerUser() {
+    } else if (!savedUser) {
 
-  const username =
-    $("registerUsername").value.trim();
+      currentUser = {
+        username,
+        email: `${username}@example.com`
+      };
 
-  const email =
-    $("registerEmail").value.trim();
+    } else {
 
-  const password =
-    $("registerPassword").value;
+      showToast("Username ya password galat hai");
+      return;
+    }
 
-  if (!username || !email || !password) {
+    localStorage.setItem(
+      "rahulLiveUser",
+      JSON.stringify(currentUser)
+    );
 
-    $("authMessage").textContent =
-      "सभी जानकारी भरें";
+    updateProfile();
 
-    return;
+    showScreen(homeScreen);
+
+    showToast(`Welcome ${currentUser.username} 👋`);
   }
 
-  if (password.length < 4) {
+  $("loginBtn").addEventListener("click", loginUser);
 
-    $("authMessage").textContent =
-      "Password कम से कम 4 अक्षर का रखें";
+  $("loginPassword").addEventListener("keydown", (e) => {
+    if (e.key === "Enter") loginUser();
+  });
 
-    return;
-  }
+  /* ================= REGISTER ================= */
 
-  $("registerBtn").disabled = true;
-  $("registerBtn").textContent = "Registering...";
+  function registerUser() {
 
-  const result = await api("/api/register", {
-    method: "POST",
-    body: JSON.stringify({
+    const username = $("registerUsername").value.trim();
+    const email = $("registerEmail").value.trim();
+    const password = $("registerPassword").value;
+
+    if (!username || !email || !password) {
+      showToast("Sabhi details bharo");
+      return;
+    }
+
+    if (username.length < 3) {
+      showToast("Username kam se kam 3 characters ka ho");
+      return;
+    }
+
+    if (password.length < 6) {
+      showToast("Password kam se kam 6 characters ka ho");
+      return;
+    }
+
+    const user = {
       username,
       email,
       password
-    })
-  });
+    };
 
-  $("registerBtn").disabled = false;
-  $("registerBtn").textContent = "Register";
+    localStorage.setItem(
+      "rahulLiveRegisteredUser",
+      JSON.stringify(user)
+    );
 
-  if (!result.success) {
-
-    $("authMessage").textContent =
-      result.message || "Registration failed";
-
-    return;
-  }
-
-  $("authMessage").textContent =
-    "Registration successful ✅";
-
-  $("registerUsername").value = "";
-  $("registerEmail").value = "";
-  $("registerPassword").value = "";
-
-  setTimeout(() => {
-
-    $("loginUsername").value = username;
-
-    showLogin();
-
-  }, 700);
-
-}
-
-
-/* ================= LOGIN ================= */
-
-async function loginUser() {
-
-  const username =
-    $("loginUsername").value.trim();
-
-  const password =
-    $("loginPassword").value;
-
-  if (!username || !password) {
-
-    $("authMessage").textContent =
-      "Username और password भरें";
-
-    return;
-  }
-
-  $("loginBtn").disabled = true;
-  $("loginBtn").textContent = "Login...";
-
-  const result = await api("/api/login", {
-    method: "POST",
-    body: JSON.stringify({
+    currentUser = {
       username,
-      password
-    })
+      email
+    };
+
+    localStorage.setItem(
+      "rahulLiveUser",
+      JSON.stringify(currentUser)
+    );
+
+    updateProfile();
+
+    showScreen(homeScreen);
+
+    showToast("Account successfully create ho gaya 🎉");
+  }
+
+  $("registerBtn").addEventListener("click", registerUser);
+
+  /* ================= LOGIN / REGISTER SWITCH ================= */
+
+  $("showRegisterBtn").addEventListener("click", () => {
+    showScreen(registerScreen);
   });
 
-  $("loginBtn").disabled = false;
-  $("loginBtn").textContent = "Login";
+  $("showLoginBtn").addEventListener("click", () => {
+    showScreen(loginScreen);
+  });
 
-  if (!result.success) {
+  /* ================= PROFILE ================= */
 
-    $("authMessage").textContent =
-      result.message || "Login failed";
+  function updateProfile() {
 
-    return;
-  }
+    if (!currentUser) return;
 
-  currentUser = result.user;
-
-  localStorage.setItem(
-    "rahulLiveUser",
-    JSON.stringify(currentUser)
-  );
-
-  $("authMessage").textContent = "";
-
-  showLiveApp();
-
-}
-
-
-/* ================= SHOW APP ================= */
-
-function showLiveApp() {
-
-  hide("authScreen");
-  show("liveApp");
-
-  if ($("hostName")) {
-    $("hostName").textContent =
+    $("profileUsername").textContent =
       currentUser.username;
+
+    $("profileEmail").textContent =
+      currentUser.email;
+
   }
 
-  if ($("hostAvatar")) {
-    $("hostAvatar").textContent =
-      currentUser.username
-        .charAt(0)
-        .toUpperCase();
-  }
+  /* ================= LOGOUT ================= */
 
-  toast(
-    "Welcome " + currentUser.username + " 👋"
-  );
+  $("logoutBtn").addEventListener("click", () => {
 
-  loadLiveRooms();
-}
+    currentUser = null;
 
+    localStorage.removeItem("rahulLiveUser");
 
-/* ================= LOGOUT ================= */
+    closeAllPanels();
 
-function logoutUser() {
+    showScreen(loginScreen);
 
-  if (currentRoom) {
-    leaveLive(false);
-  }
+    showToast("Logout successful");
+  });
 
-  currentUser = null;
+  /* ================= AUTO LOGIN ================= */
 
-  localStorage.removeItem(
-    "rahulLiveUser"
-  );
+  if (currentUser) {
 
-  stopTimers();
+    updateProfile();
 
-  hide("liveApp");
-  show("authScreen");
+    showScreen(homeScreen);
 
-  showLogin();
-
-}
-
-
-/* ================= CREATE LIVE ================= */
-
-async function createLive() {
-
-  if (!currentUser) {
-
-    toast("पहले Login करें");
-    return;
-  }
-
-  const title =
-    prompt(
-      "LIVE का नाम लिखें:",
-      "Chat LIVE Room"
-    );
-
-  if (title === null) return;
-
-  const result = await api(
-    "/api/live/create",
-    {
-      method: "POST",
-      body: JSON.stringify({
-        host_id: currentUser.id,
-        title:
-          title.trim() ||
-          "Chat LIVE Room"
-      })
-    }
-  );
-
-  if (!result.success) {
-
-    toast(
-      result.message ||
-      "LIVE शुरू नहीं हुआ"
-    );
-
-    return;
-  }
-
-  currentRoom = result.room;
-
-  updateRoomUI();
-
-  showHostControls();
-
-  toast("🔴 LIVE शुरू हो गया");
-
-  startLivePolling();
-
-}
-
-
-/* ================= JOIN LIVE ================= */
-
-async function joinLive(roomId) {
-
-  if (!currentUser) {
-
-    toast("पहले Login करें");
-    return;
-  }
-
-  const result = await api(
-    "/api/live/join",
-    {
-      method: "POST",
-      body: JSON.stringify({
-        live_room_id: roomId,
-        user_id: currentUser.id
-      })
-    }
-  );
-
-  if (!result.success) {
-
-    toast(
-      result.message ||
-      "LIVE join नहीं हुआ"
-    );
-
-    return;
-  }
-
-  const roomResult =
-    await api(
-      "/api/live/room/" + roomId
-    );
-
-  if (!roomResult.success) {
-
-    toast("LIVE room नहीं मिला");
-    return;
-  }
-
-  currentRoom = roomResult.room;
-
-  updateRoomUI();
-
-  hideHostControls();
-
-  toast("🔴 LIVE joined");
-
-  startLivePolling();
-
-}
-
-
-/* ================= UPDATE ROOM UI ================= */
-
-function updateRoomUI() {
-
-  if (!currentRoom) return;
-
-  if ($("liveTitle")) {
-    $("liveTitle").textContent =
-      currentRoom.title ||
-      "Chat LIVE Room";
-  }
-
-  if ($("hostName")) {
-    $("hostName").textContent =
-      currentRoom.host_username ||
-      currentUser.username;
-  }
-
-  if ($("hostAvatar")) {
-    $("hostAvatar").textContent =
-      (
-        currentRoom.host_username ||
-        currentUser.username
-      )
-      .charAt(0)
-      .toUpperCase();
-  }
-
-  const isHost =
-    String(currentRoom.host_id) ===
-    String(currentUser.id);
-
-  if (isHost) {
-    showHostControls();
   } else {
-    hideHostControls();
+
+    showScreen(loginScreen);
+
   }
 
-}
+  /* ================= SEARCH ================= */
 
+  $("searchBtn").addEventListener("click", () => {
 
-/* ================= HOST CONTROLS ================= */
+    $("searchBox").classList.toggle("hidden");
 
-function showHostControls() {
-  show("hostControls");
-}
-
-function hideHostControls() {
-  hide("hostControls");
-}
-
-
-/* ================= CHAT ================= */
-
-async function sendChat() {
-
-  if (!currentUser) {
-
-    toast("पहले Login करें");
-    return;
-  }
-
-  if (!currentRoom) {
-
-    toast("पहले LIVE join करें");
-    return;
-  }
-
-  const input =
-    $("chatInput");
-
-  const message =
-    input.value.trim();
-
-  if (!message) return;
-
-  const result = await api(
-    "/api/live/message",
-    {
-      method: "POST",
-      body: JSON.stringify({
-        live_room_id:
-          currentRoom.id,
-
-        user_id:
-          currentUser.id,
-
-        message
-      })
+    if (!$("searchBox").classList.contains("hidden")) {
+      $("roomSearch").focus();
     }
-  );
-
-  if (!result.success) {
-
-    toast(
-      result.message ||
-      "Message नहीं भेजा गया"
-    );
-
-    return;
-  }
-
-  input.value = "";
-
-  loadMessages();
-
-}
-
-
-/* ================= LOAD CHAT ================= */
-
-async function loadMessages() {
-
-  if (!currentRoom) return;
-
-  const result =
-    await api(
-      "/api/live/messages/" +
-      currentRoom.id
-    );
-
-  if (!result.success) return;
-
-  const container =
-    $("chatMessages");
-
-  if (!container) return;
-
-  container.innerHTML = "";
-
-  if (!result.messages.length) {
-
-    container.innerHTML =
-      `<div class="system-message">
-        LIVE room में आपका स्वागत है 👋
-      </div>`;
-
-    return;
-  }
-
-  result.messages.forEach(msg => {
-
-    const div =
-      document.createElement("div");
-
-    const mine =
-      String(msg.user_id) ===
-      String(currentUser.id);
-
-    div.className =
-      "chat-message" +
-      (mine ? " mine" : "");
-
-    const username =
-      msg.username ||
-      "User";
-
-    div.innerHTML = `
-      <div class="chat-username">
-        ${escapeHTML(username)}
-      </div>
-
-      <div class="chat-text">
-        ${escapeHTML(msg.message)}
-      </div>
-    `;
-
-    container.appendChild(div);
 
   });
 
-  container.scrollTop =
-    container.scrollHeight;
+  $("roomSearch").addEventListener("input", filterRooms);
 
-}
+  function filterRooms() {
 
+    const value =
+      $("roomSearch").value
+        .trim()
+        .toLowerCase();
 
-/* ================= VIEWERS ================= */
+    document.querySelectorAll(".room-card")
+      .forEach((card) => {
 
-async function loadViewers() {
+        const text =
+          card.textContent.toLowerCase();
 
-  if (!currentRoom) return;
+        card.style.display =
+          text.includes(value)
+            ? ""
+            : "none";
 
-  const result =
-    await api(
-      "/api/live/viewers/" +
-      currentRoom.id
+      });
+  }
+
+  /* ================= CATEGORIES ================= */
+
+  document.querySelectorAll(".category")
+    .forEach((button) => {
+
+      button.addEventListener("click", () => {
+
+        document.querySelectorAll(".category")
+          .forEach((b) =>
+            b.classList.remove("active")
+          );
+
+        button.classList.add("active");
+
+        const category =
+          button.dataset.category;
+
+        document.querySelectorAll(".room-card")
+          .forEach((card) => {
+
+            if (category === "all") {
+              card.style.display = "";
+              return;
+            }
+
+            card.style.display =
+              card.dataset.room === category
+                ? ""
+                : "none";
+
+          });
+
+      });
+
+    });
+
+  /* ================= JOIN ROOM ================= */
+
+  document.querySelectorAll(".join-room-btn")
+    .forEach((button) => {
+
+      button.addEventListener("click", () => {
+
+        const roomId =
+          button.dataset.roomId;
+
+        joinRoom(roomId);
+
+      });
+
+    });
+
+  function joinRoom(roomId) {
+
+    const rooms = {
+
+      room001: {
+        name: "Music Lovers",
+        id: "954032",
+        host: "Blake Kim",
+        viewers: 1092
+      },
+
+      room002: {
+        name: "Friends Forever ❤️",
+        id: "821745",
+        host: "Teresa",
+        viewers: 892
+      },
+
+      room003: {
+        name: "Game Night 🎮",
+        id: "665421",
+        host: "Harry",
+        viewers: 564
+      }
+
+    };
+
+    currentRoom =
+      rooms[roomId] || rooms.room001;
+
+    $("liveRoomName").textContent =
+      currentRoom.name;
+
+    $("liveRoomId").textContent =
+      currentRoom.id;
+
+    $("hostName").textContent =
+      currentRoom.host;
+
+    $("roomViewerCount").textContent =
+      currentRoom.viewers;
+
+    showScreen(liveRoomScreen);
+
+    showToast(
+      `${currentRoom.name} mein join ho gaye 🎙️`
     );
+  }
 
-  if (!result.success) return;
+  /* ================= LEAVE ROOM ================= */
 
-  const list =
-    $("viewerList");
+  $("leaveRoomBtn").addEventListener("click", () => {
 
-  if (!list) return;
+    currentRoom = null;
 
-  list.innerHTML = "";
+    closeAllPanels();
 
-  result.viewers.forEach(viewer => {
+    showScreen(homeScreen);
 
-    const div =
-      document.createElement("div");
+  });
 
-    div.className =
-      "viewer-item";
+  /* ================= CREATE ROOM ================= */
+
+  $("createRoomBtn").addEventListener(
+    "click",
+    openCreateRoom
+  );
+
+  $("bottomCreateRoom").addEventListener(
+    "click",
+    openCreateRoom
+  );
+
+  function openCreateRoom() {
+
+    closeAllPanels();
+
+    createRoomPanel.classList.remove("hidden");
+
+  }
+
+  $("closeCreateRoomBtn").addEventListener(
+    "click",
+    () => {
+      createRoomPanel.classList.add("hidden");
+    }
+  );
+
+  $("startRoomBtn").addEventListener(
+    "click",
+    createRoom
+  );
+
+  function createRoom() {
 
     const name =
-      viewer.username ||
-      "User";
+      $("newRoomName").value.trim();
 
-    div.innerHTML = `
-      <div class="viewer-avatar">
-        ${escapeHTML(
-          name.charAt(0).toUpperCase()
-        )}
+    const category =
+      $("newRoomCategory").value;
+
+    if (!name) {
+      showToast("Room ka naam bharo");
+      return;
+    }
+
+    const roomId =
+      "room" + Date.now();
+
+    const newRoom =
+      document.createElement("article");
+
+    newRoom.className = "room-card";
+
+    newRoom.dataset.room = category;
+    newRoom.dataset.roomId = roomId;
+
+    newRoom.innerHTML = `
+
+      <div class="room-cover room-cover-1">
+
+        <div class="room-top">
+
+          <span class="live-label">
+            ● LIVE
+          </span>
+
+          <span class="viewer-label">
+            👁 1
+          </span>
+
+        </div>
+
+        <div class="host-avatar">
+
+          <div class="avatar-frame gold">
+            👤
+          </div>
+
+          <span class="host-crown">
+            👑
+          </span>
+
+        </div>
+
+        <h3>${escapeHTML(name)}</h3>
+
+        <p>New live voice room</p>
+
+        <div class="mini-users">
+
+          <span>👤</span>
+
+          <b>+0</b>
+
+        </div>
+
       </div>
 
-      <div class="viewer-name">
-        ${escapeHTML(name)}
+      <div class="room-info">
+
+        <div>
+
+          <strong>
+            ${escapeHTML(name)}
+          </strong>
+
+          <span>
+            Hosted by ${
+              escapeHTML(
+                currentUser?.username || "You"
+              )
+            }
+          </span>
+
+        </div>
+
+        <button
+          class="join-room-btn"
+          data-room-id="${roomId}"
+        >
+          Join
+        </button>
+
       </div>
     `;
 
-    list.appendChild(div);
+    $("roomList").prepend(newRoom);
+
+    newRoom
+      .querySelector(".join-room-btn")
+      .addEventListener("click", () => {
+        joinCreatedRoom(name, roomId);
+      });
+
+    $("newRoomName").value = "";
+
+    createRoomPanel.classList.add("hidden");
+
+    showToast("Live room create ho gaya 🎙️");
+
+    joinCreatedRoom(name, roomId);
+  }
+
+  function joinCreatedRoom(name, roomId) {
+
+    currentRoom = {
+      name,
+      id: roomId.substring(4, 10),
+      host: currentUser?.username || "You",
+      viewers: 1
+    };
+
+    $("liveRoomName").textContent =
+      name;
+
+    $("liveRoomId").textContent =
+      currentRoom.id;
+
+    $("hostName").textContent =
+      currentRoom.host;
+
+    $("roomViewerCount").textContent =
+      "1";
+
+    showScreen(liveRoomScreen);
+  }
+
+  /* ================= CHAT ================= */
+
+  $("sendMessageBtn").addEventListener(
+    "click",
+    sendMessage
+  );
+
+  $("chatInput").addEventListener(
+    "keydown",
+    (e) => {
+
+      if (e.key === "Enter") {
+        sendMessage();
+      }
+
+    }
+  );
+
+  function sendMessage() {
+
+    const input = $("chatInput");
+
+    const message =
+      input.value.trim();
+
+    if (!message) return;
+
+    addChatMessage(
+      currentUser?.username || "You",
+      "👤",
+      message
+    );
+
+    input.value = "";
+  }
+
+  function addChatMessage(
+    username,
+    avatar,
+    message
+  ) {
+
+    const chat =
+      $("roomChat");
+
+    const item =
+      document.createElement("div");
+
+    item.className =
+      "chat-message";
+
+    item.innerHTML = `
+
+      <span class="chat-avatar">
+        ${avatar}
+      </span>
+
+      <div class="chat-bubble">
+
+        <strong>
+          ${escapeHTML(username)}
+        </strong>
+
+        <span>
+          ${escapeHTML(message)}
+        </span>
+
+      </div>
+    `;
+
+    chat.appendChild(item);
+
+    while (chat.children.length > 7) {
+      chat.removeChild(chat.firstChild);
+    }
+  }
+
+  /* ================= REACTIONS ================= */
+
+  document.querySelectorAll(
+    ".quick-reactions button"
+  ).forEach((button) => {
+
+    button.addEventListener(
+      "click",
+      () => {
+
+        createReaction(
+          button.dataset.reaction
+        );
+
+      }
+    );
 
   });
 
-  const count =
-    result.viewers.length;
+  function createReaction(emoji) {
 
-  if ($("viewerCount")) {
-    $("viewerCount").textContent =
-      count;
+    const area =
+      $("reactionArea");
+
+    const reaction =
+      document.createElement("span");
+
+    reaction.className =
+      "floating-reaction";
+
+    reaction.textContent =
+      emoji;
+
+    reaction.style.setProperty(
+      "--move",
+      `${Math.random() * 80 - 40}px`
+    );
+
+    area.appendChild(reaction);
+
+    setTimeout(() => {
+      reaction.remove();
+    }, 2500);
   }
 
-  if ($("viewerTotal")) {
-    $("viewerTotal").textContent =
-      count;
-  }
+  /* ================= EMOJI ================= */
 
-  if ($("chatUserCount")) {
-    $("chatUserCount").textContent =
-      count + " viewers";
-  }
+  $("emojiBtn").addEventListener(
+    "click",
+    () => {
 
-}
+      const emojis =
+        ["😀","😂","😍","🥰","😘","🔥","❤️","👏"];
 
+      const emoji =
+        emojis[
+          Math.floor(
+            Math.random() * emojis.length
+          )
+        ];
 
-/* ================= EMOJI ================= */
+      $("chatInput").value += emoji;
 
-function insertEmoji(emoji) {
+      $("chatInput").focus();
 
-  const input =
-    $("chatInput");
-
-  if (!input) return;
-
-  input.value += emoji;
-
-  input.focus();
-
-}
-
-
-/* ================= REACTION ================= */
-
-async function sendReaction(emoji) {
-
-  if (!currentUser || !currentRoom) {
-
-    toast("पहले LIVE join करें");
-    return;
-  }
-
-  createFloatingEmoji(emoji);
-
-  await api(
-    "/api/live/reaction",
-    {
-      method: "POST",
-      body: JSON.stringify({
-        live_room_id:
-          currentRoom.id,
-
-        user_id:
-          currentUser.id,
-
-        reaction: emoji
-      })
     }
   );
 
-  loadMessages();
+  /* ================= GIFT ================= */
 
-}
+  $("giftBtn").addEventListener(
+    "click",
+    () => {
 
+      closeAllPanels();
 
-/* ================= FLOATING EMOJI ================= */
+      giftPanel.classList.remove("hidden");
 
-function createFloatingEmoji(emoji) {
-
-  let box =
-    $("floatingReactions");
-
-  if (!box) {
-
-    box =
-      document.createElement("div");
-
-    box.id =
-      "floatingReactions";
-
-    document.body.appendChild(box);
-
-  }
-
-  const item =
-    document.createElement("div");
-
-  item.className =
-    "floating-reaction";
-
-  item.textContent =
-    emoji;
-
-  item.style.right =
-    Math.floor(
-      Math.random() * 80
-    ) + "px";
-
-  box.appendChild(item);
-
-  setTimeout(() => {
-    item.remove();
-  }, 1900);
-
-}
-
-
-/* ================= MODERATION ================= */
-
-async function moderateUser(
-  targetUserId,
-  action
-) {
-
-  if (!currentRoom || !currentUser) return;
-
-  const isHost =
-    String(currentRoom.host_id) ===
-    String(currentUser.id);
-
-  if (!isHost) {
-
-    toast(
-      "केवल Host यह action कर सकता है"
-    );
-
-    return;
-  }
-
-  const result =
-    await api(
-      "/api/live/moderate",
-      {
-        method: "POST",
-        body: JSON.stringify({
-          live_room_id:
-            currentRoom.id,
-
-          host_id:
-            currentUser.id,
-
-          target_user_id:
-            targetUserId,
-
-          action
-        })
-      }
-    );
-
-  toast(
-    result.message ||
-    "Action complete"
-  );
-
-  loadViewers();
-
-}
-
-
-/* ================= END LIVE ================= */
-
-async function endLive() {
-
-  if (!currentRoom || !currentUser) return;
-
-  const isHost =
-    String(currentRoom.host_id) ===
-    String(currentUser.id);
-
-  if (!isHost) {
-
-    toast(
-      "केवल Host LIVE end कर सकता है"
-    );
-
-    return;
-  }
-
-  const confirmEnd =
-    confirm(
-      "क्या आप LIVE समाप्त करना चाहते हैं?"
-    );
-
-  if (!confirmEnd) return;
-
-  const result =
-    await api(
-      "/api/live/end",
-      {
-        method: "POST",
-        body: JSON.stringify({
-          live_room_id:
-            currentRoom.id,
-
-          host_id:
-            currentUser.id
-        })
-      }
-    );
-
-  if (!result.success) {
-
-    toast(
-      result.message ||
-      "LIVE end नहीं हुआ"
-    );
-
-    return;
-  }
-
-  toast("LIVE समाप्त हो गया");
-
-  currentRoom = null;
-
-  stopTimers();
-
-  hideHostControls();
-
-  loadLiveRooms();
-
-}
-
-
-/* ================= LEAVE LIVE ================= */
-
-async function leaveLive(showMessage = true) {
-
-  if (!currentRoom || !currentUser) return;
-
-  await api(
-    "/api/live/leave",
-    {
-      method: "POST",
-      body: JSON.stringify({
-        live_room_id:
-          currentRoom.id,
-
-        user_id:
-          currentUser.id
-      })
     }
   );
 
-  stopTimers();
-
-  currentRoom = null;
-
-  hideHostControls();
-
-  if (showMessage) {
-    toast("LIVE से बाहर आ गए");
-  }
-
-  loadLiveRooms();
-
-}
-
-
-/* ================= LIVE ROOMS ================= */
-
-async function loadLiveRooms() {
-
-  /*
-    अभी index.html में अलग room-list नहीं है,
-    इसलिए function API को test कर सकता है।
-  */
-
-  const result =
-    await api(
-      "/api/live/rooms"
-    );
-
-  console.log(
-    "LIVE rooms:",
-    result
+  $("closeGiftBtn").addEventListener(
+    "click",
+    () => {
+      giftPanel.classList.add("hidden");
+    }
   );
 
-}
+  document.querySelectorAll(
+    ".gift-item"
+  ).forEach((gift) => {
 
+    gift.addEventListener(
+      "click",
+      () => {
 
-/* ================= POLLING ================= */
+        const emoji =
+          gift.dataset.gift;
 
-function startLivePolling() {
+        const cost =
+          gift.dataset.cost;
 
-  stopTimers();
+        giftPanel.classList.add("hidden");
 
-  loadMessages();
-  loadViewers();
+        showGiftAnimation(emoji);
 
-  chatTimer =
-    setInterval(
-      loadMessages,
-      2500
+        showToast(
+          `${emoji} Gift sent • ${cost} coins`
+        );
+
+      }
     );
 
-  viewerTimer =
-    setInterval(
-      loadViewers,
-      5000
-    );
+  });
 
-}
+  function showGiftAnimation(emoji) {
 
-function stopTimers() {
+    const animation =
+      $("giftAnimation");
 
-  if (chatTimer) {
-    clearInterval(chatTimer);
-    chatTimer = null;
+    animation.textContent =
+      emoji;
+
+    animation.classList.remove("hidden");
+
+    animation.style.animation = "none";
+
+    void animation.offsetWidth;
+
+    animation.style.animation =
+      "giftPop 1.2s ease forwards";
+
+    setTimeout(() => {
+      animation.classList.add("hidden");
+    }, 1200);
+
   }
 
-  if (viewerTimer) {
-    clearInterval(viewerTimer);
-    viewerTimer = null;
-  }
+  /* ================= MEMBERS ================= */
 
-}
+  $("membersBtn").addEventListener(
+    "click",
+    () => {
 
+      closeAllPanels();
 
-/* ================= ESCAPE HTML ================= */
+      membersPanel.classList.remove(
+        "hidden"
+      );
 
-function escapeHTML(value) {
+    }
+  );
 
-  return String(value)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
+  $("closeMembersBtn").addEventListener(
+    "click",
+    () => {
+      membersPanel.classList.add("hidden");
+    }
+  );
 
-}
+  /* ================= MIC ================= */
 
+  $("micBtn").addEventListener(
+    "click",
+    () => {
 
-/* ================= EVENTS ================= */
+      microphoneOn =
+        !microphoneOn;
 
-document.addEventListener(
-  "DOMContentLoaded",
-  () => {
+      $("micBtn").innerHTML =
+        microphoneOn
+          ? "🎤<small>Mic</small>"
+          : "🔇<small>Muted</small>";
 
-    /* Login */
+      showToast(
+        microphoneOn
+          ? "Microphone ON 🎤"
+          : "Microphone OFF 🔇"
+      );
 
-    $("loginBtn")?.addEventListener(
+    }
+  );
+
+  /* ================= SOUND ================= */
+
+  $("muteBtn").addEventListener(
+    "click",
+    () => {
+
+      soundOn =
+        !soundOn;
+
+      $("muteBtn").innerHTML =
+        soundOn
+          ? "🔊<small>Sound</small>"
+          : "🔇<small>Muted</small>";
+
+      showToast(
+        soundOn
+          ? "Room sound ON"
+          : "Room sound OFF"
+      );
+
+    }
+  );
+
+  /* ================= RAISE HAND ================= */
+
+  $("raiseHandBtn").addEventListener(
+    "click",
+    () => {
+
+      handRaised =
+        !handRaised;
+
+      $("raiseHandBtn").innerHTML =
+        handRaised
+          ? "✋<small>Raised</small>"
+          : "🙋<small>Hand</small>";
+
+      showToast(
+        handRaised
+          ? "Hand raised 🙋"
+          : "Hand lowered"
+      );
+
+    }
+  );
+
+  /* ================= SHARE ================= */
+
+  $("shareRoomBtn").addEventListener(
+    "click",
+    async () => {
+
+      const roomName =
+        currentRoom?.name ||
+        "Rahul Live Room";
+
+      const shareText =
+        `Join my live room: ${roomName}`;
+
+      if (
+        navigator.share
+      ) {
+
+        try {
+
+          await navigator.share({
+            title: roomName,
+            text: shareText,
+            url: location.href
+          });
+
+        } catch (error) {}
+
+      } else {
+
+        try {
+
+          await navigator.clipboard.writeText(
+            location.href
+          );
+
+          showToast(
+            "Room link copied 🔗"
+          );
+
+        } catch (error) {
+
+          showToast(
+            "Room link: " + location.href
+          );
+
+        }
+
+      }
+
+    }
+  );
+
+  /* ================= ROOM SETTINGS ================= */
+
+  $("roomSettingsBtn").addEventListener(
+    "click",
+    () => {
+
+      showToast(
+        "Room settings coming in next step ⚙️"
+      );
+
+    }
+  );
+
+  /* ================= PROFILE ================= */
+
+  $("profileBtn").addEventListener(
+    "click",
+    () => {
+
+      closeAllPanels();
+
+      profilePanel.classList.remove(
+        "hidden"
+      );
+
+    }
+  );
+
+  $("closeProfileBtn").addEventListener(
+    "click",
+    () => {
+      profilePanel.classList.add("hidden");
+    }
+  );
+
+  /* ================= BOTTOM NAV ================= */
+
+  document.querySelectorAll(
+    ".nav-item"
+  ).forEach((button) => {
+
+    button.addEventListener(
       "click",
-      loginUser
-    );
+      () => {
 
-    /* Register */
+        const page =
+          button.dataset.page;
 
-    $("registerBtn")?.addEventListener(
-      "click",
-      registerUser
-    );
+        if (page === "profile") {
 
-    /* Switch forms */
+          closeAllPanels();
 
-    $("showRegisterBtn")?.addEventListener(
-      "click",
-      showRegister
-    );
-
-    $("showLoginBtn")?.addEventListener(
-      "click",
-      showLogin
-    );
-
-    /* Logout */
-
-    $("logoutBtn")?.addEventListener(
-      "click",
-      logoutUser
-    );
-
-    /* Join */
-
-    $("joinLiveBtn")?.addEventListener(
-      "click",
-      async () => {
-
-        if (!currentRoom) {
-
-          toast(
-            "अभी कोई LIVE room selected नहीं है"
+          profilePanel.classList.remove(
+            "hidden"
           );
 
           return;
         }
 
-        await joinLive(
-          currentRoom.id
-        );
+        if (page === "rooms") {
 
-      }
-    );
+          showToast(
+            "Live Rooms 🎙️"
+          );
 
-    /* Leave */
-
-    $("leaveLiveBtn")?.addEventListener(
-      "click",
-      () => leaveLive(true)
-    );
-
-    /* Send chat */
-
-    $("sendChatBtn")?.addEventListener(
-      "click",
-      sendChat
-    );
-
-    /* Enter key */
-
-    $("chatInput")?.addEventListener(
-      "keydown",
-      event => {
-
-        if (
-          event.key === "Enter" &&
-          !event.shiftKey
-        ) {
-
-          event.preventDefault();
-
-          sendChat();
-
+          return;
         }
 
-      }
-    );
+        if (page === "wallet") {
 
-    /* Emoji panel */
-
-    $("emojiBtn")?.addEventListener(
-      "click",
-      () => {
-
-        const panel =
-          $("emojiPanel");
-
-        if (!panel) return;
-
-        panel.classList.toggle(
-          "hidden"
-        );
-
-      }
-    );
-
-    /* Emoji buttons */
-
-    document
-      .querySelectorAll(
-        "[data-emoji]"
-      )
-      .forEach(button => {
-
-        button.addEventListener(
-          "click",
-          () => {
-
-            insertEmoji(
-              button.dataset.emoji
-            );
-
-          }
-        );
-
-      });
-
-    /* Quick reactions */
-
-    document
-      .querySelectorAll(
-        "[data-reaction]"
-      )
-      .forEach(button => {
-
-        button.addEventListener(
-          "click",
-          () => {
-
-            sendReaction(
-              button.dataset.reaction
-            );
-
-          }
-        );
-
-      });
-
-    /* Host mute */
-
-    $("muteBtn")?.addEventListener(
-      "click",
-      () => {
-
-        const target =
-          prompt(
-            "Mute करने वाले Viewer की User ID:"
+          showToast(
+            "Wallet 🪙"
           );
 
-        if (target) {
-          moderateUser(
-            target,
-            "mute"
-          );
+          return;
         }
 
-      }
-    );
-
-    /* Host kick */
-
-    $("kickBtn")?.addEventListener(
-      "click",
-      () => {
-
-        const target =
-          prompt(
-            "Kick करने वाले Viewer की User ID:"
-          );
-
-        if (target) {
-          moderateUser(
-            target,
-            "kick"
-          );
-        }
+        showScreen(homeScreen);
 
       }
     );
 
-    /* Host block */
+  });
 
-    $("blockBtn")?.addEventListener(
-      "click",
-      () => {
+  /* ================= REFRESH ================= */
 
-        const target =
-          prompt(
-            "Block करने वाले Viewer की User ID:"
-          );
+  $("refreshRoomsBtn").addEventListener(
+    "click",
+    () => {
 
-        if (target) {
-          moderateUser(
-            target,
-            "block"
-          );
-        }
+      const button =
+        $("refreshRoomsBtn");
 
-      }
-    );
+      button.style.transform =
+        "rotate(360deg)";
 
-    /* End LIVE */
+      setTimeout(() => {
 
-    $("endLiveBtn")?.addEventListener(
-      "click",
-      endLive
-    );
+        button.style.transform =
+          "";
 
-
-    /* ================= RESTORE LOGIN ================= */
-
-    const saved =
-      localStorage.getItem(
-        "rahulLiveUser"
-      );
-
-    if (saved) {
-
-      try {
-
-        currentUser =
-          JSON.parse(saved);
-
-        showLiveApp();
-
-      } catch {
-
-        localStorage.removeItem(
-          "rahulLiveUser"
+        showToast(
+          "Rooms refreshed 🔄"
         );
 
-        showLogin();
-
-      }
-
-    } else {
-
-      showLogin();
+      }, 500);
 
     }
+  );
+
+  /* ================= NOTIFICATION ================= */
+
+  $("notificationBtn").addEventListener(
+    "click",
+    () => {
+
+      showToast(
+        "No new notifications 🔔"
+      );
+
+    }
+  );
+
+  /* ================= CLOSE PANELS ================= */
+
+  function closeAllPanels() {
+
+    giftPanel.classList.add("hidden");
+
+    membersPanel.classList.add("hidden");
+
+    createRoomPanel.classList.add(
+      "hidden"
+    );
+
+    profilePanel.classList.add(
+      "hidden"
+    );
 
   }
-);
+
+  /* ================= SECURITY ================= */
+
+  function escapeHTML(value) {
+
+    return String(value)
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+
+  }
+
+});
