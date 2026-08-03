@@ -1,23 +1,25 @@
 "use strict";
 
 /* =========================================================
-   RAHUL LIVE — FRONTEND CORE
+   RAHUL LIVE — REAL API CONNECTION
    ========================================================= */
 
-const $ = (id) => document.getElementById(id);
+const API_URL =
+  "https://rahulsocialhub-db.09rcrg.workers.dev";
 
 const state = {
   currentUser: null,
-  currentPage: "homePage",
-  rooms: [],
-  friends: [],
-  coinBalance: 0
+  token: localStorage.getItem("rahul_live_token") || "",
+  currentRoom: null,
+  rooms: []
 };
 
 
 /* =========================================================
    HELPERS
    ========================================================= */
+
+const $ = (id) => document.getElementById(id);
 
 function show(element) {
   if (element) element.classList.remove("hidden");
@@ -27,19 +29,71 @@ function hide(element) {
   if (element) element.classList.add("hidden");
 }
 
-function showToast(message) {
-  const toast = $("toast");
+function toast(message) {
 
-  if (!toast) return;
+  const element = $("toast");
 
-  toast.textContent = message;
-  show(toast);
+  if (!element) {
+    alert(message);
+    return;
+  }
 
-  clearTimeout(showToast.timer);
+  element.textContent = message;
+  show(element);
 
-  showToast.timer = setTimeout(() => {
-    hide(toast);
+  clearTimeout(toast.timer);
+
+  toast.timer = setTimeout(() => {
+    hide(element);
   }, 3000);
+}
+
+
+/* =========================================================
+   API REQUEST
+   ========================================================= */
+
+async function api(path, options = {}) {
+
+  const headers = {
+    "Content-Type": "application/json",
+    ...(options.headers || {})
+  };
+
+  if (state.token) {
+    headers.Authorization =
+      `Bearer ${state.token}`;
+  }
+
+  const response =
+    await fetch(
+      `${API_URL}${path}`,
+      {
+        ...options,
+        headers
+      }
+    );
+
+  let data;
+
+  try {
+    data = await response.json();
+  } catch {
+    throw new Error(
+      "Server ने valid response नहीं दिया।"
+    );
+  }
+
+  if (!response.ok || data.success === false) {
+
+    throw new Error(
+      data.message ||
+      data.error ||
+      "Request failed."
+    );
+  }
+
+  return data;
 }
 
 
@@ -48,131 +102,217 @@ function showToast(message) {
    ========================================================= */
 
 function showLoginForm() {
+
   show($("loginForm"));
   hide($("registerForm"));
 }
 
 function showRegisterForm() {
+
   hide($("loginForm"));
   show($("registerForm"));
 }
 
 
 /* =========================================================
-   PAGE NAVIGATION
+   REGISTER
    ========================================================= */
 
-function openPage(pageId) {
+async function registerUser() {
 
-  document.querySelectorAll(".page").forEach((page) => {
-    hide(page);
-  });
+  const name =
+    $("registerName")?.value.trim();
 
-  const page = $(pageId);
+  const email =
+    $("registerEmail")?.value.trim();
 
-  if (!page) return;
+  const password =
+    $("registerPassword")?.value;
 
-  show(page);
+  const confirmPassword =
+    $("registerPasswordConfirm")?.value;
 
-  state.currentPage = pageId;
 
-  document.querySelectorAll(".nav-item").forEach((item) => {
-    item.classList.remove("active");
-  });
+  if (!name) {
+    toast("अपना नाम लिखें।");
+    return;
+  }
 
-  const activeNav = document.querySelector(
-    `.nav-item[data-page="${pageId}"]`
-  );
+  if (!email) {
+    toast("अपना email लिखें।");
+    return;
+  }
 
-  if (activeNav) {
-    activeNav.classList.add("active");
+  if (!password) {
+    toast("Password लिखें।");
+    return;
+  }
+
+  if (password.length < 6) {
+    toast(
+      "Password कम से कम 6 characters का होना चाहिए।"
+    );
+    return;
+  }
+
+  if (password !== confirmPassword) {
+    toast("दोनों passwords समान नहीं हैं।");
+    return;
+  }
+
+
+  try {
+
+    const data =
+      await api(
+        "/api/register",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            name,
+            email,
+            password
+          })
+        }
+      );
+
+
+    toast(
+      data.message ||
+      "Registration successful."
+    );
+
+
+    $("registerName").value = "";
+    $("registerEmail").value = "";
+    $("registerPassword").value = "";
+    $("registerPasswordConfirm").value = "";
+
+
+    showLoginForm();
+
+    if ($("loginEmail")) {
+      $("loginEmail").value = email;
+    }
+
+
+  } catch (error) {
+
+    toast(error.message);
+
   }
 }
 
 
 /* =========================================================
-   LOGIN / REGISTER UI
+   LOGIN
    ========================================================= */
-
-function validateRegisterForm() {
-
-  const name = $("registerName").value.trim();
-  const email = $("registerEmail").value.trim();
-  const password = $("registerPassword").value;
-  const confirmPassword = $("registerPasswordConfirm").value;
-
-  if (!name) {
-    showToast("अपना नाम लिखें।");
-    return false;
-  }
-
-  if (!email) {
-    showToast("अपना email लिखें।");
-    return false;
-  }
-
-  if (!password) {
-    showToast("Password लिखें।");
-    return false;
-  }
-
-  if (password.length < 6) {
-    showToast("Password कम से कम 6 characters का होना चाहिए।");
-    return false;
-  }
-
-  if (password !== confirmPassword) {
-    showToast("दोनों passwords समान नहीं हैं।");
-    return false;
-  }
-
-  return true;
-}
-
-function validateLoginForm() {
-
-  const email = $("loginEmail").value.trim();
-  const password = $("loginPassword").value;
-
-  if (!email) {
-    showToast("Email लिखें।");
-    return false;
-  }
-
-  if (!password) {
-    showToast("Password लिखें।");
-    return false;
-  }
-
-  return true;
-}
-
-
-/*
-  IMPORTANT:
-
-  Login/Register की वास्तविक request अभी backend/API
-  से जोड़ी जाएगी।
-
-  यहाँ कोई fake successful login नहीं बनाया गया है।
-*/
-
-async function registerUser() {
-
-  if (!validateRegisterForm()) return;
-
-  showToast(
-    "Register API अभी backend से connect होना बाकी है।"
-  );
-}
 
 async function loginUser() {
 
-  if (!validateLoginForm()) return;
+  const email =
+    $("loginEmail")?.value.trim();
 
-  showToast(
-    "Login API अभी backend से connect होना बाकी है।"
-  );
+  const password =
+    $("loginPassword")?.value;
+
+
+  if (!email) {
+    toast("Email लिखें।");
+    return;
+  }
+
+  if (!password) {
+    toast("Password लिखें।");
+    return;
+  }
+
+
+  try {
+
+    const data =
+      await api(
+        "/api/login",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            email,
+            password
+          })
+        }
+      );
+
+
+    state.token =
+      data.token;
+
+    state.currentUser =
+      data.user;
+
+
+    localStorage.setItem(
+      "rahul_live_token",
+      state.token
+    );
+
+
+    showMainApp();
+
+    await loadRooms();
+
+    toast(
+      data.message ||
+      "Login successful."
+    );
+
+
+  } catch (error) {
+
+    toast(error.message);
+
+  }
+}
+
+
+/* =========================================================
+   CHECK EXISTING LOGIN
+   ========================================================= */
+
+async function checkLogin() {
+
+  if (!state.token) {
+    showAuth();
+    return;
+  }
+
+
+  try {
+
+    const data =
+      await api("/api/me");
+
+
+    state.currentUser =
+      data.user;
+
+
+    showMainApp();
+
+    await loadRooms();
+
+
+  } catch {
+
+    state.token = "";
+    state.currentUser = null;
+
+    localStorage.removeItem(
+      "rahul_live_token"
+    );
+
+    showAuth();
+
+  }
 }
 
 
@@ -180,198 +320,593 @@ async function loginUser() {
    LOGOUT
    ========================================================= */
 
-function logoutUser() {
+async function logoutUser() {
 
+  try {
+
+    if (state.token) {
+      await api(
+        "/api/logout",
+        {
+          method: "POST"
+        }
+      );
+    }
+
+  } catch {
+    // Local logout still happens.
+  }
+
+
+  state.token = "";
   state.currentUser = null;
+  state.currentRoom = null;
 
-  hide($("mainApp"));
-  show($("authScreen"));
+  localStorage.removeItem(
+    "rahul_live_token"
+  );
 
-  showLoginForm();
 
-  showToast("आप logout हो गए हैं।");
+  showAuth();
+
+  toast("Logout हो गया।");
 }
 
 
 /* =========================================================
-   CREATE ROOM MODAL
+   AUTH / MAIN APP
    ========================================================= */
 
-function openCreateRoomModal() {
+function showAuth() {
 
-  const modal = $("createRoomModal");
+  show($("authScreen"));
+  hide($("mainApp"));
 
-  if (!modal) return;
-
-  show(modal);
-
-  $("roomName").focus();
+  showLoginForm();
 }
 
-function closeCreateRoomModal() {
 
-  const modal = $("createRoomModal");
+function showMainApp() {
 
-  if (!modal) return;
-
-  hide(modal);
+  hide($("authScreen"));
+  show($("mainApp"));
 }
 
-function validateRoomForm() {
 
-  const roomName = $("roomName").value.trim();
+/* =========================================================
+   ROOMS
+   ========================================================= */
 
-  if (!roomName) {
-    showToast("Room का नाम लिखें।");
-    return false;
+async function loadRooms() {
+
+  try {
+
+    const data =
+      await api("/api/rooms");
+
+
+    state.rooms =
+      data.rooms || [];
+
+
+    renderRooms();
+
+
+  } catch (error) {
+
+    toast(
+      "Rooms load नहीं हुए: " +
+      error.message
+    );
+
+  }
+}
+
+
+function renderRooms() {
+
+  const container =
+    $("roomsContainer");
+
+
+  if (!container) {
+    return;
   }
 
-  return true;
+
+  container.innerHTML = "";
+
+
+  if (!state.rooms.length) {
+
+    container.innerHTML = `
+      <div class="empty-state">
+        <h3>अभी कोई Live Room नहीं है</h3>
+        <p>अपना पहला room बनाइए।</p>
+      </div>
+    `;
+
+    return;
+  }
+
+
+  state.rooms.forEach((room) => {
+
+    const card =
+      document.createElement("div");
+
+
+    card.className =
+      "room-card";
+
+
+    card.dataset.roomName =
+      room.name.toLowerCase();
+
+
+    card.innerHTML = `
+      <div class="room-card-content">
+
+        <h3>
+          ${escapeHTML(room.name)}
+        </h3>
+
+        <p>
+          ${escapeHTML(
+            room.description || ""
+          )}
+        </p>
+
+        <small>
+          Host:
+          ${escapeHTML(
+            room.owner_name || ""
+          )}
+        </small>
+
+        <button
+          type="button"
+          class="join-room-btn"
+          data-room-id="${room.id}"
+        >
+          Join Room
+        </button>
+
+      </div>
+    `;
+
+
+    container.appendChild(card);
+
+  });
+
+
+  container
+    .querySelectorAll(".join-room-btn")
+    .forEach((button) => {
+
+      button.addEventListener(
+        "click",
+        () => {
+          joinRoom(
+            Number(
+              button.dataset.roomId
+            )
+          );
+        }
+      );
+
+    });
 }
 
 
-/*
-  Room creation की वास्तविक database/API functionality
-  backend आने के बाद जोड़ी जाएगी।
-
-  Fake room यहाँ create नहीं किया गया है।
-*/
+/* =========================================================
+   CREATE ROOM
+   ========================================================= */
 
 async function createRoom() {
 
-  if (!validateRoomForm()) return;
+  const name =
+    $("roomName")?.value.trim();
 
-  showToast(
-    "Room Create API अभी backend से connect होना बाकी है।"
-  );
+  const description =
+    $("roomDescription")?.value.trim() || "";
+
+  const roomType =
+    $("roomType")?.value || "public";
+
+
+  if (!name) {
+
+    toast(
+      "Room का नाम लिखें।"
+    );
+
+    return;
+  }
+
+
+  try {
+
+    const data =
+      await api(
+        "/api/rooms",
+        {
+          method: "POST",
+
+          body: JSON.stringify({
+            name,
+            description,
+            room_type: roomType
+          })
+        }
+      );
+
+
+    closeCreateRoomModal();
+
+    if ($("roomName")) {
+      $("roomName").value = "";
+    }
+
+    if ($("roomDescription")) {
+      $("roomDescription").value = "";
+    }
+
+
+    await loadRooms();
+
+
+    toast(
+      data.message ||
+      "Room created."
+    );
+
+
+  } catch (error) {
+
+    toast(error.message);
+
+  }
 }
 
 
 /* =========================================================
-   ROOM SEARCH
+   JOIN ROOM
+   ========================================================= */
+
+async function joinRoom(roomId) {
+
+  try {
+
+    const data =
+      await api(
+        `/api/rooms/${roomId}/join`,
+        {
+          method: "POST"
+        }
+      );
+
+
+    state.currentRoom =
+      roomId;
+
+
+    toast(
+      data.message ||
+      "Room joined."
+    );
+
+
+    await loadRoomMessages(
+      roomId
+    );
+
+
+    openPage("roomPage");
+
+
+  } catch (error) {
+
+    toast(error.message);
+
+  }
+}
+
+
+/* =========================================================
+   LEAVE ROOM
+   ========================================================= */
+
+async function leaveRoom() {
+
+  if (!state.currentRoom) {
+    return;
+  }
+
+
+  try {
+
+    await api(
+      `/api/rooms/${state.currentRoom}/leave`,
+      {
+        method: "POST"
+      }
+    );
+
+
+    state.currentRoom = null;
+
+    openPage("homePage");
+
+
+  } catch (error) {
+
+    toast(error.message);
+
+  }
+}
+
+
+/* =========================================================
+   ROOM CHAT
+   ========================================================= */
+
+async function loadRoomMessages(roomId) {
+
+  try {
+
+    const data =
+      await api(
+        `/api/rooms/${roomId}/messages`
+      );
+
+
+    renderMessages(
+      data.messages || []
+    );
+
+
+  } catch (error) {
+
+    toast(
+      "Chat load नहीं हुई: " +
+      error.message
+    );
+
+  }
+}
+
+
+function renderMessages(messages) {
+
+  const container =
+    $("roomMessages");
+
+
+  if (!container) {
+    return;
+  }
+
+
+  container.innerHTML = "";
+
+
+  messages.forEach((message) => {
+
+    const item =
+      document.createElement("div");
+
+
+    item.className =
+      "chat-message";
+
+
+    item.innerHTML = `
+      <strong>
+        ${escapeHTML(
+          message.name || ""
+        )}
+      </strong>
+
+      <span>
+        ${escapeHTML(
+          message.message
+        )}
+      </span>
+    `;
+
+
+    container.appendChild(item);
+
+  });
+
+
+  container.scrollTop =
+    container.scrollHeight;
+}
+
+
+async function sendRoomMessage() {
+
+  if (!state.currentRoom) {
+
+    toast(
+      "पहले room join करें।"
+    );
+
+    return;
+  }
+
+
+  const input =
+    $("roomMessageInput");
+
+
+  if (!input) {
+    return;
+  }
+
+
+  const message =
+    input.value.trim();
+
+
+  if (!message) {
+    return;
+  }
+
+
+  try {
+
+    await api(
+      `/api/rooms/${state.currentRoom}/messages`,
+      {
+        method: "POST",
+
+        body: JSON.stringify({
+          message
+        })
+      }
+    );
+
+
+    input.value = "";
+
+
+    await loadRoomMessages(
+      state.currentRoom
+    );
+
+
+  } catch (error) {
+
+    toast(error.message);
+
+  }
+}
+
+
+/* =========================================================
+   SEARCH ROOMS
    ========================================================= */
 
 function searchRooms() {
 
-  const search = $("roomSearch");
+  const input =
+    $("roomSearch");
 
-  if (!search) return;
 
-  const query = search.value.trim().toLowerCase();
+  if (!input) {
+    return;
+  }
 
-  document.querySelectorAll(".room-card").forEach((card) => {
 
-    const text = card.textContent.toLowerCase();
+  const query =
+    input.value
+      .trim()
+      .toLowerCase();
 
-    card.style.display =
-      !query || text.includes(query)
-        ? ""
-        : "none";
-  });
+
+  document
+    .querySelectorAll(".room-card")
+    .forEach((card) => {
+
+      const name =
+        card.dataset.roomName || "";
+
+
+      card.style.display =
+        !query ||
+        name.includes(query)
+          ? ""
+          : "none";
+
+    });
 }
 
 
 /* =========================================================
-   CATEGORY BUTTONS
+   MODAL
    ========================================================= */
 
-function setupCategories() {
+function openCreateRoomModal() {
 
-  document.querySelectorAll(".category").forEach((button) => {
+  show(
+    $("createRoomModal")
+  );
+}
 
-    button.addEventListener("click", () => {
 
-      document.querySelectorAll(".category").forEach((item) => {
-        item.classList.remove("active");
-      });
+function closeCreateRoomModal() {
 
-      button.classList.add("active");
+  hide(
+    $("createRoomModal")
+  );
+}
 
-      /*
-        Actual category filtering बाद में
-        database room type के साथ जोड़ा जाएगा।
-      */
+
+/* =========================================================
+   NAVIGATION
+   ========================================================= */
+
+function openPage(pageId) {
+
+  document
+    .querySelectorAll(".page")
+    .forEach((page) => {
+      hide(page);
     });
 
-  });
+
+  const page =
+    $(pageId);
+
+
+  if (!page) {
+    return;
+  }
+
+
+  show(page);
+
+
+  document
+    .querySelectorAll(".nav-item")
+    .forEach((item) => {
+      item.classList.remove(
+        "active"
+      );
+    });
+
+
+  const active =
+    document.querySelector(
+      `.nav-item[data-page="${pageId}"]`
+    );
+
+
+  if (active) {
+    active.classList.add(
+      "active"
+    );
+  }
 }
 
 
 /* =========================================================
-   FRIENDS
+   ESCAPE HTML
    ========================================================= */
 
-function addFriend() {
+function escapeHTML(value) {
 
-  showToast(
-    "Friend system backend से connect होने के बाद काम करेगा।"
-  );
-}
+  const div =
+    document.createElement("div");
 
+  div.textContent =
+    String(value ?? "");
 
-/* =========================================================
-   WALLET
-   ========================================================= */
-
-function addCoins() {
-
-  showToast(
-    "Coins purchase system backend/payment integration के बाद काम करेगा।"
-  );
-}
-
-function giftHistory() {
-
-  showToast(
-    "Gift history database से load होगी।"
-  );
-}
-
-function transactionHistory() {
-
-  showToast(
-    "Transactions database से load होंगे।"
-  );
-}
-
-
-/* =========================================================
-   SUPPORT
-   ========================================================= */
-
-function createSupportRequest() {
-
-  showToast(
-    "Support system backend से connect होने के बाद ticket बनेगा।"
-  );
-}
-
-
-/* =========================================================
-   PROFILE
-   ========================================================= */
-
-function openProfile() {
-  openPage("profilePage");
-}
-
-function editProfile() {
-
-  showToast(
-    "Profile editing backend/profile storage से connect होगा।"
-  );
-}
-
-
-/* =========================================================
-   NOTIFICATIONS
-   ========================================================= */
-
-function openNotifications() {
-
-  showToast(
-    "Notifications system backend से connect होने के बाद दिखेंगी।"
-  );
+  return div.innerHTML;
 }
 
 
@@ -379,155 +914,136 @@ function openNotifications() {
    EVENT LISTENERS
    ========================================================= */
 
-function setupEventListeners() {
+function setupEvents() {
 
-  /* Auth */
-
-  $("showRegisterBtn")?.addEventListener(
-    "click",
-    showRegisterForm
-  );
-
-  $("showLoginBtn")?.addEventListener(
-    "click",
-    showLoginForm
-  );
-
-  $("loginBtn")?.addEventListener(
-    "click",
-    loginUser
-  );
-
-  $("registerBtn")?.addEventListener(
-    "click",
-    registerUser
-  );
+  $("showRegisterBtn")
+    ?.addEventListener(
+      "click",
+      showRegisterForm
+    );
 
 
-  /* Profile */
-
-  $("profileBtn")?.addEventListener(
-    "click",
-    openProfile
-  );
-
-  $("editProfileBtn")?.addEventListener(
-    "click",
-    editProfile
-  );
-
-  $("logoutBtn")?.addEventListener(
-    "click",
-    logoutUser
-  );
+  $("showLoginBtn")
+    ?.addEventListener(
+      "click",
+      showLoginForm
+    );
 
 
-  /* Notifications */
-
-  $("notificationBtn")?.addEventListener(
-    "click",
-    openNotifications
-  );
-
-
-  /* Room */
-
-  $("createRoomBtn")?.addEventListener(
-    "click",
-    openCreateRoomModal
-  );
-
-  $("emptyCreateRoomBtn")?.addEventListener(
-    "click",
-    openCreateRoomModal
-  );
-
-  $("bottomCreateRoomBtn")?.addEventListener(
-    "click",
-    openCreateRoomModal
-  );
-
-  $("closeCreateRoomBtn")?.addEventListener(
-    "click",
-    closeCreateRoomModal
-  );
-
-  $("saveRoomBtn")?.addEventListener(
-    "click",
-    createRoom
-  );
+  $("registerBtn")
+    ?.addEventListener(
+      "click",
+      registerUser
+    );
 
 
-  /* Search */
-
-  $("roomSearch")?.addEventListener(
-    "input",
-    searchRooms
-  );
-
-
-  /* Friends */
-
-  $("addFriendBtn")?.addEventListener(
-    "click",
-    addFriend
-  );
+  $("loginBtn")
+    ?.addEventListener(
+      "click",
+      loginUser
+    );
 
 
-  /* Wallet */
-
-  $("addCoinsBtn")?.addEventListener(
-    "click",
-    addCoins
-  );
-
-  $("giftHistoryBtn")?.addEventListener(
-    "click",
-    giftHistory
-  );
-
-  $("transactionHistoryBtn")?.addEventListener(
-    "click",
-    transactionHistory
-  );
+  $("logoutBtn")
+    ?.addEventListener(
+      "click",
+      logoutUser
+    );
 
 
-  /* Help */
+  $("createRoomBtn")
+    ?.addEventListener(
+      "click",
+      openCreateRoomModal
+    );
 
-  $("createSupportBtn")?.addEventListener(
-    "click",
-    createSupportRequest
-  );
+
+  $("emptyCreateRoomBtn")
+    ?.addEventListener(
+      "click",
+      openCreateRoomModal
+    );
 
 
-  /* Bottom navigation */
+  $("bottomCreateRoomBtn")
+    ?.addEventListener(
+      "click",
+      openCreateRoomModal
+    );
 
-  document.querySelectorAll(".nav-item[data-page]")
+
+  $("closeCreateRoomBtn")
+    ?.addEventListener(
+      "click",
+      closeCreateRoomModal
+    );
+
+
+  $("saveRoomBtn")
+    ?.addEventListener(
+      "click",
+      createRoom
+    );
+
+
+  $("roomSearch")
+    ?.addEventListener(
+      "input",
+      searchRooms
+    );
+
+
+  $("sendRoomMessageBtn")
+    ?.addEventListener(
+      "click",
+      sendRoomMessage
+    );
+
+
+  $("leaveRoomBtn")
+    ?.addEventListener(
+      "click",
+      leaveRoom
+    );
+
+
+  $("roomMessageInput")
+    ?.addEventListener(
+      "keydown",
+      (event) => {
+
+        if (
+          event.key === "Enter"
+        ) {
+
+          event.preventDefault();
+
+          sendRoomMessage();
+
+        }
+
+      }
+    );
+
+
+  document
+    .querySelectorAll(
+      ".nav-item[data-page]"
+    )
     .forEach((button) => {
 
-      button.addEventListener("click", () => {
+      button.addEventListener(
+        "click",
+        () => {
 
-        const pageId =
-          button.getAttribute("data-page");
+          openPage(
+            button.dataset.page
+          );
 
-        openPage(pageId);
-      });
+        }
+      );
 
     });
-
-
-  /* Modal background */
-
-  $("createRoomModal")?.addEventListener(
-    "click",
-    (event) => {
-
-      if (event.target.id === "createRoomModal") {
-        closeCreateRoomModal();
-      }
-
-    }
-  );
 
 }
 
@@ -536,27 +1052,13 @@ function setupEventListeners() {
    APP START
    ========================================================= */
 
-function initApp() {
-
-  show($("authScreen"));
-  hide($("mainApp"));
-
-  showLoginForm();
-
-  setupCategories();
-  setupEventListeners();
-
-  console.log(
-    "Rahul Live frontend loaded successfully."
-  );
-}
-
-
-/* =========================================================
-   START
-   ========================================================= */
-
 document.addEventListener(
   "DOMContentLoaded",
-  initApp
+  () => {
+
+    setupEvents();
+
+    checkLogin();
+
+  }
 );
