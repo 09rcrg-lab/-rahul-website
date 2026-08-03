@@ -1,1135 +1,562 @@
-document.addEventListener("DOMContentLoaded", () => {
+"use strict";
 
-  const $ = (id) => document.getElementById(id);
+/* =========================================================
+   RAHUL LIVE — FRONTEND CORE
+   ========================================================= */
 
-  /* =========================
-     STATE
-  ========================= */
+const $ = (id) => document.getElementById(id);
 
-  let currentPage = "roomPage";
-  let selectedSeat = null;
-  let mySeat = null;
-
-  let user = {
-    name: localStorage.getItem("rahul_name") || "Rahul",
-    photo: localStorage.getItem("rahul_photo") ||
-      "https://i.pravatar.cc/200?img=12"
-  };
-
-  let room = {
-    id: "874271",
-    host: "Rahul",
-    viewers: 1
-  };
-
-  const seats = {};
+const state = {
+  currentUser: null,
+  currentPage: "homePage",
+  rooms: [],
+  friends: [],
+  coinBalance: 0
+};
 
 
-  /* =========================
-     PAGE NAVIGATION
-  ========================= */
+/* =========================================================
+   HELPERS
+   ========================================================= */
 
-  function showPage(pageId) {
+function show(element) {
+  if (element) element.classList.remove("hidden");
+}
 
-    document.querySelectorAll(".page").forEach(page => {
-      page.classList.remove("active");
-    });
+function hide(element) {
+  if (element) element.classList.add("hidden");
+}
 
-    const page = $(pageId);
+function showToast(message) {
+  const toast = $("toast");
 
-    if (page) {
-      page.classList.add("active");
-      currentPage = pageId;
-    }
+  if (!toast) return;
 
-    window.scrollTo(0, 0);
+  toast.textContent = message;
+  show(toast);
+
+  clearTimeout(showToast.timer);
+
+  showToast.timer = setTimeout(() => {
+    hide(toast);
+  }, 3000);
+}
+
+
+/* =========================================================
+   AUTH SCREEN
+   ========================================================= */
+
+function showLoginForm() {
+  show($("loginForm"));
+  hide($("registerForm"));
+}
+
+function showRegisterForm() {
+  hide($("loginForm"));
+  show($("registerForm"));
+}
+
+
+/* =========================================================
+   PAGE NAVIGATION
+   ========================================================= */
+
+function openPage(pageId) {
+
+  document.querySelectorAll(".page").forEach((page) => {
+    hide(page);
+  });
+
+  const page = $(pageId);
+
+  if (!page) return;
+
+  show(page);
+
+  state.currentPage = pageId;
+
+  document.querySelectorAll(".nav-item").forEach((item) => {
+    item.classList.remove("active");
+  });
+
+  const activeNav = document.querySelector(
+    `.nav-item[data-page="${pageId}"]`
+  );
+
+  if (activeNav) {
+    activeNav.classList.add("active");
+  }
+}
+
+
+/* =========================================================
+   LOGIN / REGISTER UI
+   ========================================================= */
+
+function validateRegisterForm() {
+
+  const name = $("registerName").value.trim();
+  const email = $("registerEmail").value.trim();
+  const password = $("registerPassword").value;
+  const confirmPassword = $("registerPasswordConfirm").value;
+
+  if (!name) {
+    showToast("अपना नाम लिखें।");
+    return false;
   }
 
+  if (!email) {
+    showToast("अपना email लिखें।");
+    return false;
+  }
 
-  document.querySelectorAll("[data-back]").forEach(button => {
+  if (!password) {
+    showToast("Password लिखें।");
+    return false;
+  }
+
+  if (password.length < 6) {
+    showToast("Password कम से कम 6 characters का होना चाहिए।");
+    return false;
+  }
+
+  if (password !== confirmPassword) {
+    showToast("दोनों passwords समान नहीं हैं।");
+    return false;
+  }
+
+  return true;
+}
+
+function validateLoginForm() {
+
+  const email = $("loginEmail").value.trim();
+  const password = $("loginPassword").value;
+
+  if (!email) {
+    showToast("Email लिखें।");
+    return false;
+  }
+
+  if (!password) {
+    showToast("Password लिखें।");
+    return false;
+  }
+
+  return true;
+}
+
+
+/*
+  IMPORTANT:
+
+  Login/Register की वास्तविक request अभी backend/API
+  से जोड़ी जाएगी।
+
+  यहाँ कोई fake successful login नहीं बनाया गया है।
+*/
+
+async function registerUser() {
+
+  if (!validateRegisterForm()) return;
+
+  showToast(
+    "Register API अभी backend से connect होना बाकी है।"
+  );
+}
+
+async function loginUser() {
+
+  if (!validateLoginForm()) return;
+
+  showToast(
+    "Login API अभी backend से connect होना बाकी है।"
+  );
+}
+
+
+/* =========================================================
+   LOGOUT
+   ========================================================= */
+
+function logoutUser() {
+
+  state.currentUser = null;
+
+  hide($("mainApp"));
+  show($("authScreen"));
+
+  showLoginForm();
+
+  showToast("आप logout हो गए हैं।");
+}
+
+
+/* =========================================================
+   CREATE ROOM MODAL
+   ========================================================= */
+
+function openCreateRoomModal() {
+
+  const modal = $("createRoomModal");
+
+  if (!modal) return;
+
+  show(modal);
+
+  $("roomName").focus();
+}
+
+function closeCreateRoomModal() {
+
+  const modal = $("createRoomModal");
+
+  if (!modal) return;
+
+  hide(modal);
+}
+
+function validateRoomForm() {
+
+  const roomName = $("roomName").value.trim();
+
+  if (!roomName) {
+    showToast("Room का नाम लिखें।");
+    return false;
+  }
+
+  return true;
+}
+
+
+/*
+  Room creation की वास्तविक database/API functionality
+  backend आने के बाद जोड़ी जाएगी।
+
+  Fake room यहाँ create नहीं किया गया है।
+*/
+
+async function createRoom() {
+
+  if (!validateRoomForm()) return;
+
+  showToast(
+    "Room Create API अभी backend से connect होना बाकी है।"
+  );
+}
+
+
+/* =========================================================
+   ROOM SEARCH
+   ========================================================= */
+
+function searchRooms() {
+
+  const search = $("roomSearch");
+
+  if (!search) return;
+
+  const query = search.value.trim().toLowerCase();
+
+  document.querySelectorAll(".room-card").forEach((card) => {
+
+    const text = card.textContent.toLowerCase();
+
+    card.style.display =
+      !query || text.includes(query)
+        ? ""
+        : "none";
+  });
+}
+
+
+/* =========================================================
+   CATEGORY BUTTONS
+   ========================================================= */
+
+function setupCategories() {
+
+  document.querySelectorAll(".category").forEach((button) => {
 
     button.addEventListener("click", () => {
 
-      const target = button.dataset.back;
+      document.querySelectorAll(".category").forEach((item) => {
+        item.classList.remove("active");
+      });
 
-      if (target) {
-        showPage(target);
-      }
+      button.classList.add("active");
 
+      /*
+        Actual category filtering बाद में
+        database room type के साथ जोड़ा जाएगा।
+      */
     });
 
   });
+}
 
 
-  /* =========================
-     USER PROFILE
-  ========================= */
+/* =========================================================
+   FRIENDS
+   ========================================================= */
 
-  function updateUserProfile() {
+function addFriend() {
 
-    if ($("profileName")) {
-      $("profileName").textContent = user.name;
-    }
+  showToast(
+    "Friend system backend से connect होने के बाद काम करेगा।"
+  );
+}
 
-    if ($("roomHostName")) {
-      $("roomHostName").textContent = room.host;
-    }
 
-    if ($("mainHostName")) {
-      $("mainHostName").textContent = room.host;
-    }
+/* =========================================================
+   WALLET
+   ========================================================= */
 
-    if ($("profilePhoto")) {
-      $("profilePhoto").src = user.photo;
-    }
+function addCoins() {
 
-    if ($("roomHostPhoto")) {
-      $("roomHostPhoto").src = user.photo;
-    }
+  showToast(
+    "Coins purchase system backend/payment integration के बाद काम करेगा।"
+  );
+}
 
-    if ($("mainHostPhoto")) {
-      $("mainHostPhoto").src = user.photo;
-    }
+function giftHistory() {
 
-    if ($("chatUserPhoto")) {
-      $("chatUserPhoto").src = user.photo;
-    }
+  showToast(
+    "Gift history database से load होगी।"
+  );
+}
 
-    if ($("chatUserName")) {
-      $("chatUserName").textContent = user.name;
-    }
-  }
+function transactionHistory() {
 
-  updateUserProfile();
+  showToast(
+    "Transactions database से load होंगे।"
+  );
+}
 
 
-  /* =========================
-     PROFILE PHOTO UPLOAD
-  ========================= */
+/* =========================================================
+   SUPPORT
+   ========================================================= */
 
-  const photoInput = $("profilePhotoInput");
+function createSupportRequest() {
 
-  if (photoInput) {
+  showToast(
+    "Support system backend से connect होने के बाद ticket बनेगा।"
+  );
+}
 
-    photoInput.addEventListener("change", (event) => {
 
-      const file = event.target.files[0];
+/* =========================================================
+   PROFILE
+   ========================================================= */
 
-      if (!file) return;
+function openProfile() {
+  openPage("profilePage");
+}
 
-      if (!file.type.startsWith("image/")) {
-        alert("Please select an image.");
-        return;
-      }
+function editProfile() {
 
-      if (file.size > 5 * 1024 * 1024) {
-        alert("Photo 5MB se chhoti honi chahiye.");
-        return;
-      }
+  showToast(
+    "Profile editing backend/profile storage से connect होगा।"
+  );
+}
 
-      const reader = new FileReader();
 
-      reader.onload = () => {
+/* =========================================================
+   NOTIFICATIONS
+   ========================================================= */
 
-        user.photo = reader.result;
+function openNotifications() {
 
-        localStorage.setItem(
-          "rahul_photo",
-          user.photo
-        );
+  showToast(
+    "Notifications system backend से connect होने के बाद दिखेंगी।"
+  );
+}
 
-        updateUserProfile();
 
-      };
+/* =========================================================
+   EVENT LISTENERS
+   ========================================================= */
 
-      reader.readAsDataURL(file);
+function setupEventListeners() {
 
-    });
+  /* Auth */
 
-  }
+  $("showRegisterBtn")?.addEventListener(
+    "click",
+    showRegisterForm
+  );
 
+  $("showLoginBtn")?.addEventListener(
+    "click",
+    showLoginForm
+  );
 
-  /* =========================
-     PROFILE NAME
-  ========================= */
+  $("loginBtn")?.addEventListener(
+    "click",
+    loginUser
+  );
 
-  if ($("profileName")) {
+  $("registerBtn")?.addEventListener(
+    "click",
+    registerUser
+  );
 
-    $("profileName").addEventListener("click", () => {
 
-      const newName =
-        prompt("Apna naam enter karo:", user.name);
+  /* Profile */
 
-      if (!newName) return;
+  $("profileBtn")?.addEventListener(
+    "click",
+    openProfile
+  );
 
-      const name = newName.trim();
+  $("editProfileBtn")?.addEventListener(
+    "click",
+    editProfile
+  );
 
-      if (name.length < 2) {
-        alert("Naam bahut chhota hai.");
-        return;
-      }
+  $("logoutBtn")?.addEventListener(
+    "click",
+    logoutUser
+  );
 
-      user.name = name;
 
-      localStorage.setItem(
-        "rahul_name",
-        user.name
-      );
+  /* Notifications */
 
-      updateUserProfile();
+  $("notificationBtn")?.addEventListener(
+    "click",
+    openNotifications
+  );
 
-    });
 
-  }
+  /* Room */
 
+  $("createRoomBtn")?.addEventListener(
+    "click",
+    openCreateRoomModal
+  );
 
-  /* =========================
-     ROOM ID
-  ========================= */
+  $("emptyCreateRoomBtn")?.addEventListener(
+    "click",
+    openCreateRoomModal
+  );
 
-  if ($("roomId")) {
-    $("roomId").textContent = room.id;
-  }
+  $("bottomCreateRoomBtn")?.addEventListener(
+    "click",
+    openCreateRoomModal
+  );
 
-  if ($("viewerCount")) {
-    $("viewerCount").textContent = room.viewers;
-  }
+  $("closeCreateRoomBtn")?.addEventListener(
+    "click",
+    closeCreateRoomModal
+  );
 
+  $("saveRoomBtn")?.addEventListener(
+    "click",
+    createRoom
+  );
 
-  /* =========================
-     VOICE SEATS
-  ========================= */
 
-  document.querySelectorAll(".seat").forEach(seat => {
+  /* Search */
 
-    seat.addEventListener("click", () => {
+  $("roomSearch")?.addEventListener(
+    "input",
+    searchRooms
+  );
 
-      const seatNumber =
-        Number(seat.dataset.seat);
 
-      if (seat.classList.contains("locked")) {
+  /* Friends */
 
-        showNotice("🔒 Ye seat locked hai.");
+  $("addFriendBtn")?.addEventListener(
+    "click",
+    addFriend
+  );
 
-        return;
-      }
 
-      if (
-        mySeat !== null &&
-        mySeat !== seatNumber
-      ) {
+  /* Wallet */
 
-        showNotice(
-          "Pehle apni current seat chhodo."
-        );
+  $("addCoinsBtn")?.addEventListener(
+    "click",
+    addCoins
+  );
 
-        return;
-      }
+  $("giftHistoryBtn")?.addEventListener(
+    "click",
+    giftHistory
+  );
 
-      selectedSeat = seatNumber;
+  $("transactionHistoryBtn")?.addEventListener(
+    "click",
+    transactionHistory
+  );
 
-      $("selectedSeatNumber").textContent =
-        seatNumber;
 
-      $("seatModal").classList.add("show");
+  /* Help */
 
-    });
+  $("createSupportBtn")?.addEventListener(
+    "click",
+    createSupportRequest
+  );
 
-  });
 
+  /* Bottom navigation */
 
-  /* =========================
-     CLOSE SEAT MODAL
-  ========================= */
+  document.querySelectorAll(".nav-item[data-page]")
+    .forEach((button) => {
 
-  if ($("closeSeatModal")) {
+      button.addEventListener("click", () => {
 
-    $("closeSeatModal").addEventListener(
-      "click",
-      () => {
+        const pageId =
+          button.getAttribute("data-page");
 
-        $("seatModal").classList.remove("show");
-
-      }
-    );
-
-  }
-
-
-  /* =========================
-     JOIN SEAT
-  ========================= */
-
-  if ($("joinSeatBtn")) {
-
-    $("joinSeatBtn").addEventListener(
-      "click",
-      () => {
-
-        if (!selectedSeat) return;
-
-        occupySeat(selectedSeat);
-
-        $("seatModal").classList.remove("show");
-
-      }
-    );
-
-  }
-
-
-  function occupySeat(number) {
-
-    if (
-      mySeat !== null &&
-      mySeat !== number
-    ) {
-      return;
-    }
-
-    const seat =
-      document.querySelector(
-        `.seat[data-seat="${number}"]`
-      );
-
-    if (!seat) return;
-
-    seat.classList.remove("empty");
-    seat.classList.add("occupied");
-
-    seat.innerHTML = `
-      <span class="seat-circle">
-        <img src="${escapeHTML(user.photo)}"
-             alt="User">
-      </span>
-
-      <span class="seat-user-name">
-        ${escapeHTML(user.name)}
-      </span>
-
-      <span class="mic-status">
-        🎙️
-      </span>
-
-      <span class="seat-number">
-        ${number}
-      </span>
-    `;
-
-    seats[number] = {
-      name: user.name,
-      photo: user.photo,
-      mic: true
-    };
-
-    mySeat = number;
-
-    room.viewers++;
-
-    updateViewerCount();
-
-    showNotice(
-      `Seat ${number} par aap baith gaye 🎙️`
-    );
-
-  }
-
-
-  /* =========================
-     LEAVE MY SEAT
-  ========================= */
-
-  function leaveMySeat() {
-
-    if (mySeat === null) {
-      showNotice("Aap kisi seat par nahi ho.");
-      return;
-    }
-
-    const number = mySeat;
-
-    const seat =
-      document.querySelector(
-        `.seat[data-seat="${number}"]`
-      );
-
-    if (!seat) return;
-
-    seat.classList.remove("occupied");
-    seat.classList.add("empty");
-
-    seat.innerHTML = `
-      <span class="seat-circle">
-        +
-      </span>
-
-      <span class="seat-number">
-        ${number}
-      </span>
-    `;
-
-    delete seats[number];
-
-    mySeat = null;
-
-    room.viewers =
-      Math.max(1, room.viewers - 1);
-
-    updateViewerCount();
-
-    showNotice("Aapne seat chhod di.");
-
-  }
-
-
-  /* =========================
-     VIEWER COUNT
-  ========================= */
-
-  function updateViewerCount() {
-
-    if ($("viewerCount")) {
-      $("viewerCount").textContent =
-        room.viewers;
-    }
-
-  }
-
-
-  /* =========================
-     MICROPHONE
-  ========================= */
-
-  let micOn = true;
-
-  if ($("micBtn")) {
-
-    $("micBtn").addEventListener(
-      "click",
-      () => {
-
-        micOn = !micOn;
-
-        $("micBtn").textContent =
-          micOn ? "🎙️" : "🔇";
-
-        if (mySeat !== null) {
-
-          seats[mySeat].mic = micOn;
-
-          const seat =
-            document.querySelector(
-              `.seat[data-seat="${mySeat}"]`
-            );
-
-          const mic =
-            seat?.querySelector(".mic-status");
-
-          if (mic) {
-            mic.textContent =
-              micOn ? "🎙️" : "🔇";
-          }
-
-        }
-
-        showNotice(
-          micOn
-            ? "Microphone ON 🎙️"
-            : "Microphone OFF 🔇"
-        );
-
-      }
-    );
-
-  }
-
-
-  /* =========================
-     SPEAKER
-  ========================= */
-
-  let speakerOn = true;
-
-  if ($("speakerBtn")) {
-
-    $("speakerBtn").addEventListener(
-      "click",
-      () => {
-
-        speakerOn = !speakerOn;
-
-        $("speakerBtn").textContent =
-          speakerOn ? "🔊" : "🔇";
-
-        showNotice(
-          speakerOn
-            ? "Speaker ON"
-            : "Speaker OFF"
-        );
-
-      }
-    );
-
-  }
-
-
-  /* =========================
-     ROOM CHAT
-  ========================= */
-
-  function addRoomMessage(
-    name,
-    message,
-    mine = false
-  ) {
-
-    const container =
-      $("roomMessages");
-
-    if (!container) return;
-
-    const item =
-      document.createElement("div");
-
-    item.className =
-      mine
-        ? "join-message"
-        : "system-message";
-
-    item.innerHTML = `
-      <span>${escapeHTML(name)}</span>
-      ${escapeHTML(message)}
-    `;
-
-    container.appendChild(item);
-
-    while (container.children.length > 7) {
-      container.removeChild(
-        container.firstChild
-      );
-    }
-
-  }
-
-
-  if ($("openRoomChat")) {
-
-    $("openRoomChat").addEventListener(
-      "click",
-      openRoomChat
-    );
-
-  }
-
-
-  if ($("roomChatButton")) {
-
-    $("roomChatButton").addEventListener(
-      "click",
-      openRoomChat
-    );
-
-  }
-
-
-  function openRoomChat() {
-
-    const message =
-      prompt("Room mein message likho:");
-
-    if (!message) return;
-
-    const text =
-      message.trim();
-
-    if (!text) return;
-
-    addRoomMessage(
-      user.name,
-      ": " + text,
-      true
-    );
-
-  }
-
-
-  /* =========================
-     PERSONAL CHAT
-  ========================= */
-
-  const personalInput =
-    $("personalMessageInput");
-
-  const sendPersonal =
-    $("sendPersonalMessage");
-
-  if (sendPersonal) {
-
-    sendPersonal.addEventListener(
-      "click",
-      sendPersonalMessage
-    );
-
-  }
-
-
-  if (personalInput) {
-
-    personalInput.addEventListener(
-      "keydown",
-      (event) => {
-
-        if (event.key === "Enter") {
-          sendPersonalMessage();
-        }
-
-      }
-    );
-
-  }
-
-
-  function sendPersonalMessage() {
-
-    if (!personalInput) return;
-
-    const text =
-      personalInput.value.trim();
-
-    if (!text) return;
-
-    const container =
-      $("personalMessages");
-
-    if (!container) return;
-
-    const message =
-      document.createElement("div");
-
-    message.className =
-      "message sent";
-
-    const bubble =
-      document.createElement("div");
-
-    bubble.innerHTML = `
-      ${escapeHTML(text)}
-      <small>Now ✓✓</small>
-    `;
-
-    message.appendChild(bubble);
-
-    container.appendChild(message);
-
-    personalInput.value = "";
-
-    container.scrollTop =
-      container.scrollHeight;
-
-  }
-
-
-  /* =========================
-     PERSONAL CHAT OPEN
-  ========================= */
-
-  if ($("personalChatNav")) {
-
-    $("personalChatNav").addEventListener(
-      "click",
-      () => {
-
-        showPage("chatPage");
-
-      }
-    );
-
-  }
-
-
-  /* =========================
-     PROFILE OPEN
-  ========================= */
-
-  if ($("profileSettingsBtn")) {
-
-    $("profileSettingsBtn").addEventListener(
-      "click",
-      () => {
-
-        showPage("settingsPage");
-
-      }
-    );
-
-  }
-
-
-  /* =========================
-     CHAT EMOJI
-  ========================= */
-
-  if ($("chatEmojiBtn")) {
-
-    $("chatEmojiBtn").addEventListener(
-      "click",
-      () => {
-
-        if (!personalInput) return;
-
-        personalInput.value += " 😊";
-
-        personalInput.focus();
-
-      }
-    );
-
-  }
-
-
-  /* =========================
-     ROOM EMOJI
-  ========================= */
-
-  if ($("emojiBtn")) {
-
-    $("emojiBtn").addEventListener(
-      "click",
-      () => {
-
-        $("emojiPanel").classList.toggle(
-          "show"
-        );
-
-      }
-    );
-
-  }
-
-
-  document.querySelectorAll(
-    "#emojiPanel button"
-  ).forEach(button => {
-
-    button.addEventListener(
-      "click",
-      () => {
-
-        addRoomMessage(
-          user.name,
-          ": " + button.textContent,
-          true
-        );
-
-        $("emojiPanel").classList.remove(
-          "show"
-        );
-
-      }
-    );
-
-  });
-
-
-  /* =========================
-     GIFTS
-  ========================= */
-
-  if ($("giftBtn")) {
-
-    $("giftBtn").addEventListener(
-      "click",
-      () => {
-
-        $("giftModal").classList.add(
-          "show"
-        );
-
-      }
-    );
-
-  }
-
-
-  if ($("closeGiftModal")) {
-
-    $("closeGiftModal").addEventListener(
-      "click",
-      () => {
-
-        $("giftModal").classList.remove(
-          "show"
-        );
-
-      }
-    );
-
-  }
-
-
-  document.querySelectorAll(
-    ".gift-grid button"
-  ).forEach(button => {
-
-    button.addEventListener(
-      "click",
-      () => {
-
-        const gift =
-          button.dataset.gift;
-
-        addRoomMessage(
-          user.name,
-          `sent ${gift} gift 🎁`,
-          true
-        );
-
-        $("giftModal").classList.remove(
-          "show"
-        );
-
-        showNotice(
-          `${gift} Gift sent 🎁`
-        );
-
-      }
-    );
-
-  });
-
-
-  /* =========================
-     SHARE
-  ========================= */
-
-  if ($("shareRoomBtn")) {
-
-    $("shareRoomBtn").addEventListener(
-      "click",
-      async () => {
-
-        const text =
-          `Join my Rahul Live room. Room ID: ${room.id}`;
-
-        if (
-          navigator.share
-        ) {
-
-          try {
-
-            await navigator.share({
-              title: "Rahul Live",
-              text,
-              url: location.href
-            });
-
-          } catch (error) {}
-
-        } else {
-
-          try {
-
-            await navigator.clipboard.writeText(
-              location.href
-            );
-
-            showNotice(
-              "Room link copied 🔗"
-            );
-
-          } catch (error) {
-
-            showNotice(text);
-
-          }
-
-        }
-
-      }
-    );
-
-  }
-
-
-  /* =========================
-     LEAVE ROOM
-  ========================= */
-
-  if ($("leaveRoomBtn")) {
-
-    $("leaveRoomBtn").addEventListener(
-      "click",
-      () => {
-
-        if (mySeat !== null) {
-          leaveMySeat();
-        }
-
-        showPage("profilePage");
-
-      }
-    );
-
-  }
-
-
-  /* =========================
-     ROOM MUSIC
-  ========================= */
-
-  if ($("roomMusicBtn")) {
-
-    $("roomMusicBtn").addEventListener(
-      "click",
-      () => {
-
-        showNotice(
-          "Room music option selected 🎵"
-        );
-
-      }
-    );
-
-  }
-
-
-  /* =========================
-     MESSAGES BUTTON
-  ========================= */
-
-  if ($("messagesBtn")) {
-
-    $("messagesBtn").addEventListener(
-      "click",
-      () => {
-
-        showPage("chatPage");
-
-      }
-    );
-
-  }
-
-
-  /* =========================
-     MENU
-  ========================= */
-
-  if ($("menuBtn")) {
-
-    $("menuBtn").addEventListener(
-      "click",
-      () => {
-
-        const action =
-          confirm(
-            "Apni current seat chhodni hai?"
-          );
-
-        if (action) {
-          leaveMySeat();
-        }
-
-      }
-    );
-
-  }
-
-
-  /* =========================
-     SIGN OUT
-  ========================= */
-
-  if ($("signOutBtn")) {
-
-    $("signOutBtn").addEventListener(
-      "click",
-      () => {
-
-        const yes =
-          confirm(
-            "Kya aap Sign Out karna chahte hain?"
-          );
-
-        if (!yes) return;
-
-        localStorage.removeItem(
-          "rahul_name"
-        );
-
-        localStorage.removeItem(
-          "rahul_photo"
-        );
-
-        user.name = "Rahul";
-
-        user.photo =
-          "https://i.pravatar.cc/200?img=12";
-
-        updateUserProfile();
-
-        showPage("roomPage");
-
-        showNotice(
-          "Signed out"
-        );
-
-      }
-    );
-
-  }
-
-
-  /* =========================
-     ROOM TIMER
-  ========================= */
-
-  let seconds = 4 * 60 + 54;
-
-  setInterval(() => {
-
-    if (!$("pkTimer")) return;
-
-    seconds--;
-
-    if (seconds < 0) {
-      seconds = 4 * 60 + 54;
-    }
-
-    const minutes =
-      Math.floor(seconds / 60);
-
-    const sec =
-      seconds % 60;
-
-    $("pkTimer").textContent =
-      `${String(minutes).padStart(2, "0")}:${String(sec).padStart(2, "0")}`;
-
-  }, 1000);
-
-
-  /* =========================
-     NOTICE
-  ========================= */
-
-  function showNotice(message) {
-
-    let notice =
-      document.getElementById(
-        "rahulNotice"
-      );
-
-    if (!notice) {
-
-      notice =
-        document.createElement("div");
-
-      notice.id =
-        "rahulNotice";
-
-      notice.style.position =
-        "fixed";
-
-      notice.style.left =
-        "50%";
-
-      notice.style.bottom =
-        "95px";
-
-      notice.style.transform =
-        "translateX(-50%)";
-
-      notice.style.zIndex =
-        "9999";
-
-      notice.style.background =
-        "rgba(0,0,0,.82)";
-
-      notice.style.color =
-        "#fff";
-
-      notice.style.padding =
-        "11px 18px";
-
-      notice.style.borderRadius =
-        "22px";
-
-      notice.style.fontSize =
-        "14px";
-
-      notice.style.whiteSpace =
-        "nowrap";
-
-      document.body.appendChild(
-        notice
-      );
-
-    }
-
-    notice.textContent =
-      message;
-
-    clearTimeout(
-      notice._timer
-    );
-
-    notice._timer =
-      setTimeout(() => {
-
-        notice.remove();
-
-      }, 2200);
-
-  }
-
-
-  /* =========================
-     HTML ESCAPE
-  ========================= */
-
-  function escapeHTML(value) {
-
-    return String(value)
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#039;");
-
-  }
-
-
-  /* =========================
-     MODAL BACKDROP
-  ========================= */
-
-  document.querySelectorAll(".modal")
-    .forEach(modal => {
-
-      modal.addEventListener(
-        "click",
-        event => {
-
-          if (
-            event.target === modal
-          ) {
-
-            modal.classList.remove(
-              "show"
-            );
-
-          }
-
-        }
-      );
+        openPage(pageId);
+      });
 
     });
 
 
-  /* =========================
-     START
-  ========================= */
+  /* Modal background */
 
-  showPage("roomPage");
+  $("createRoomModal")?.addEventListener(
+    "click",
+    (event) => {
 
-});
+      if (event.target.id === "createRoomModal") {
+        closeCreateRoomModal();
+      }
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   APP START
+   ========================================================= */
+
+function initApp() {
+
+  show($("authScreen"));
+  hide($("mainApp"));
+
+  showLoginForm();
+
+  setupCategories();
+  setupEventListeners();
+
+  console.log(
+    "Rahul Live frontend loaded successfully."
+  );
+}
+
+
+/* =========================================================
+   START
+   ========================================================= */
+
+document.addEventListener(
+  "DOMContentLoaded",
+  initApp
+);
