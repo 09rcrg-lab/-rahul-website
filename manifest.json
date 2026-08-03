@@ -1,12 +1,27 @@
 {
-  "name": "Rahul Live",
+  "name": "Rahul Live Community",
   "short_name": "Rahul Live",
-  "description": "Rahul Live Voice Rooms, Chat, Friends and Music",
-  "start_url": "./",
+  "description": "Rahul Live Community - Live Rooms, Voice Chat, Music, Friends and Support",
+  "start_url": "/",
+  "scope": "/",
   "display": "standalone",
-  "background_color": "#050505",
-  "theme_color": "#39ff88",
   "orientation": "portrait",
+  "background_color": "#050505",
+  "theme_color": "#00ff66",
   "lang": "hi-IN",
-  "icons": []
+  "dir": "ltr",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
 }
