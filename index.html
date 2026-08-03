@@ -1,18 +1,14 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="hi">
 <head>
   <meta charset="UTF-8">
   <meta
     name="viewport"
-    content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
   >
   <meta
     name="theme-color"
     content="#050505"
-  >
-  <meta
-    name="description"
-    content="Rahul Live Community"
   >
   <title>Rahul Live Community</title>
   <link
@@ -39,18 +35,29 @@
   id="authScreen"
   class="auth-screen"
 >
-  <div class="auth-card">
-    <div class="logo">
-      Rahul Live
+  <div class="auth-box">
+    <div class="brand">
+      <div class="brand-logo">
+        🎙️
+      </div>
+      <h1>
+        Rahul Live
+      </h1>
+      <p>
+        Live Community
+      </p>
     </div>
-    <p class="subtitle">
-      Live Community
-    </p>
     <!-- LOGIN -->
-    <div id="loginForm">
+    <div
+      id="loginForm"
+      class="auth-form"
+    >
       <h2>
         Welcome Back
       </h2>
+      <p>
+        अपने account में login करें
+      </p>
       <input
         id="loginEmail"
         type="email"
@@ -65,33 +72,34 @@
       >
       <button
         id="loginBtn"
+        class="primary-btn"
         type="button"
       >
         Login
       </button>
-      <p>
-        नया account?
-        <button
-          id="showRegisterBtn"
-          class="text-button"
-          type="button"
-        >
-          Register
-        </button>
-      </p>
+      <button
+        id="showRegisterBtn"
+        class="link-btn"
+        type="button"
+      >
+        नया account बनाएं
+      </button>
     </div>
     <!-- REGISTER -->
     <div
       id="registerForm"
-      class="hidden"
+      class="auth-form hidden"
     >
       <h2>
         Create Account
       </h2>
+      <p>
+        Rahul Live Community join करें
+      </p>
       <input
         id="registerName"
         type="text"
-        placeholder="Your Name"
+        placeholder="पूरा नाम"
         autocomplete="name"
       >
       <input
@@ -114,20 +122,18 @@
       >
       <button
         id="registerBtn"
+        class="primary-btn"
         type="button"
       >
         Create Account
       </button>
-      <p>
-        पहले से account है?
-        <button
-          id="showLoginBtn"
-          class="text-button"
-          type="button"
-        >
-          Login
-        </button>
-      </p>
+      <button
+        id="showLoginBtn"
+        class="link-btn"
+        type="button"
+      >
+        पहले से account है? Login
+      </button>
     </div>
   </div>
 </section>
@@ -136,59 +142,61 @@
 ===================================================== -->
 <section
   id="mainApp"
-  class="app hidden"
+  class="main-app hidden"
 >
-  <!-- TOP BAR -->
-  <header class="topbar">
+  <!-- HEADER -->
+  <header class="app-header">
     <div>
-      <strong>
+      <h1>
         Rahul Live
-      </strong>
-      <small>
+      </h1>
+      <span>
         Live Community
-      </small>
+      </span>
     </div>
     <button
       id="logoutBtn"
-      class="outline-button"
+      class="icon-btn"
       type="button"
+      title="Logout"
     >
-      Logout
+      ⇥
     </button>
   </header>
-  <!-- ===================================================
-       HOME
-  ==================================================== -->
+  <!-- HOME -->
   <main
     id="homePage"
     class="page"
   >
-    <div class="page-heading">
+    <div class="home-hero">
       <div>
-        <h1>
+        <h2>
           Live Rooms
-        </h1>
+        </h2>
         <p>
-          Join a room or create your own.
+          अपनी पसंद के room में join होकर दोस्तों से बात करें।
         </p>
       </div>
       <button
         id="createRoomBtn"
+        class="primary-btn"
         type="button"
       >
         + Create Room
       </button>
     </div>
+    <!-- SEARCH -->
     <div class="search-box">
       <input
         id="roomSearch"
         type="search"
-        placeholder="Search live rooms..."
+        placeholder="Room या host search करें..."
       >
     </div>
-    <div
+    <!-- ROOMS -->
+    <section
       id="roomsContainer"
-      class="rooms-grid"
+      class="rooms-container"
     >
       <div class="empty-state">
         <h3>
@@ -198,115 +206,89 @@
           Please wait.
         </p>
       </div>
-    </div>
+    </section>
   </main>
-  <!-- ===================================================
-       PROFILE
-  ==================================================== -->
+  <!-- PROFILE -->
   <main
     id="profilePage"
     class="page hidden"
   >
-    <div class="page-heading">
-      <div>
-        <h1>
-          Profile
-        </h1>
-        <p>
-          Your Rahul Live profile.
-        </p>
-      </div>
+    <div class="section-title">
+      <h2>
+        My Profile
+      </h2>
     </div>
     <div
       id="profileCard"
       class="profile-card"
     >
-      <div class="avatar">
-        👤
-      </div>
-      <div>
-        <h2>
-          Loading...
-        </h2>
-      </div>
+      Loading...
     </div>
   </main>
-  <!-- ===================================================
-       HELP / PERSONAL HELPLINE
-  ==================================================== -->
+  <!-- SUPPORT -->
   <main
-    id="helpPage"
+    id="supportPage"
     class="page hidden"
   >
-    <div class="page-heading">
-      <div>
-        <h1>
-          Personal Help
-        </h1>
-        <p>
-          किसी भी problem के लिए support team से बात करें।
-        </p>
-      </div>
+    <div class="section-title">
+      <h2>
+        Personal Help
+      </h2>
+      <p>
+        किसी समस्या के लिए support team को message भेजें।
+      </p>
     </div>
     <div class="support-card">
+      <div class="support-icon">
+        🆘
+      </div>
       <h3>
-        Rahul Live Support
+        Personal Support
       </h3>
       <p>
-        Account, room, chat या दूसरे platform-related
-        problem के लिए personal support request भेजें।
+        Account, room या किसी दूसरी समस्या के बारे में हमें बताएं।
       </p>
       <button
         id="openSupportBtn"
+        class="primary-btn"
         type="button"
       >
         Contact Support
       </button>
     </div>
   </main>
-  <!-- ===================================================
-       BOTTOM NAV
-  ==================================================== -->
+  <!-- BOTTOM NAV -->
   <nav class="bottom-nav">
     <button
       class="nav-item active"
       data-page="homePage"
       type="button"
     >
-      🏠
-      <span>
-        Home
-      </span>
+      <span>🏠</span>
+      <small>Home</small>
     </button>
     <button
       id="bottomCreateRoomBtn"
-      class="nav-item"
+      class="nav-create"
       type="button"
     >
-      ➕
-      <span>
-        Create
-      </span>
+      +
     </button>
     <button
       class="nav-item"
       data-page="profilePage"
       type="button"
     >
-      👤
-      <span>
-        Profile
-      </span>
+      <span>👤</span>
+      <small>Profile</small>
     </button>
     <button
       class="nav-item"
-      data-page="helpPage"
+      data-page="supportPage"
       type="button"
     >
-      🛟
-      <span>
-        Help
-      </span>
+      <span>🆘</span>
+      <small>Help</small>
     </button>
   </nav>
 </section>
@@ -317,38 +299,37 @@
   id="createRoomModal"
   class="modal hidden"
 >
-  <div class="modal-card">
-    <button
-      id="closeCreateRoomBtn"
-      class="modal-close"
-      type="button"
-    >
-      ×
-    </button>
-    <h2>
-      Create Live Room
-    </h2>
-    <p>
-      अपना अलग room बनाइए और अपने friends को invite कीजिए।
-    </p>
-    <label for="roomName">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2>
+        Create Live Room
+      </h2>
+      <button
+        id="closeCreateRoomBtn"
+        class="close-btn"
+        type="button"
+      >
+        ×
+      </button>
+    </div>
+    <label>
       Room Name
     </label>
     <input
       id="roomName"
       type="text"
-      placeholder="My Live Room"
       maxlength="80"
+      placeholder="जैसे Friends Room"
     >
-    <label for="roomDescription">
+    <label>
       Description
     </label>
     <textarea
       id="roomDescription"
-      placeholder="Room के बारे में..."
       maxlength="300"
+      placeholder="अपने room के बारे में लिखें..."
     ></textarea>
-    <label for="roomType">
+    <label>
       Room Type
     </label>
     <select id="roomType">
@@ -361,6 +342,7 @@
     </select>
     <button
       id="saveRoomBtn"
+      class="primary-btn"
       type="button"
     >
       Create Room
@@ -378,178 +360,183 @@
   <header class="room-header">
     <button
       id="leaveRoomBtn"
-      class="room-back"
+      class="room-back-btn"
       type="button"
     >
       ←
     </button>
-    <div>
-      <strong
-        class="room-title"
-      >
+    <div class="room-header-info">
+      <span class="live-dot">
+        ● LIVE
+      </span>
+      <h1 class="room-title">
         Live Room
-      </strong>
-      <small>
-        Live conversation
-      </small>
+      </h1>
     </div>
+    <button
+      class="room-more-btn"
+      type="button"
+    >
+      ⋮
+    </button>
   </header>
-  <!-- ROOM BODY -->
-  <div class="room-body">
-    <!-- ROOM INFO -->
-    <div class="room-info-card">
-      <div
-        class="room-host-avatar"
-      >
-        👤
+  <!-- ROOM CONTENT -->
+  <main class="room-content">
+    <!-- HOST / ROOM INFO -->
+    <section class="room-info-card">
+      <div class="room-cover">
+        🎙️
       </div>
       <div>
-        <strong>
+        <h2 class="room-title">
           Live Room
-        </strong>
+        </h2>
         <p>
-          You are included in this room.
+          Live conversation
         </p>
       </div>
-    </div>
-    <!-- =================================================
-         VOICE SEATS
-         FIXED 8 SEATS
-    ================================================== -->
-    <div
-      class="voice-area"
-    >
-      <button
-        class="voice-seat empty-seat"
-        data-join-seat="1"
-        type="button"
-      >
-        <div class="seat-avatar">
-          +
-        </div>
-        <strong>
-          Seat 1
-        </strong>
-        <small>
-          Join
-        </small>
-      </button>
-      <button
-        class="voice-seat empty-seat"
-        data-join-seat="2"
-        type="button"
-      >
-        <div class="seat-avatar">
-          +
-        </div>
-        <strong>
-          Seat 2
-        </strong>
-        <small>
-          Join
-        </small>
-      </button>
-      <button
-        class="voice-seat empty-seat"
-        data-join-seat="3"
-        type="button"
-      >
-        <div class="seat-avatar">
-          +
-        </div>
-        <strong>
-          Seat 3
-        </strong>
-        <small>
-          Join
-        </small>
-      </button>
-      <button
-        class="voice-seat empty-seat"
-        data-join-seat="4"
-        type="button"
-      >
-        <div class="seat-avatar">
-          +
-        </div>
-        <strong>
-          Seat 4
-        </strong>
-        <small>
-          Join
-        </small>
-      </button>
-      <button
-        class="voice-seat empty-seat"
-        data-join-seat="5"
-        type="button"
-      >
-        <div class="seat-avatar">
-          +
-        </div>
-        <strong>
-          Seat 5
-        </strong>
-        <small>
-          Join
-        </small>
-      </button>
-      <button
-        class="voice-seat empty-seat"
-        data-join-seat="6"
-        type="button"
-      >
-        <div class="seat-avatar">
-          +
-        </div>
-        <strong>
-          Seat 6
-        </strong>
-        <small>
-          Join
-        </small>
-      </button>
-      <button
-        class="voice-seat empty-seat"
-        data-join-seat="7"
-        type="button"
-      >
-        <div class="seat-avatar">
-          +
-        </div>
-        <strong>
-          Seat 7
-        </strong>
-        <small>
-          Join
-        </small>
-      </button>
-      <button
-        class="voice-seat empty-seat"
-        data-join-seat="8"
-        type="button"
-      >
-        <div class="seat-avatar">
-          +
-        </div>
-        <strong>
-          Seat 8
-        </strong>
-        <small>
-          Join
-        </small>
-      </button>
-    </div>
-    <!-- =================================================
-         ROOM CHAT
-    ================================================== -->
-    <section class="chat-card">
-      <div class="chat-heading">
-        <strong>
-          Room Chat Live
-        </strong>
+    </section>
+    <!-- VOICE SEATS -->
+    <section class="voice-section">
+      <div class="section-heading">
+        <h2>
+          Voice Seats
+        </h2>
         <span>
-          LIVE
+          8 Seats
+        </span>
+      </div>
+      <div class="voice-seats-grid">
+        <button
+          class="voice-seat empty-seat"
+          data-join-seat="1"
+          type="button"
+        >
+          <div class="seat-avatar">
+            +
+          </div>
+          <strong>
+            Seat 1
+          </strong>
+          <small>
+            Join
+          </small>
+        </button>
+        <button
+          class="voice-seat empty-seat"
+          data-join-seat="2"
+          type="button"
+        >
+          <div class="seat-avatar">
+            +
+          </div>
+          <strong>
+            Seat 2
+          </strong>
+          <small>
+            Join
+          </small>
+        </button>
+        <button
+          class="voice-seat empty-seat"
+          data-join-seat="3"
+          type="button"
+        >
+          <div class="seat-avatar">
+            +
+          </div>
+          <strong>
+            Seat 3
+          </strong>
+          <small>
+            Join
+          </small>
+        </button>
+        <button
+          class="voice-seat empty-seat"
+          data-join-seat="4"
+          type="button"
+        >
+          <div class="seat-avatar">
+            +
+          </div>
+          <strong>
+            Seat 4
+          </strong>
+          <small>
+            Join
+          </small>
+        </button>
+        <button
+          class="voice-seat empty-seat"
+          data-join-seat="5"
+          type="button"
+        >
+          <div class="seat-avatar">
+            +
+          </div>
+          <strong>
+            Seat 5
+          </strong>
+          <small>
+            Join
+          </small>
+        </button>
+        <button
+          class="voice-seat empty-seat"
+          data-join-seat="6"
+          type="button"
+        >
+          <div class="seat-avatar">
+            +
+          </div>
+          <strong>
+            Seat 6
+          </strong>
+          <small>
+            Join
+          </small>
+        </button>
+        <button
+          class="voice-seat empty-seat"
+          data-join-seat="7"
+          type="button"
+        >
+          <div class="seat-avatar">
+            +
+          </div>
+          <strong>
+            Seat 7
+          </strong>
+          <small>
+            Join
+          </small>
+        </button>
+        <button
+          class="voice-seat empty-seat"
+          data-join-seat="8"
+          type="button"
+        >
+          <div class="seat-avatar">
+            +
+          </div>
+          <strong>
+            Seat 8
+          </strong>
+          <small>
+            Join
+          </small>
+        </button>
+      </div>
+    </section>
+    <!-- ROOM CHAT -->
+    <section class="room-chat-section">
+      <div class="section-heading">
+        <h2>
+          Room Chat Live
+        </h2>
+        <span>
+          💬
         </span>
       </div>
       <div
@@ -560,82 +547,111 @@
           Chat loading...
         </div>
       </div>
-      <div class="chat-input-area">
+      <!-- REACTIONS -->
+      <div class="reaction-bar">
+        <button
+          type="button"
+          data-reaction="❤️"
+        >
+          ❤️
+        </button>
+        <button
+          type="button"
+          data-reaction="🔥"
+        >
+          🔥
+        </button>
+        <button
+          type="button"
+          data-reaction="😂"
+        >
+          😂
+        </button>
+        <button
+          type="button"
+          data-reaction="👏"
+        >
+          👏
+        </button>
+        <button
+          type="button"
+          data-reaction="😍"
+        >
+          😍
+        </button>
+        <button
+          type="button"
+          data-reaction="🎉"
+        >
+          🎉
+        </button>
+      </div>
+      <!-- CHAT INPUT -->
+      <div class="chat-input-row">
         <input
           id="roomMessageInput"
           type="text"
           maxlength="500"
           placeholder="Write message..."
-          autocomplete="off"
         >
         <button
           id="sendRoomMessageBtn"
+          class="send-btn"
           type="button"
         >
           Send
         </button>
       </div>
     </section>
-  </div>
-  <!-- =================================================
-       ROOM CONTROLS
-  ================================================== -->
-  <div class="room-controls">
-    <!-- MICROPHONE -->
-    <button
-      data-action="mic"
-      type="button"
-    >
-      🎙️
-      <span>
-        Mic
-      </span>
-    </button>
-    <!-- MUSIC -->
-    <button
-      data-action="music"
-      type="button"
-    >
-      🎵
-      <span>
-        Music
-      </span>
-    </button>
-    <!-- INVITE -->
-    <button
-      data-action="invite"
-      type="button"
-    >
-      👥
-      <span>
-        Invite
-      </span>
-    </button>
-    <!-- GIFT -->
-    <button
-      data-action="gift"
-      type="button"
-    >
-      🎁
-      <span>
-        Gift
-      </span>
-    </button>
-    <!-- REACTION -->
-    <button
-      data-reaction="❤️"
-      type="button"
-    >
-      ❤️
-      <span>
-        React
-      </span>
-    </button>
-  </div>
+    <!-- ROOM CONTROLS -->
+    <section class="room-controls">
+      <button
+        type="button"
+        data-action="mic"
+      >
+        <span>
+          🎙️
+        </span>
+        <small>
+          Mic
+        </small>
+      </button>
+      <button
+        type="button"
+        data-action="music"
+      >
+        <span>
+          🎵
+        </span>
+        <small>
+          Music
+        </small>
+      </button>
+      <button
+        type="button"
+        data-action="invite"
+      >
+        <span>
+          👥
+        </span>
+        <small>
+          Invite
+        </small>
+      </button>
+      <button
+        type="button"
+        data-action="gift"
+      >
+        <span>
+          🎁
+        </span>
+        <small>
+          Gift
+        </small>
+      </button>
+    </section>
+  </main>
 </section>
-<!-- =====================================================
-     SCRIPT
-===================================================== -->
 <script
   src="script.js"
   defer
