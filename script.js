@@ -1,67 +1,37 @@
-const API_BASE = "https://rahulsocialhub-db.09rcrg.workers.dev";
+const API =
+  "https://rahulsocialhub-db.09rcrg.workers.dev";
+
+const TOKEN_KEY =
+  "rahul_live_token";
+
 
 const state = {
-  token: localStorage.getItem("rahul_live_token") || "",
+
   user: null,
+
   roomId: null,
+
+  room: null,
+
   seat: null,
-  messageTimer: null,
-  seatTimer: null
+
+  micOn: false,
+
+  refreshTimer: null,
+
+  currentPage: "login"
+
 };
 
 
 /* =====================================================
-   API
+   BASIC HELPERS
 ===================================================== */
 
-async function api(path, options = {}) {
-
-  const headers = {
-    "Content-Type": "application/json",
-    ...(options.headers || {})
-  };
-
-  if (state.token) {
-    headers.Authorization = `Bearer ${state.token}`;
-  }
-
-  const response = await fetch(
-    `${API_BASE}${path}`,
-    {
-      ...options,
-      headers
-    }
-  );
-
-  let data;
-
-  try {
-    data = await response.json();
-  } catch {
-    throw new Error("Server ने valid response नहीं दिया।");
-  }
-
-  if (!response.ok || data.success === false) {
-    throw new Error(
-      data.message || "Request failed."
-    );
-  }
-
-  return data;
+function $(id) {
+  return document.getElementById(id);
 }
 
-
-/* =====================================================
-   HELPERS
-===================================================== */
-
-function $(selector) {
-  return document.querySelector(selector);
-}
-
-function $all(selector) {
-  return [...document.querySelectorAll(selector)];
-}
 
 function escapeHTML(value) {
 
@@ -74,46 +44,309 @@ function escapeHTML(value) {
 }
 
 
+function getToken() {
+  return localStorage.getItem(TOKEN_KEY) || "";
+}
+
+
+function setToken(token) {
+
+  if (token) {
+
+    localStorage.setItem(
+      TOKEN_KEY,
+      token
+    );
+
+  } else {
+
+    localStorage.removeItem(
+      TOKEN_KEY
+    );
+  }
+}
+
+
+function showLoading(show = true) {
+
+  const overlay =
+    $("loadingOverlay");
+
+  if (!overlay) return;
+
+  overlay.classList.toggle(
+    "hidden",
+    !show
+  );
+}
+
+
 function showMessage(message) {
 
   alert(message);
 }
 
 
-function saveToken(token) {
+async function api(
+  path,
+  options = {}
+) {
 
-  state.token = token;
-
-  localStorage.setItem(
-    "rahul_live_token",
-    token
-  );
-}
-
-
-function clearSession() {
-
-  state.token = "";
-  state.user = null;
-
-  localStorage.removeItem(
-    "rahul_live_token"
-  );
-}
+  const headers = {
+    "Content-Type":
+      "application/json",
+    ...(options.headers || {})
+  };
 
 
-function authRequired() {
+  const token =
+    getToken();
 
-  if (!state.token) {
 
-    showMessage(
-      "पहले Login करें।"
-    );
+  if (token) {
 
-    return false;
+    headers.Authorization =
+      `Bearer ${token}`;
   }
 
-  return true;
+
+  const response =
+    await fetch(
+      API + path,
+      {
+        ...options,
+        headers
+      }
+    );
+
+
+  let data;
+
+  try {
+
+    data =
+      await response.json();
+
+  } catch {
+
+    data = {
+      success: false,
+      message:
+        "Server ने invalid response दिया।"
+    };
+  }
+
+
+  if (!response.ok || data.success === false) {
+
+    throw new Error(
+      data.message ||
+      `Request failed (${response.status})`
+    );
+  }
+
+
+  return data;
+}
+
+
+/* =====================================================
+   PAGE CONTROL
+===================================================== */
+
+function hideAllPages() {
+
+  document
+    .querySelectorAll(".page")
+    .forEach(
+      page => {
+        page.classList.add(
+          "hidden"
+        );
+      }
+    );
+}
+
+
+function openPage(id) {
+
+  hideAllPages();
+
+  const page =
+    $(id);
+
+  if (page) {
+
+    page.classList.remove(
+      "hidden"
+    );
+  }
+}
+
+
+window.showPage =
+  function(page) {
+
+    if (
+      page === "login"
+    ) {
+
+      openPage(
+        "loginPage"
+      );
+
+      state.currentPage =
+        "login";
+
+      return;
+    }
+
+
+    if (
+      page === "register"
+    ) {
+
+      openPage(
+        "registerPage"
+      );
+
+      state.currentPage =
+        "register";
+
+      return;
+    }
+
+
+    if (
+      page === "home"
+    ) {
+
+      openPage(
+        "homePage"
+      );
+
+      state.currentPage =
+        "home";
+
+      loadRooms();
+
+      return;
+    }
+
+
+    if (
+      page === "room"
+    ) {
+
+      openPage(
+        "roomPage"
+      );
+
+      state.currentPage =
+        "room";
+
+      renderRoom();
+
+      return;
+    }
+
+
+    if (
+      page === "support"
+    ) {
+
+      openPage(
+        "supportPage"
+      );
+
+      state.currentPage =
+        "support";
+
+      return;
+    }
+  };
+
+
+/* =====================================================
+   USER UI
+===================================================== */
+
+function updateUserUI() {
+
+  const user =
+    state.user;
+
+
+  if (!user) return;
+
+
+  document
+    .querySelectorAll(
+      "[data-user-name]"
+    )
+    .forEach(
+      element => {
+
+        element.textContent =
+          user.name ||
+          "User";
+      }
+    );
+
+
+  document
+    .querySelectorAll(
+      "[data-user-username]"
+    )
+    .forEach(
+      element => {
+
+        element.textContent =
+          user.username
+            ? "@" + user.username
+            : "";
+      }
+    );
+
+
+  document
+    .querySelectorAll(
+      "[data-user-coins]"
+    )
+    .forEach(
+      element => {
+
+        element.textContent =
+          Number(user.coins || 0)
+            .toLocaleString("en-IN");
+      }
+    );
+
+
+  document
+    .querySelectorAll(
+      "[data-user-avatar]"
+    )
+    .forEach(
+      element => {
+
+        if (
+          user.avatar_url
+        ) {
+
+          element.innerHTML =
+            `<img
+              src="${escapeHTML(user.avatar_url)}"
+              alt=""
+            >`;
+
+        } else {
+
+          element.textContent =
+            "👤";
+        }
+      }
+    );
 }
 
 
@@ -121,32 +354,40 @@ function authRequired() {
    REGISTER
 ===================================================== */
 
-async function registerUser(event) {
+async function registerUser(
+  event
+) {
 
   if (event) {
     event.preventDefault();
   }
 
+
   const name =
-    $("#registerName")?.value.trim() ||
-    $("#name")?.value.trim() ||
-    "";
+    $("registerName")
+      ?.value
+      .trim();
+
 
   const email =
-    $("#registerEmail")?.value.trim() ||
-    $("#email")?.value.trim() ||
-    "";
+    $("registerEmail")
+      ?.value
+      .trim();
+
 
   const password =
-    $("#registerPassword")?.value ||
-    $("#password")?.value ||
-    "";
+    $("registerPassword")
+      ?.value;
 
 
-  if (!name || !email || !password) {
+  if (
+    !name ||
+    !email ||
+    !password
+  ) {
 
     showMessage(
-      "Name, email और password भरें।"
+      "सभी fields भरें।"
     );
 
     return;
@@ -155,39 +396,49 @@ async function registerUser(event) {
 
   try {
 
-    const data =
+    showLoading(true);
+
+
+    const result =
       await api(
         "/api/register",
         {
           method: "POST",
-          body: JSON.stringify({
-            name,
-            email,
-            password
-          })
+
+          body:
+            JSON.stringify({
+              name,
+              email,
+              password
+            })
         }
       );
 
 
     showMessage(
-      data.message ||
+      result.message ||
       "Registration successful."
     );
 
 
-    const emailInput =
-      $("#loginEmail");
-
-    if (emailInput) {
-      emailInput.value = email;
-    }
+    $("registerForm")
+      ?.reset();
 
 
-    const passwordInput =
-      $("#loginPassword");
+    openPage(
+      "loginPage"
+    );
 
-    if (passwordInput) {
-      passwordInput.value = password;
+
+    state.currentPage =
+      "login";
+
+
+    if ($("loginEmail")) {
+
+      $("loginEmail")
+        .value =
+        email;
     }
 
 
@@ -196,6 +447,10 @@ async function registerUser(event) {
     showMessage(
       error.message
     );
+
+  } finally {
+
+    showLoading(false);
   }
 }
 
@@ -204,7 +459,9 @@ async function registerUser(event) {
    LOGIN
 ===================================================== */
 
-async function loginUser(event) {
+async function loginUser(
+  event
+) {
 
   if (event) {
     event.preventDefault();
@@ -212,17 +469,20 @@ async function loginUser(event) {
 
 
   const email =
-    $("#loginEmail")?.value.trim() ||
-    $("#email")?.value.trim() ||
-    "";
+    $("loginEmail")
+      ?.value
+      .trim();
+
 
   const password =
-    $("#loginPassword")?.value ||
-    $("#password")?.value ||
-    "";
+    $("loginPassword")
+      ?.value;
 
 
-  if (!email || !password) {
+  if (
+    !email ||
+    !password
+  ) {
 
     showMessage(
       "Email और password भरें।"
@@ -234,44 +494,47 @@ async function loginUser(event) {
 
   try {
 
-    const data =
+    showLoading(true);
+
+
+    const result =
       await api(
         "/api/login",
         {
           method: "POST",
-          body: JSON.stringify({
-            email,
-            password
-          })
+
+          body:
+            JSON.stringify({
+              email,
+              password
+            })
         }
       );
 
 
-    saveToken(
-      data.token
+    setToken(
+      result.token
     );
 
 
     state.user =
-      data.user;
+      result.user ||
+      null;
 
 
-    showMessage(
-      "Login successful."
+    updateUserUI();
+
+
+    openPage(
+      "homePage"
     );
 
 
-    await loadCurrentUser();
+    state.currentPage =
+      "home";
+
 
     await loadRooms();
-
-
-    if (
-      typeof window.showPage ===
-      "function"
-    ) {
-      window.showPage("home");
-    }
 
 
   } catch (error) {
@@ -279,106 +542,83 @@ async function loginUser(event) {
     showMessage(
       error.message
     );
+
+  } finally {
+
+    showLoading(false);
   }
 }
 
 
 /* =====================================================
-   CURRENT USER
+   CHECK LOGIN
 ===================================================== */
 
-async function loadCurrentUser() {
+async function checkLogin() {
 
-  if (!state.token) {
-    return null;
+  const token =
+    getToken();
+
+
+  if (!token) {
+
+    openPage(
+      "loginPage"
+    );
+
+    state.currentPage =
+      "login";
+
+    return false;
   }
 
 
   try {
 
-    const data =
+    const result =
       await api(
         "/api/me"
       );
 
 
     state.user =
-      data.user;
+      result.user;
 
 
     updateUserUI();
 
-    return data.user;
+
+    openPage(
+      "homePage"
+    );
+
+
+    state.currentPage =
+      "home";
+
+
+    await loadRooms();
+
+
+    return true;
 
 
   } catch {
 
-    clearSession();
+    setToken("");
 
-    return null;
+
+    openPage(
+      "loginPage"
+    );
+
+
+    state.currentPage =
+      "login";
+
+
+    return false;
   }
-}
-
-
-function updateUserUI() {
-
-  if (!state.user) {
-    return;
-  }
-
-
-  $all(
-    "[data-user-name]"
-  ).forEach(
-    element => {
-      element.textContent =
-        state.user.name;
-    }
-  );
-
-
-  $all(
-    "[data-user-username]"
-  ).forEach(
-    element => {
-      element.textContent =
-        state.user.username || "";
-    }
-  );
-
-
-  $all(
-    "[data-user-avatar]"
-  ).forEach(
-    element => {
-
-      if (
-        element.tagName ===
-        "IMG"
-      ) {
-
-        element.src =
-          state.user.avatar_url ||
-          "https://placehold.co/100x100";
-
-      } else {
-
-        element.style.backgroundImage =
-          `url("${state.user.avatar_url || "https://placehold.co/100x100"}")`;
-
-      }
-    }
-  );
-
-
-  $all(
-    "[data-user-coins]"
-  ).forEach(
-    element => {
-      element.textContent =
-        Number(state.user.coins || 0);
-    }
-  );
 }
 
 
@@ -390,7 +630,7 @@ async function logoutUser() {
 
   try {
 
-    if (state.token) {
+    if (getToken()) {
 
       await api(
         "/api/logout",
@@ -401,21 +641,30 @@ async function logoutUser() {
     }
 
   } catch {
-    // Session will still be cleared locally.
+    // Local logout will continue.
   }
 
 
-  clearSession();
+  stopRoomRefresh();
 
 
-  if (
-    typeof window.showPage ===
-    "function"
-  ) {
-    window.showPage("login");
-  } else {
-    location.reload();
-  }
+  setToken("");
+
+
+  state.user = null;
+  state.roomId = null;
+  state.room = null;
+  state.seat = null;
+  state.micOn = false;
+
+
+  openPage(
+    "loginPage"
+  );
+
+
+  state.currentPage =
+    "login";
 }
 
 
@@ -425,84 +674,113 @@ async function logoutUser() {
 
 async function loadRooms() {
 
-  if (!authRequired()) {
+  const container =
+    $("roomsList");
+
+
+  if (!container) return;
+
+
+  if (!getToken()) {
+
     return;
   }
 
 
   try {
 
-    const data =
+    container.innerHTML =
+      `<div class="empty-state">
+        Rooms loading...
+      </div>`;
+
+
+    const result =
       await api(
         "/api/rooms"
       );
 
 
-    renderRooms(
-      data.rooms || []
-    );
+    const rooms =
+      result.rooms || [];
+
+
+    if (!rooms.length) {
+
+      container.innerHTML =
+        `<div class="empty-state">
+          अभी कोई Live Room नहीं है।
+        </div>`;
+
+      return;
+    }
+
+
+    container.innerHTML =
+      rooms
+        .map(
+          room => {
+
+            return `
+              <div
+                class="room-card"
+              >
+
+                <div
+                  class="room-card-title"
+                >
+                  ${escapeHTML(
+                    room.name
+                  )}
+                </div>
+
+                <div
+                  class="room-card-description"
+                >
+                  ${escapeHTML(
+                    room.description ||
+                    "Live conversation"
+                  )}
+                </div>
+
+                <div
+                  class="room-card-footer"
+                >
+
+                  <span>
+                    👤
+                    ${Number(
+                      room.viewer_count || 0
+                    )}
+                    viewers
+                  </span>
+
+                  <button
+                    type="button"
+                    class="join-room-btn"
+                    onclick="joinRoom(${Number(room.id)})"
+                  >
+                    Join Room
+                  </button>
+
+                </div>
+
+              </div>
+            `;
+          }
+        )
+        .join("");
 
 
   } catch (error) {
 
-    showMessage(
-      error.message
-    );
-  }
-}
-
-
-function renderRooms(rooms) {
-
-  const container =
-    $("#roomsList") ||
-    $("#roomList") ||
-    $("[data-rooms]");
-
-
-  if (!container) {
-    return;
-  }
-
-
-  if (!rooms.length) {
-
     container.innerHTML =
       `<div class="empty-state">
-        अभी कोई room नहीं है।
+        ${escapeHTML(
+          error.message
+        )}
       </div>`;
-
-    return;
   }
-
-
-  container.innerHTML =
-    rooms.map(room => `
-
-      <div class="room-card"
-           data-room-id="${room.id}">
-
-        <div class="room-card-title">
-          ${escapeHTML(room.name)}
-        </div>
-
-        <div class="room-card-owner">
-          ${escapeHTML(room.owner_name || "")}
-        </div>
-
-        <div class="room-card-viewers">
-          👁 ${Number(room.viewer_count || 0)}
-        </div>
-
-        <button
-          type="button"
-          onclick="joinRoom(${room.id})">
-          Join Room
-        </button>
-
-      </div>
-
-    `).join("");
 }
 
 
@@ -510,38 +788,35 @@ function renderRooms(rooms) {
    CREATE ROOM
 ===================================================== */
 
-async function createRoom(event) {
+async function createRoom(
+  event
+) {
 
-  if (event) {
-    event.preventDefault();
-  }
-
-
-  if (!authRequired()) {
-    return;
-  }
+  event.preventDefault();
 
 
   const name =
-    $("#roomName")?.value.trim() ||
-    $("#createRoomName")?.value.trim() ||
-    "";
+    $("roomName")
+      ?.value
+      .trim();
 
 
   const description =
-    $("#roomDescription")?.value.trim() ||
-    "";
+    $("roomDescription")
+      ?.value
+      .trim();
 
 
   const roomType =
-    $("#roomType")?.value ||
-    "public";
+    $("roomType")
+      ?.value ||
+      "public";
 
 
   if (!name) {
 
     showMessage(
-      "Room name डालें।"
+      "Room का नाम डालें।"
     );
 
     return;
@@ -550,33 +825,32 @@ async function createRoom(event) {
 
   try {
 
-    const data =
+    showLoading(true);
+
+
+    const result =
       await api(
         "/api/rooms",
         {
           method: "POST",
-          body: JSON.stringify({
-            name,
-            description,
-            room_type: roomType
-          })
+
+          body:
+            JSON.stringify({
+              name,
+              description,
+              room_type:
+                roomType
+            })
         }
       );
 
 
-    state.roomId =
-      Number(data.room_id);
+    $("createRoomForm")
+      ?.reset();
 
 
-    showMessage(
-      "Room बन गया।"
-    );
-
-
-    await loadRooms();
-
-    await openRoom(
-      state.roomId
+    await joinRoom(
+      result.room_id
     );
 
 
@@ -585,6 +859,10 @@ async function createRoom(event) {
     showMessage(
       error.message
     );
+
+  } finally {
+
+    showLoading(false);
   }
 }
 
@@ -593,26 +871,51 @@ async function createRoom(event) {
    JOIN ROOM
 ===================================================== */
 
-async function joinRoom(roomId) {
+async function joinRoom(
+  roomId
+) {
 
-  if (!authRequired()) {
-    return;
-  }
+  if (!roomId) return;
 
 
   try {
 
+    showLoading(true);
+
+
     await api(
-      `/api/rooms/${roomId}/join`,
+      `/api/rooms/${Number(roomId)}/join`,
       {
         method: "POST"
       }
     );
 
 
-    await openRoom(
-      roomId
+    state.roomId =
+      Number(roomId);
+
+
+    state.seat =
+      null;
+
+
+    state.micOn =
+      false;
+
+
+    await loadRoom();
+
+
+    openPage(
+      "roomPage"
     );
+
+
+    state.currentPage =
+      "room";
+
+
+    startRoomRefresh();
 
 
   } catch (error) {
@@ -620,60 +923,44 @@ async function joinRoom(roomId) {
     showMessage(
       error.message
     );
+
+  } finally {
+
+    showLoading(false);
   }
 }
 
 
 /* =====================================================
-   OPEN ROOM
+   LOAD ROOM
 ===================================================== */
 
-async function openRoom(roomId) {
+async function loadRoom() {
 
-  if (!authRequired()) {
+  if (!state.roomId) {
     return;
   }
 
 
-  state.roomId =
-    Number(roomId);
-
-
-  try {
-
-    const data =
-      await api(
-        `/api/rooms/${state.roomId}`
-      );
-
-
-    renderRoom(
-      data.room,
-      data.seats || []
+  const result =
+    await api(
+      `/api/rooms/${state.roomId}`
     );
 
 
-    await loadRoomMessages();
-
-    await loadRoomSeats();
-
-    startRoomPolling();
+  state.room =
+    result.room;
 
 
-    if (
-      typeof window.showPage ===
-      "function"
-    ) {
-      window.showPage("room");
-    }
+  renderRoom(
+    result.seats || []
+  );
 
 
-  } catch (error) {
+  await loadMessages();
 
-    showMessage(
-      error.message
-    );
-  }
+
+  return result;
 }
 
 
@@ -681,26 +968,43 @@ async function openRoom(roomId) {
    RENDER ROOM
 ===================================================== */
 
-function renderRoom(room, seats) {
+function renderRoom(
+  seats = []
+) {
 
-  $all(
-    "[data-room-name]"
-  ).forEach(
-    element => {
-      element.textContent =
-        room.name;
-    }
-  );
+  const room =
+    state.room;
 
 
-  $all(
-    "[data-room-description]"
-  ).forEach(
-    element => {
-      element.textContent =
-        room.description || "";
-    }
-  );
+  if (!room) return;
+
+
+  document
+    .querySelectorAll(
+      "[data-room-name]"
+    )
+    .forEach(
+      element => {
+
+        element.textContent =
+          room.name ||
+          "Live Room";
+      }
+    );
+
+
+  document
+    .querySelectorAll(
+      "[data-room-description]"
+    )
+    .forEach(
+      element => {
+
+        element.textContent =
+          room.description ||
+          "You are included in this room.";
+      }
+    );
 
 
   renderSeats(
@@ -710,59 +1014,28 @@ function renderRoom(room, seats) {
 
 
 /* =====================================================
-   SEATS
+   RENDER 8 SEATS
 ===================================================== */
 
-async function loadRoomSeats() {
-
-  if (!state.roomId) {
-    return;
-  }
-
-
-  try {
-
-    const data =
-      await api(
-        `/api/rooms/${state.roomId}/seats`
-      );
-
-
-    renderSeats(
-      data.seats || []
-    );
-
-
-  } catch (error) {
-
-    console.error(
-      "Seat loading error:",
-      error
-    );
-  }
-}
-
-
-function renderSeats(seats) {
+function renderSeats(
+  occupiedSeats = []
+) {
 
   const container =
-    $("#voiceSeats") ||
-    $("#roomSeats") ||
-    $("[data-seats]");
+    $("voiceSeats");
 
 
-  if (!container) {
-    return;
-  }
+  if (!container) return;
 
 
-  const seatMap =
+  const map =
     new Map();
 
 
-  seats.forEach(
+  occupiedSeats.forEach(
     seat => {
-      seatMap.set(
+
+      map.set(
         Number(seat.seat_number),
         seat
       );
@@ -770,7 +1043,8 @@ function renderSeats(seats) {
   );
 
 
-  let html = "";
+  container.innerHTML =
+    "";
 
 
   for (
@@ -780,78 +1054,137 @@ function renderSeats(seats) {
   ) {
 
     const seat =
-      seatMap.get(number);
+      map.get(number);
+
+
+    const element =
+      document.createElement(
+        "div"
+      );
+
+
+    element.className =
+      "voice-seat" +
+      (
+        seat
+          ? " occupied"
+          : ""
+      );
 
 
     if (seat) {
 
       const avatar =
-        seat.avatar_url ||
-        "https://placehold.co/100x100";
+        seat.avatar_url
+          ? `
+            <img
+              src="${escapeHTML(
+                seat.avatar_url
+              )}"
+              alt=""
+            >
+          `
+          : "👤";
 
 
       const muted =
-        Number(seat.is_muted) === 1;
+        Number(
+          seat.is_muted
+        ) === 1;
 
 
-      html += `
+      element.innerHTML = `
 
-        <div class="voice-seat occupied"
-             data-seat="${number}">
+        <div
+          class="voice-seat-avatar"
+        >
 
-          <img
-            src="${escapeHTML(avatar)}"
-            alt=""
-            class="seat-avatar"
+          ${avatar}
+
+          <div
+            class="seat-mic"
           >
-
-          <div class="seat-number">
-            Seat ${number}
-          </div>
-
-          <div class="seat-name">
-            ${escapeHTML(seat.name || "User")}
-          </div>
-
-          <div class="seat-mic">
             ${muted ? "🔇" : "🎙️"}
           </div>
 
         </div>
 
+
+        <div
+          class="voice-seat-name"
+        >
+          ${escapeHTML(
+            seat.name ||
+            seat.username ||
+            "User"
+          )}
+        </div>
+
+
+        <div
+          class="voice-seat-number"
+        >
+          Seat ${number}
+        </div>
+
       `;
+
+
+      if (
+        state.user &&
+        Number(seat.user_id) ===
+        Number(state.user.id)
+      ) {
+
+        state.seat =
+          number;
+
+        state.micOn =
+          !muted;
+      }
+
 
     } else {
 
-      html += `
+      element.innerHTML = `
 
         <button
           type="button"
-          class="voice-seat empty"
-          data-seat="${number}"
-          onclick="joinSeat(${number})">
-
-          <div class="seat-plus">
-            +
-          </div>
-
-          <div class="seat-number">
-            Seat ${number}
-          </div>
-
-          <div class="seat-empty">
-            Empty
-          </div>
-
+          class="empty-seat-btn"
+          onclick="joinSeat(${number})"
+        >
+          +
         </button>
+
+        <div
+          class="voice-seat-avatar"
+        >
+          👤
+        </div>
+
+        <div
+          class="voice-seat-name"
+        >
+          Empty
+        </div>
+
+        <div
+          class="voice-seat-number"
+        >
+          Seat ${number}
+        </div>
 
       `;
     }
+
+
+    container.appendChild(
+      element
+    );
   }
 
 
-  container.innerHTML =
-    html;
+  updateMicButton();
 }
 
 
@@ -859,12 +1192,9 @@ function renderSeats(seats) {
    JOIN SEAT
 ===================================================== */
 
-async function joinSeat(seatNumber) {
-
-  if (!authRequired()) {
-    return;
-  }
-
+async function joinSeat(
+  seatNumber
+) {
 
   if (!state.roomId) {
     return;
@@ -873,29 +1203,30 @@ async function joinSeat(seatNumber) {
 
   try {
 
-    await api(
-      `/api/rooms/${state.roomId}/seats/${seatNumber}/join`,
-      {
-        method: "POST"
-      }
-    );
+    showLoading(true);
+
+
+    const result =
+      await api(
+        `/api/rooms/${state.roomId}/seats/${Number(seatNumber)}/join`,
+        {
+          method: "POST"
+        }
+      );
 
 
     state.seat =
-      Number(seatNumber);
+      Number(
+        result.seat_number ||
+        seatNumber
+      );
 
 
-    await loadRoomSeats();
+    state.micOn =
+      false;
 
 
-    /*
-      IMPORTANT:
-      Seat join सिर्फ server state है.
-      Real browser voice के लिए नीचे WebRTC
-      signaling connection भी जरूरी है.
-    */
-
-    await startVoiceConnection();
+    await refreshRoom();
 
 
   } catch (error) {
@@ -903,6 +1234,10 @@ async function joinSeat(seatNumber) {
     showMessage(
       error.message
     );
+
+  } finally {
+
+    showLoading(false);
   }
 }
 
@@ -911,7 +1246,7 @@ async function joinSeat(seatNumber) {
    LEAVE SEAT
 ===================================================== */
 
-async function leaveSeat() {
+async function leaveMySeat() {
 
   if (
     !state.roomId ||
@@ -931,14 +1266,14 @@ async function leaveSeat() {
     );
 
 
-    await stopVoiceConnection();
-
-
     state.seat =
       null;
 
+    state.micOn =
+      false;
 
-    await loadRoomSeats();
+
+    await refreshRoom();
 
 
   } catch (error) {
@@ -954,14 +1289,17 @@ async function leaveSeat() {
    MIC STATE
 ===================================================== */
 
-async function setMicState(enabled) {
+async function setMicState(
+  micOn
+) {
 
   if (
     !state.roomId ||
     !state.seat
   ) {
+
     showMessage(
-      "पहले voice seat join करें।"
+      "पहले एक seat join करें।"
     );
 
     return;
@@ -974,449 +1312,24 @@ async function setMicState(enabled) {
       `/api/rooms/${state.roomId}/seats/${state.seat}/mic`,
       {
         method: "POST",
-        body: JSON.stringify({
-          mic_on: Boolean(enabled)
-        })
-      }
-    );
 
-
-    if (enabled) {
-      await enableLocalMicrophone();
-    } else {
-      disableLocalMicrophone();
-    }
-
-
-    await loadRoomSeats();
-
-
-  } catch (error) {
-
-    showMessage(
-      error.message
-    );
-  }
-}
-
-
-/* =====================================================
-   CHAT
-===================================================== */
-
-async function loadRoomMessages() {
-
-  if (!state.roomId) {
-    return;
-  }
-
-
-  try {
-
-    const data =
-      await api(
-        `/api/rooms/${state.roomId}/messages`
-      );
-
-
-    renderMessages(
-      data.messages || []
-    );
-
-
-  } catch (error) {
-
-    console.error(
-      "Chat error:",
-      error
-    );
-  }
-}
-
-
-function renderMessages(messages) {
-
-  const container =
-    $("#roomMessages") ||
-    $("#chatMessages") ||
-    $("[data-room-messages]");
-
-
-  if (!container) {
-    return;
-  }
-
-
-  container.innerHTML =
-    messages.map(message => `
-
-      <div class="chat-message">
-
-        <div class="chat-avatar">
-
-          ${
-            message.avatar_url
-              ? `<img src="${escapeHTML(message.avatar_url)}" alt="">`
-              : "👤"
-          }
-
-        </div>
-
-        <div class="chat-content">
-
-          <div class="chat-name">
-            ${escapeHTML(message.name || "User")}
-          </div>
-
-          <div class="chat-text">
-            ${escapeHTML(message.message)}
-          </div>
-
-        </div>
-
-      </div>
-
-    `).join("");
-
-
-  container.scrollTop =
-    container.scrollHeight;
-}
-
-
-/* =====================================================
-   SEND MESSAGE
-===================================================== */
-
-async function sendRoomMessage(event) {
-
-  if (event) {
-    event.preventDefault();
-  }
-
-
-  if (!authRequired()) {
-    return;
-  }
-
-
-  if (!state.roomId) {
-    return;
-  }
-
-
-  const input =
-    $("#roomMessage") ||
-    $("#messageInput") ||
-    $("#chatInput");
-
-
-  if (!input) {
-    return;
-  }
-
-
-  const message =
-    input.value.trim();
-
-
-  if (!message) {
-    return;
-  }
-
-
-  try {
-
-    await api(
-      `/api/rooms/${state.roomId}/messages`,
-      {
-        method: "POST",
-        body: JSON.stringify({
-          message
-        })
-      }
-    );
-
-
-    input.value =
-      "";
-
-
-    await loadRoomMessages();
-
-
-  } catch (error) {
-
-    showMessage(
-      error.message
-    );
-  }
-}
-
-
-/* =====================================================
-   REACTIONS
-===================================================== */
-
-async function sendReaction(emoji) {
-
-  if (!authRequired()) {
-    return;
-  }
-
-
-  if (!state.roomId) {
-    return;
-  }
-
-
-  try {
-
-    await api(
-      `/api/rooms/${state.roomId}/reactions`,
-      {
-        method: "POST",
-        body: JSON.stringify({
-          emoji
-        })
-      }
-    );
-
-
-    showFloatingReaction(
-      emoji
-    );
-
-
-  } catch (error) {
-
-    showMessage(
-      error.message
-    );
-  }
-}
-
-
-function showFloatingReaction(emoji) {
-
-  const element =
-    document.createElement(
-      "div"
-    );
-
-
-  element.className =
-    "floating-reaction";
-
-
-  element.textContent =
-    emoji;
-
-
-  document.body.appendChild(
-    element
-  );
-
-
-  setTimeout(
-    () => element.remove(),
-    1800
-  );
-}
-
-
-/* =====================================================
-   MUSIC
-===================================================== */
-
-async function loadMusic() {
-
-  if (!authRequired()) {
-    return;
-  }
-
-
-  try {
-
-    const data =
-      await api(
-        "/api/music"
-      );
-
-
-    renderMusic(
-      data.tracks || []
-    );
-
-
-  } catch (error) {
-
-    showMessage(
-      error.message
-    );
-  }
-}
-
-
-function renderMusic(tracks) {
-
-  const container =
-    $("#musicList") ||
-    $("[data-music-list]");
-
-
-  if (!container) {
-    return;
-  }
-
-
-  if (!tracks.length) {
-
-    container.innerHTML =
-      `<div class="empty-state">
-        अभी music available नहीं है।
-      </div>`;
-
-    return;
-  }
-
-
-  container.innerHTML =
-    tracks.map(track => `
-
-      <div class="music-item">
-
-        <div>
-          <strong>
-            ${escapeHTML(track.title)}
-          </strong>
-
-          <small>
-            ${escapeHTML(track.artist || "")}
-          </small>
-        </div>
-
-        <button
-          type="button"
-          onclick="playRoomMusic(${track.id})">
-          ▶
-        </button>
-
-      </div>
-
-    `).join("");
-}
-
-
-/* =====================================================
-   PLAY ROOM MUSIC
-===================================================== */
-
-async function playRoomMusic(trackId) {
-
-  if (!state.roomId) {
-    return;
-  }
-
-
-  try {
-
-    const data =
-      await api(
-        `/api/rooms/${state.roomId}/music`,
-        {
-          method: "POST",
-          body: JSON.stringify({
-            track_id: Number(trackId)
+        body:
+          JSON.stringify({
+            mic_on:
+              Boolean(micOn)
           })
-        }
-      );
-
-
-    if (data.track) {
-
-      playAudioTrack(
-        data.track
-      );
-    }
-
-
-  } catch (error) {
-
-    showMessage(
-      error.message
-    );
-  }
-}
-
-
-let roomAudio = null;
-
-
-function playAudioTrack(track) {
-
-  if (!track.audio_url) {
-
-    showMessage(
-      "इस track की audio file उपलब्ध नहीं है।"
-    );
-
-    return;
-  }
-
-
-  if (roomAudio) {
-
-    roomAudio.pause();
-
-    roomAudio =
-      null;
-  }
-
-
-  roomAudio =
-    new Audio(
-      track.audio_url
-    );
-
-
-  roomAudio.loop =
-    false;
-
-
-  roomAudio.play()
-    .catch(
-      () => {
-        showMessage(
-          "Music चलाने के लिए Play दबाएँ।"
-        );
       }
     );
-}
 
 
-/* =====================================================
-   GIFTS
-===================================================== */
-
-async function loadGifts() {
-
-  if (!authRequired()) {
-    return;
-  }
+    state.micOn =
+      Boolean(micOn);
 
 
-  try {
-
-    const data =
-      await api(
-        "/api/gifts"
-      );
+    updateMicButton();
 
 
-    renderGifts(
-      data.gifts || []
-    );
+    await refreshRoom();
 
 
   } catch (error) {
@@ -1428,161 +1341,53 @@ async function loadGifts() {
 }
 
 
-function renderGifts(gifts) {
+function updateMicButton() {
 
-  const container =
-    $("#giftList") ||
-    $("[data-gift-list]");
-
-
-  if (!container) {
-    return;
-  }
+  const button =
+    $("micButton");
 
 
-  container.innerHTML =
-    gifts.map(gift => `
+  if (!button) return;
 
-      <button
-        type="button"
-        class="gift-item"
-        onclick="sendGift(${gift.id})">
 
-        ${
-          gift.image_url
-            ? `<img src="${escapeHTML(gift.image_url)}" alt="">`
-            : "🎁"
-        }
+  button.dataset.micOn =
+    String(
+      state.micOn
+    );
 
-        <span>
-          ${escapeHTML(gift.name)}
-        </span>
 
-        <small>
-          ${Number(gift.coin_cost)} coins
-        </small>
-
-      </button>
-
-    `).join("");
+  button.innerHTML =
+    state.micOn
+      ? "🔊<span>Mic ON</span>"
+      : "🎙️<span>Mic</span>";
 }
 
 
-/*
-  Gift transaction endpoint अभी Worker में
-  payment/coin deduction के साथ अलग से secure
-  करना जरूरी है। इसलिए fake success नहीं दिखाएँगे.
-*/
-
-async function sendGift() {
-
-  showMessage(
-    "Gift transaction API अभी secure coin-deduction endpoint के बिना execute नहीं किया जाएगा।"
-  );
-}
+window.setMicState =
+  setMicState;
 
 
 /* =====================================================
-   SUPPORT / PERSONAL HELP
+   TOGGLE MIC
 ===================================================== */
 
-async function sendSupport(event) {
+window.toggleMic =
+  async function() {
 
-  if (event) {
-    event.preventDefault();
-  }
+    if (!state.seat) {
 
-
-  if (!authRequired()) {
-    return;
-  }
-
-
-  const subject =
-    $("#supportSubject")?.value.trim() ||
-    "";
-
-
-  const message =
-    $("#supportMessage")?.value.trim() ||
-    "";
-
-
-  if (!subject || !message) {
-
-    showMessage(
-      "Subject और problem दोनों लिखें।"
-    );
-
-    return;
-  }
-
-
-  try {
-
-    const data =
-      await api(
-        "/api/support",
-        {
-          method: "POST",
-          body: JSON.stringify({
-            subject,
-            message
-          })
-        }
+      showMessage(
+        "पहले खाली seat पर + दबाकर seat join करें।"
       );
 
-
-    showMessage(
-      data.message ||
-      "Support request भेज दी गई।"
-    );
-
-
-    const form =
-      $("#supportForm");
-
-
-    if (form) {
-      form.reset();
+      return;
     }
 
 
-  } catch (error) {
-
-    showMessage(
-      error.message
+    await setMicState(
+      !state.micOn
     );
-  }
-}
-
-
-/* =====================================================
-   INVITE
-===================================================== */
-
-async function inviteUser(userId) {
-
-  if (!authRequired()) {
-    return;
-  }
-
-
-  if (!state.roomId) {
-    return;
-  }
-
-
-  /*
-    Invite endpoint के लिए Worker में dedicated
-    secure implementation अभी जोड़ना बाकी है।
-    Fake invitation नहीं बनाया गया है.
-  */
-
-  showMessage(
-    "Invite भेजने के लिए friends/invitation API का secure endpoint जोड़ना बाकी है।"
-  );
-}
+  };
 
 
 /* =====================================================
@@ -1592,15 +1397,32 @@ async function inviteUser(userId) {
 async function leaveRoom() {
 
   if (!state.roomId) {
+
+    openPage(
+      "homePage"
+    );
+
     return;
   }
 
 
   try {
 
+    showLoading(true);
+
+
     if (state.seat) {
 
-      await leaveSeat();
+      try {
+
+        await api(
+          `/api/rooms/${state.roomId}/seats/${state.seat}/leave`,
+          {
+            method: "POST"
+          }
+        );
+
+      } catch {}
     }
 
 
@@ -1617,115 +1439,706 @@ async function leaveRoom() {
     console.error(
       error
     );
-  }
+
+  } finally {
+
+    stopRoomRefresh();
 
 
-  stopRoomPolling();
+    state.roomId =
+      null;
+
+    state.room =
+      null;
+
+    state.seat =
+      null;
+
+    state.micOn =
+      false;
 
 
-  state.roomId =
-    null;
-
-  state.seat =
-    null;
+    closePanels();
 
 
-  if (
-    typeof window.showPage ===
-    "function"
-  ) {
-    window.showPage("home");
+    showLoading(false);
+
+
+    openPage(
+      "homePage"
+    );
+
+
+    state.currentPage =
+      "home";
+
+
+    await loadRooms();
   }
 }
+
+
+window.leaveRoom =
+  leaveRoom;
 
 
 /* =====================================================
-   POLLING
+   REFRESH ROOM
 ===================================================== */
 
-function startRoomPolling() {
+async function refreshRoom() {
 
-  stopRoomPolling();
-
-
-  state.messageTimer =
-    setInterval(
-      () => {
-
-        if (state.roomId) {
-
-          loadRoomMessages();
-        }
-
-      },
-      2000
-    );
-
-
-  state.seatTimer =
-    setInterval(
-      () => {
-
-        if (state.roomId) {
-
-          loadRoomSeats();
-        }
-
-      },
-      2000
-    );
-}
-
-
-function stopRoomPolling() {
-
-  if (state.messageTimer) {
-
-    clearInterval(
-      state.messageTimer
-    );
-
-    state.messageTimer =
-      null;
-  }
-
-
-  if (state.seatTimer) {
-
-    clearInterval(
-      state.seatTimer
-    );
-
-    state.seatTimer =
-      null;
-  }
-}
-
-
-/* =====================================================
-   WEBRTC
-===================================================== */
-
-let localStream = null;
-
-const peerConnections =
-  new Map();
-
-
-async function startVoiceConnection() {
-
-  if (!state.seat) {
+  if (!state.roomId) {
     return;
   }
 
 
+  try {
+
+    const result =
+      await api(
+        `/api/rooms/${state.roomId}`
+      );
+
+
+    state.room =
+      result.room;
+
+
+    renderRoom(
+      result.seats || []
+    );
+
+
+  } catch (error) {
+
+    console.error(
+      "Room refresh:",
+      error
+    );
+  }
+}
+
+
+/* =====================================================
+   ROOM AUTO REFRESH
+===================================================== */
+
+function startRoomRefresh() {
+
+  stopRoomRefresh();
+
+
+  state.refreshTimer =
+    setInterval(
+      async () => {
+
+        if (
+          state.currentPage ===
+          "room" &&
+          state.roomId
+        ) {
+
+          await refreshRoom();
+
+          await loadMessages();
+        }
+
+      },
+      3000
+    );
+}
+
+
+function stopRoomRefresh() {
+
   if (
-    !navigator.mediaDevices ||
-    !navigator.mediaDevices.getUserMedia
+    state.refreshTimer
+  ) {
+
+    clearInterval(
+      state.refreshTimer
+    );
+
+    state.refreshTimer =
+      null;
+  }
+}
+
+
+/* =====================================================
+   CHAT LOAD
+===================================================== */
+
+async function loadMessages() {
+
+  if (!state.roomId) {
+    return;
+  }
+
+
+  const container =
+    $("roomMessages");
+
+
+  if (!container) {
+    return;
+  }
+
+
+  try {
+
+    const result =
+      await api(
+        `/api/rooms/${state.roomId}/messages`
+      );
+
+
+    const messages =
+      result.messages || [];
+
+
+    if (!messages.length) {
+
+      container.innerHTML =
+        `<div class="empty-chat">
+          Chat शुरू करें...
+        </div>`;
+
+      return;
+    }
+
+
+    container.innerHTML =
+      messages
+        .map(
+          message => {
+
+            const avatar =
+              message.avatar_url
+                ? `
+                  <img
+                    src="${escapeHTML(
+                      message.avatar_url
+                    )}"
+                    alt=""
+                  >
+                `
+                : "👤";
+
+
+            return `
+
+              <div
+                class="chat-message"
+              >
+
+                <div
+                  class="chat-avatar"
+                >
+                  ${avatar}
+                </div>
+
+                <div
+                  class="chat-content"
+                >
+
+                  <div
+                    class="chat-name"
+                  >
+                    ${escapeHTML(
+                      message.name ||
+                      message.username ||
+                      "User"
+                    )}
+                  </div>
+
+                  <div
+                    class="chat-text"
+                  >
+                    ${escapeHTML(
+                      message.message
+                    )}
+                  </div>
+
+                </div>
+
+              </div>
+
+            `;
+          }
+        )
+        .join("");
+
+
+    container.scrollTop =
+      container.scrollHeight;
+
+
+  } catch (error) {
+
+    console.error(
+      "Messages:",
+      error
+    );
+  }
+}
+
+
+/* =====================================================
+   SEND CHAT MESSAGE
+===================================================== */
+
+async function sendChatMessage(
+  event
+) {
+
+  event.preventDefault();
+
+
+  if (!state.roomId) {
+    return;
+  }
+
+
+  const input =
+    $("roomMessage");
+
+
+  const message =
+    input
+      ?.value
+      .trim();
+
+
+  if (!message) {
+    return;
+  }
+
+
+  try {
+
+    input.disabled =
+      true;
+
+
+    await api(
+      `/api/rooms/${state.roomId}/messages`,
+      {
+        method: "POST",
+
+        body:
+          JSON.stringify({
+            message
+          })
+      }
+    );
+
+
+    input.value =
+      "";
+
+
+    await loadMessages();
+
+
+  } catch (error) {
+
+    showMessage(
+      error.message
+    );
+
+  } finally {
+
+    input.disabled =
+      false;
+
+    input.focus();
+  }
+}
+
+
+/* =====================================================
+   REACTIONS
+===================================================== */
+
+async function sendReaction(
+  emoji
+) {
+
+  if (!state.roomId) {
+    return;
+  }
+
+
+  try {
+
+    await api(
+      `/api/rooms/${state.roomId}/reactions`,
+      {
+        method: "POST",
+
+        body:
+          JSON.stringify({
+            emoji
+          })
+      }
+    );
+
+
+  } catch (error) {
+
+    console.error(
+      "Reaction:",
+      error
+    );
+  }
+}
+
+
+window.sendReaction =
+  sendReaction;
+
+
+/* =====================================================
+   MUSIC
+===================================================== */
+
+async function loadMusic() {
+
+  const container =
+    $("musicList");
+
+
+  if (!container) {
+    return;
+  }
+
+
+  try {
+
+    const result =
+      await api(
+        "/api/music"
+      );
+
+
+    const tracks =
+      result.tracks || [];
+
+
+    if (!tracks.length) {
+
+      container.innerHTML =
+        `<div class="empty-state">
+          अभी Music उपलब्ध नहीं है।
+        </div>`;
+
+      return;
+    }
+
+
+    container.innerHTML =
+      tracks
+        .map(
+          track => {
+
+            return `
+
+              <div
+                class="music-item"
+              >
+
+                <div
+                  class="music-item-info"
+                >
+
+                  <div
+                    class="music-item-title"
+                  >
+                    ${escapeHTML(
+                      track.title
+                    )}
+                  </div>
+
+                  <div
+                    class="music-item-artist"
+                  >
+                    ${escapeHTML(
+                      track.artist ||
+                      "Unknown Artist"
+                    )}
+                  </div>
+
+                </div>
+
+                <button
+                  type="button"
+                  class="music-play-btn"
+                  onclick="playRoomMusic(${Number(track.id)})"
+                >
+                  ▶
+                </button>
+
+              </div>
+
+            `;
+          }
+        )
+        .join("");
+
+
+  } catch (error) {
+
+    container.innerHTML =
+      `<div class="empty-state">
+        ${escapeHTML(
+          error.message
+        )}
+      </div>`;
+  }
+}
+
+
+async function playRoomMusic(
+  trackId
+) {
+
+  if (!state.roomId) {
+    return;
+  }
+
+
+  try {
+
+    const result =
+      await api(
+        `/api/rooms/${state.roomId}/music`,
+        {
+          method: "POST",
+
+          body:
+            JSON.stringify({
+              track_id:
+                Number(trackId)
+            })
+        }
+      );
+
+
+    const track =
+      result.track;
+
+
+    /*
+      अगर audio_url उपलब्ध है,
+      तो browser में music चलाने की कोशिश।
+    */
+
+    if (
+      track &&
+      track.audio_url
+    ) {
+
+      const audio =
+        new Audio(
+          track.audio_url
+        );
+
+      audio.play()
+        .catch(
+          () => {}
+        );
+    }
+
+
+    showMessage(
+      `Music selected: ${track.title}`
+    );
+
+
+  } catch (error) {
+
+    showMessage(
+      error.message
+    );
+  }
+}
+
+
+window.loadMusic =
+  loadMusic;
+
+window.playRoomMusic =
+  playRoomMusic;
+
+
+/* =====================================================
+   GIFTS
+===================================================== */
+
+async function loadGifts() {
+
+  const container =
+    $("giftList");
+
+
+  if (!container) {
+    return;
+  }
+
+
+  try {
+
+    const result =
+      await api(
+        "/api/gifts"
+      );
+
+
+    const gifts =
+      result.gifts || [];
+
+
+    if (!gifts.length) {
+
+      container.innerHTML =
+        `<div class="empty-state">
+          अभी Gifts उपलब्ध नहीं हैं।
+        </div>`;
+
+      return;
+    }
+
+
+    container.innerHTML =
+      gifts
+        .map(
+          gift => {
+
+            const image =
+              gift.image_url
+                ? `
+                  <img
+                    src="${escapeHTML(
+                      gift.image_url
+                    )}"
+                    alt=""
+                    style="
+                      width:42px;
+                      height:42px;
+                      object-fit:contain;
+                    "
+                  >
+                `
+                : "🎁";
+
+
+            return `
+
+              <button
+                type="button"
+                class="gift-item"
+                onclick="sendGift(${Number(gift.id)})"
+              >
+
+                <div
+                  class="gift-image"
+                >
+                  ${image}
+                </div>
+
+                <div
+                  class="gift-name"
+                >
+                  ${escapeHTML(
+                    gift.name
+                  )}
+                </div>
+
+                <div
+                  class="gift-cost"
+                >
+                  🪙
+                  ${Number(
+                    gift.coin_cost || 0
+                  )}
+                </div>
+
+              </button>
+
+            `;
+          }
+        )
+        .join("");
+
+
+  } catch (error) {
+
+    container.innerHTML =
+      `<div class="empty-state">
+        ${escapeHTML(
+          error.message
+        )}
+      </div>`;
+  }
+}
+
+
+/*
+  Gift transaction endpoint अभी
+  worker में अलग endpoint नहीं है।
+  इसलिए UI में gift उपलब्ध होने के
+  बाद अगला backend step जोड़ा जा सकता है।
+*/
+
+async function sendGift(
+  giftId
+) {
+
+  showMessage(
+    "Gift चुना गया। Gift transaction API अगले backend step में जोड़ा जाएगा।"
+  );
+}
+
+
+window.loadGifts =
+  loadGifts;
+
+window.sendGift =
+  sendGift;
+
+
+/* =====================================================
+   SUPPORT
+===================================================== */
+
+async function submitSupport(
+  event
+) {
+
+  event.preventDefault();
+
+
+  const subject =
+    $("supportSubject")
+      ?.value
+      .trim();
+
+
+  const message =
+    $("supportMessage")
+      ?.value
+      .trim();
+
+
+  if (
+    !subject ||
+    !message
   ) {
 
     showMessage(
-      "इस browser में microphone access उपलब्ध नहीं है।"
+      "Subject और message भरें।"
     );
 
     return;
@@ -1734,244 +2147,260 @@ async function startVoiceConnection() {
 
   try {
 
-    localStream =
-      await navigator.mediaDevices.getUserMedia({
-        audio: true,
-        video: false
-      });
+    showLoading(true);
 
 
-    /*
-      यहाँ actual WebRTC peer connection बनेगा।
+    const result =
+      await api(
+        "/api/support",
+        {
+          method: "POST",
 
-      IMPORTANT:
-      केवल D1 API से दो अलग browsers के बीच
-      real-time audio stream नहीं भेजा जा सकता।
-
-      Production voice के लिए signaling server/
-      WebSocket layer जरूरी है।
-    */
-
-
-    localStream
-      .getAudioTracks()
-      .forEach(
-        track => {
-          track.enabled = false;
+          body:
+            JSON.stringify({
+              subject,
+              message
+            })
         }
       );
 
 
+    showMessage(
+      result.message ||
+      "Help request भेज दी गई।"
+    );
+
+
+    $("supportForm")
+      ?.reset();
+
+
+    openPage(
+      "homePage"
+    );
+
+
+    state.currentPage =
+      "home";
+
+
   } catch (error) {
 
-    console.error(
-      "Microphone:",
-      error
-    );
-
-
     showMessage(
-      "Microphone permission allow करें।"
+      error.message
     );
+
+  } finally {
+
+    showLoading(false);
   }
-}
-
-
-async function enableLocalMicrophone() {
-
-  if (!localStream) {
-
-    await startVoiceConnection();
-  }
-
-
-  if (!localStream) {
-    return;
-  }
-
-
-  localStream
-    .getAudioTracks()
-    .forEach(
-      track => {
-        track.enabled = true;
-      }
-    );
-}
-
-
-function disableLocalMicrophone() {
-
-  if (!localStream) {
-    return;
-  }
-
-
-  localStream
-    .getAudioTracks()
-    .forEach(
-      track => {
-        track.enabled = false;
-      }
-    );
-}
-
-
-async function stopVoiceConnection() {
-
-  if (localStream) {
-
-    localStream
-      .getTracks()
-      .forEach(
-        track => track.stop()
-      );
-
-    localStream =
-      null;
-  }
-
-
-  for (
-    const connection
-    of peerConnections.values()
-  ) {
-
-    try {
-      connection.close();
-    } catch {}
-  }
-
-
-  peerConnections.clear();
 }
 
 
 /* =====================================================
-   BUTTON AUTO-BINDING
+   PANELS
+===================================================== */
+
+function closePanels() {
+
+  [
+    "musicPanel",
+    "giftPanel",
+    "invitePanel"
+  ]
+  .forEach(
+    id => {
+
+      const element =
+        $(id);
+
+      if (element) {
+
+        element.classList.add(
+          "hidden"
+        );
+      }
+    }
+  );
+}
+
+
+function openMusicPanel() {
+
+  closePanels();
+
+
+  $("musicPanel")
+    ?.classList
+    .remove("hidden");
+
+
+  loadMusic();
+}
+
+
+function openGiftPanel() {
+
+  closePanels();
+
+
+  $("giftPanel")
+    ?.classList
+    .remove("hidden");
+
+
+  loadGifts();
+}
+
+
+function openInvitePanel() {
+
+  closePanels();
+
+
+  $("invitePanel")
+    ?.classList
+    .remove("hidden");
+}
+
+
+window.closePanels =
+  closePanels;
+
+window.openMusicPanel =
+  openMusicPanel;
+
+window.openGiftPanel =
+  openGiftPanel;
+
+window.openInvitePanel =
+  openInvitePanel;
+
+
+/* =====================================================
+   SUPPORT PAGE
+===================================================== */
+
+function goBackFromSupport() {
+
+  closePanels();
+
+
+  if (
+    state.roomId &&
+    state.currentPage ===
+    "support"
+  ) {
+
+    openPage(
+      "roomPage"
+    );
+
+    state.currentPage =
+      "room";
+
+    return;
+  }
+
+
+  openPage(
+    "homePage"
+  );
+
+  state.currentPage =
+    "home";
+}
+
+
+window.goBackFromSupport =
+  goBackFromSupport;
+
+
+/* =====================================================
+   EVENT LISTENERS
 ===================================================== */
 
 document.addEventListener(
   "DOMContentLoaded",
-  async () => {
-
-    /*
-      Login form
-    */
-
-    const loginForm =
-      $("#loginForm");
+  () => {
 
 
-    if (loginForm) {
+    /* Login */
 
-      loginForm.addEventListener(
+    $("loginForm")
+      ?.addEventListener(
         "submit",
         loginUser
       );
-    }
 
 
-    /*
-      Register form
-    */
+    /* Register */
 
-    const registerForm =
-      $("#registerForm");
-
-
-    if (registerForm) {
-
-      registerForm.addEventListener(
+    $("registerForm")
+      ?.addEventListener(
         "submit",
         registerUser
       );
-    }
 
 
-    /*
-      Chat form
-    */
+    /* Create Room */
 
-    const chatForm =
-      $("#roomChatForm");
-
-
-    if (chatForm) {
-
-      chatForm.addEventListener(
-        "submit",
-        sendRoomMessage
-      );
-    }
-
-
-    /*
-      Support form
-    */
-
-    const supportForm =
-      $("#supportForm");
-
-
-    if (supportForm) {
-
-      supportForm.addEventListener(
-        "submit",
-        sendSupport
-      );
-    }
-
-
-    /*
-      Create room
-    */
-
-    const roomForm =
-      $("#createRoomForm");
-
-
-    if (roomForm) {
-
-      roomForm.addEventListener(
+    $("createRoomForm")
+      ?.addEventListener(
         "submit",
         createRoom
       );
-    }
 
 
-    /*
-      Existing login session
-    */
+    /* Chat */
 
-    if (state.token) {
+    $("roomChatForm")
+      ?.addEventListener(
+        "submit",
+        sendChatMessage
+      );
 
-      const user =
-        await loadCurrentUser();
+
+    /* Support */
+
+    $("supportForm")
+      ?.addEventListener(
+        "submit",
+        submitSupport
+      );
 
 
-      if (user) {
+    /* Initial authentication */
 
-        await loadRooms();
+    checkLogin();
 
-      }
-    }
   }
 );
 
 
 /* =====================================================
-   GLOBAL FUNCTIONS
+   CLEANUP
 ===================================================== */
 
-window.registerUser =
-  registerUser;
+window.addEventListener(
+  "beforeunload",
+  () => {
 
-window.loginUser =
-  loginUser;
+    stopRoomRefresh();
 
-window.logoutUser =
-  logoutUser;
+  }
+);
+
+
+/* =====================================================
+   GLOBALS
+===================================================== */
+
+window.state =
+  state;
+
+window.loadRooms =
+  loadRooms;
 
 window.createRoom =
   createRoom;
@@ -1979,44 +2408,23 @@ window.createRoom =
 window.joinRoom =
   joinRoom;
 
-window.openRoom =
-  openRoom;
-
 window.joinSeat =
   joinSeat;
 
-window.leaveSeat =
-  leaveSeat;
+window.leaveMySeat =
+  leaveMySeat;
 
-window.leaveRoom =
-  leaveRoom;
+window.loadMessages =
+  loadMessages;
 
-window.setMicState =
-  setMicState;
+window.sendChatMessage =
+  sendChatMessage;
 
-window.sendRoomMessage =
-  sendRoomMessage;
+window.loginUser =
+  loginUser;
 
-window.sendReaction =
-  sendReaction;
+window.registerUser =
+  registerUser;
 
-window.loadMusic =
-  loadMusic;
-
-window.playRoomMusic =
-  playRoomMusic;
-
-window.loadGifts =
-  loadGifts;
-
-window.sendGift =
-  sendGift;
-
-window.sendSupport =
-  sendSupport;
-
-window.inviteUser =
-  inviteUser;
-
-window.loadRooms =
-  loadRooms;
+window.logoutUser =
+  logoutUser;
