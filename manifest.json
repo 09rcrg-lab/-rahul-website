@@ -1,11 +1,10 @@
 {
-  "name": "Rahul Live Voice Rooms",
+  "name": "Rahul Live",
   "short_name": "Rahul Live",
-  "description": "Live voice chat rooms",
-  "start_url": "./",
+  "start_url": "/",
   "display": "standalone",
-  "background_color": "#090712",
-  "theme_color": "#120727",
+  "background_color": "#ffffff",
+  "theme_color": "#6c35e9",
   "orientation": "portrait",
   "icons": []
 }
