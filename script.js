@@ -1,79 +1,53 @@
-const API =
-  "https://rahulsocialhub-db.09rcrg.workers.dev";
-let token =
-  localStorage.getItem("rahul_live_token") || "";
+const API = "https://rahulsocialhub-db.09rcrg.workers.dev";
+let token = localStorage.getItem("rahul_live_token");
 let currentUser = null;
 let currentRoom = null;
-let roomRefreshTimer = null;
-let messageRefreshTimer = null;
+let roomTimer = null;
+let messageTimer = null;
 /* =====================================================
-   BASIC HELPERS
+   HELPERS
    ===================================================== */
-function $(id) {
-  return document.getElementById(id);
+const $ = (id) => document.getElementById(id);
+function show(id) {
+  $(id)?.classList.remove("hidden");
 }
-function show(element) {
-  if (element) {
-    element.classList.remove("hidden");
+function hide(id) {
+  $(id)?.classList.add("hidden");
+}
+function toast(message) {
+  const box = $("toast");
+  if (!box) {
+    alert(message);
+    return;
   }
+  box.textContent = message;
+  box.classList.remove("hidden");
+  clearTimeout(box._timer);
+  box._timer = setTimeout(() => {
+    box.classList.add("hidden");
+  }, 2500);
 }
-function hide(element) {
-  if (element) {
-    element.classList.add("hidden");
-  }
-}
-function showToast(message) {
-  const toast = $("toast");
-  if (!toast) return;
-  toast.textContent = message;
-  show(toast);
-  clearTimeout(
-    window.__toastTimer
-  );
-  window.__toastTimer =
-    setTimeout(() => {
-      hide(toast);
-    }, 3000);
-}
-async function api(
-  path,
-  options = {}
-) {
+async function api(path, options = {}) {
   const headers = {
     "Content-Type": "application/json",
     ...(options.headers || {})
   };
   if (token) {
-    headers.Authorization =
-      `Bearer ${token}`;
+    headers.Authorization = `Bearer ${token}`;
   }
-  const response =
-    await fetch(
-      API + path,
-      {
-        ...options,
-        headers
-      }
-    );
-  let data = {};
+  const response = await fetch(API + path, {
+    ...options,
+    headers
+  });
+  let data;
   try {
     data = await response.json();
   } catch {
-    data = {
-      success: false,
-      message: "Server response invalid."
-    };
-  }
-  if (
-    response.status === 401 &&
-    path !== "/api/login"
-  ) {
-    logout(false);
+    throw new Error("Server response सही नहीं है।");
   }
   if (!response.ok || data.success === false) {
     throw new Error(
-      data.message ||
-      "Request failed."
+      data.message || "Request failed."
     );
   }
   return data;
@@ -81,260 +55,202 @@ async function api(
 /* =====================================================
    AUTH SCREEN
    ===================================================== */
-function showLoginForm() {
-  show($("loginForm"));
-  hide($("registerForm"));
+function showLogin() {
+  show("loginForm");
+  hide("registerForm");
 }
-function showRegisterForm() {
-  hide($("loginForm"));
-  show($("registerForm"));
+function showRegister() {
+  hide("loginForm");
+  show("registerForm");
 }
-function showMainApp() {
-  hide($("authScreen"));
-  show($("mainApp"));
-  hide($("roomPage"));
-  openPage("homePage");
+async function login() {
+  const email =
+    $("loginEmail")?.value.trim();
+  const password =
+    $("loginPassword")?.value;
+  if (!email || !password) {
+    toast("Email और password डालें।");
+    return;
+  }
+  const button = $("loginBtn");
+  if (button) {
+    button.disabled = true;
+    button.textContent = "Login...";
+  }
+  try {
+    const data = await api(
+      "/api/login",
+      {
+        method: "POST",
+        body: JSON.stringify({
+          email,
+          password
+        })
+      }
+    );
+    token = data.token;
+    localStorage.setItem(
+      "rahul_live_token",
+      token
+    );
+    currentUser = data.user;
+    await openApp();
+  } catch (error) {
+    toast(error.message);
+  } finally {
+    if (button) {
+      button.disabled = false;
+      button.textContent = "Login";
+    }
+  }
 }
-function showAuth() {
-  show($("authScreen"));
-  hide($("mainApp"));
-  hide($("roomPage"));
-}
-/* =====================================================
-   REGISTER
-   ===================================================== */
-async function registerUser() {
+async function register() {
   const name =
     $("registerName")?.value.trim();
   const email =
     $("registerEmail")?.value.trim();
   const password =
-    $("registerPassword")?.value || "";
-  const confirmPassword =
-    $("registerPasswordConfirm")?.value || "";
-  if (!name) {
-    showToast("नाम डालिए।");
+    $("registerPassword")?.value;
+  const confirm =
+    $("registerPasswordConfirm")?.value;
+  if (!name || !email || !password) {
+    toast("सभी जानकारी भरें।");
     return;
   }
-  if (!email) {
-    showToast("Email डालिए।");
+  if (password !== confirm) {
+    toast("Password match नहीं है।");
     return;
   }
   if (password.length < 6) {
-    showToast(
-      "Password कम से कम 6 characters का होना चाहिए।"
+    toast(
+      "Password कम से कम 6 characters का रखें।"
     );
     return;
   }
-  if (password !== confirmPassword) {
-    showToast(
-      "दोनों password समान नहीं हैं।"
-    );
-    return;
-  }
-  const button =
-    $("registerBtn");
+  const button = $("registerBtn");
   if (button) {
     button.disabled = true;
-    button.textContent =
-      "Creating...";
+    button.textContent = "Creating...";
   }
   try {
-    const result =
-      await api(
-        "/api/register",
-        {
-          method: "POST",
-          body: JSON.stringify({
-            name,
-            email,
-            password
-          })
-        }
-      );
-    showToast(
-      result.message ||
-      "Registration successful."
+    await api(
+      "/api/register",
+      {
+        method: "POST",
+        body: JSON.stringify({
+          name,
+          email,
+          password
+        })
+      }
     );
-    $("registerName").value = "";
-    $("registerEmail").value = "";
-    $("registerPassword").value = "";
-    $("registerPasswordConfirm").value = "";
-    showLoginForm();
-    if ($("loginEmail")) {
-      $("loginEmail").value = email;
-    }
+    toast(
+      "Account बन गया। अब Login करें।"
+    );
+    showLogin();
+    $("loginEmail").value = email;
   } catch (error) {
-    showToast(
-      error.message
-    );
+    toast(error.message);
   } finally {
     if (button) {
       button.disabled = false;
-      button.textContent =
-        "Create Account";
+      button.textContent = "Create Account";
     }
   }
 }
-/* =====================================================
-   LOGIN
-   ===================================================== */
-async function loginUser() {
-  const email =
-    $("loginEmail")?.value.trim();
-  const password =
-    $("loginPassword")?.value || "";
-  if (!email || !password) {
-    showToast(
-      "Email और password डालिए।"
-    );
-    return;
-  }
-  const button =
-    $("loginBtn");
-  if (button) {
-    button.disabled = true;
-    button.textContent =
-      "Logging in...";
-  }
+async function logout() {
   try {
-    const result =
-      await api(
-        "/api/login",
-        {
-          method: "POST",
-          body: JSON.stringify({
-            email,
-            password
-          })
-        }
-      );
-    token =
-      result.token;
-    localStorage.setItem(
-      "rahul_live_token",
-      token
+    await api(
+      "/api/logout",
+      {
+        method: "POST"
+      }
     );
-    currentUser =
-      result.user;
-    showToast(
-      "Login successful."
-    );
-    showMainApp();
-    await loadRooms();
-  } catch (error) {
-    showToast(
-      error.message
-    );
-  } finally {
-    if (button) {
-      button.disabled = false;
-      button.textContent =
-        "Login";
-    }
-  }
-}
-/* =====================================================
-   SESSION RESTORE
-   ===================================================== */
-async function restoreSession() {
-  if (!token) {
-    showAuth();
-    return;
-  }
-  try {
-    const result =
-      await api(
-        "/api/me"
-      );
-    currentUser =
-      result.user;
-    showMainApp();
-    await loadRooms();
-  } catch {
-    token = "";
-    localStorage.removeItem(
-      "rahul_live_token"
-    );
-    showAuth();
-  }
-}
-/* =====================================================
-   LOGOUT
-   ===================================================== */
-async function logout(
-  showMessage = true
-) {
-  clearRoomTimers();
-  try {
-    if (token) {
-      await api(
-        "/api/logout",
-        {
-          method: "POST"
-        }
-      );
-    }
-  } catch {
-    // Token may already be expired.
-  }
-  token = "";
+  } catch {}
+  stopRoomTimers();
+  token = null;
   currentUser = null;
   currentRoom = null;
   localStorage.removeItem(
     "rahul_live_token"
   );
-  showAuth();
-  if (showMessage) {
-    showToast(
-      "Logout successful."
-    );
-  }
+  hide("mainApp");
+  hide("roomPage");
+  show("authScreen");
+  showLogin();
 }
 /* =====================================================
-   PAGE NAVIGATION
+   APP
    ===================================================== */
-function closeAllPages() {
-  const pages = [
-    "homePage",
-    "discoverPage",
-    "friendsPage",
-    "musicPage",
-    "profilePage",
-    "notificationsPage",
-    "helpPage"
-  ];
-  pages.forEach(
-    page => hide($(page))
-  );
+async function openApp() {
+  hide("authScreen");
+  show("mainApp");
+  await loadMe();
+  await loadRooms();
 }
-function openPage(pageId) {
-  if (pageId === "helpPage") {
-    closeAllPages();
-    show($("helpPage"));
-    document
-      .querySelectorAll(".nav-item")
-      .forEach(
-        button =>
-          button.classList.remove("active")
-      );
+async function loadMe() {
+  try {
+    const data =
+      await api("/api/me");
+    currentUser = data.user;
+    updateProfile();
+  } catch {
+    token = null;
+    localStorage.removeItem(
+      "rahul_live_token"
+    );
+    hide("mainApp");
+    show("authScreen");
+    showLogin();
+  }
+}
+function updateProfile() {
+  const card = $("profileCard");
+  if (!card || !currentUser) {
     return;
   }
-  closeAllPages();
-  show($(pageId));
+  const avatar =
+    currentUser.avatar_url
+      ? `<img src="${escapeHTML(currentUser.avatar_url)}" alt="">`
+      : "👤";
+  card.innerHTML = `
+    <div class="avatar">
+      ${avatar}
+    </div>
+    <div>
+      <h2>${escapeHTML(currentUser.name || "")}</h2>
+      <p>
+        @${escapeHTML(currentUser.username || "")}
+      </p>
+      <p>
+        ${escapeHTML(currentUser.bio || "")}
+      </p>
+    </div>
+  `;
+}
+/* =====================================================
+   NAVIGATION
+   ===================================================== */
+function openPage(pageId) {
+  document
+    .querySelectorAll(".page")
+    .forEach(page => {
+      page.classList.add("hidden");
+    });
+  const page = $(pageId);
+  if (page) {
+    page.classList.remove("hidden");
+  }
   document
     .querySelectorAll(".nav-item")
-    .forEach(
-      button => {
-        button.classList.toggle(
-          "active",
-          button.dataset.page === pageId
-        );
-      }
+    .forEach(button => {
+      button.classList.remove("active");
+    });
+  const active =
+    document.querySelector(
+      `[data-page="${pageId}"]`
     );
-  if (pageId === "homePage") {
-    loadRooms();
-  }
+  active?.classList.add("active");
 }
 /* =====================================================
    ROOMS
@@ -344,20 +260,14 @@ async function loadRooms() {
     $("roomsContainer");
   if (!container) return;
   try {
-    const result =
-      await api(
-        "/api/rooms"
-      );
-    renderRooms(
-      result.rooms || []
-    );
+    const data =
+      await api("/api/rooms");
+    renderRooms(data.rooms || []);
   } catch (error) {
     container.innerHTML = `
       <div class="empty-state">
         <h3>Rooms load नहीं हुए</h3>
-        <p>${escapeHtml(
-          error.message
-        )}</p>
+        <p>${escapeHTML(error.message)}</p>
       </div>
     `;
   }
@@ -367,112 +277,105 @@ function renderRooms(rooms) {
     $("roomsContainer");
   if (!container) return;
   const search =
-    $("roomSearch")
-      ?.value
+    $("roomSearch")?.value
       .trim()
       .toLowerCase() || "";
   const filtered =
-    rooms.filter(
-      room =>
-        !search ||
-        String(room.name || "")
-          .toLowerCase()
-          .includes(search) ||
-        String(room.owner_name || "")
-          .toLowerCase()
-          .includes(search)
-    );
+    rooms.filter(room => {
+      const text =
+        `${room.name || ""}
+         ${room.description || ""}
+         ${room.owner_name || ""}`
+          .toLowerCase();
+      return text.includes(search);
+    });
   if (!filtered.length) {
     container.innerHTML = `
       <div class="empty-state">
         <h3>कोई Live Room नहीं मिला</h3>
-        <p>आप अपना पहला room बना सकते हैं।</p>
+        <p>अपना पहला room बनाइए।</p>
       </div>
     `;
     return;
   }
   container.innerHTML =
-    filtered.map(
-      room => `
+    filtered.map(room => {
+      const avatar =
+        room.owner_avatar
+          ? `<img src="${escapeHTML(room.owner_avatar)}" alt="">`
+          : "👤";
+      return `
         <article
           class="room-card"
+          data-room-id="${room.id}"
         >
-          <div
-            class="room-card-content"
-          >
+          <div class="room-card-avatar">
+            ${avatar}
+          </div>
+          <div class="room-card-content">
             <h3>
-              ${escapeHtml(
-                room.name
-              )}
+              ${escapeHTML(room.name || "Live Room")}
             </h3>
             <p>
-              ${escapeHtml(
-                room.description || ""
+              ${escapeHTML(
+                room.description || "Live conversation"
               )}
             </p>
-            <small>
-              👤 ${Number(
-                room.viewer_count || 0
-              )}
-              &nbsp; • &nbsp;
-              Host:
-              ${escapeHtml(
-                room.owner_name || ""
-              )}
-            </small>
-            <button
-              class="join-room-btn"
-              type="button"
-              data-room-id="${room.id}"
-            >
-              Join Room
-            </button>
+            <div class="room-meta">
+              <span>
+                👤 ${Number(room.viewer_count || 0)}
+              </span>
+              <span>
+                ${
+                  room.room_type === "private"
+                    ? "🔒 Private"
+                    : "🌐 Public"
+                }
+              </span>
+            </div>
           </div>
+          <button
+            type="button"
+            class="join-room-button"
+            data-join-room="${room.id}"
+          >
+            Join
+          </button>
         </article>
-      `
-    )
-    .join("");
+      `;
+    }).join("");
 }
 /* =====================================================
    CREATE ROOM
    ===================================================== */
 function openCreateRoom() {
-  show(
-    $("createRoomModal")
-  );
+  show("createRoomModal");
+  $("roomName")?.focus();
 }
 function closeCreateRoom() {
-  hide(
-    $("createRoomModal")
-  );
+  hide("createRoomModal");
 }
 async function createRoom() {
   const name =
-    $("roomName")
-      ?.value
-      .trim();
+    $("roomName")?.value.trim();
   const description =
-    $("roomDescription")
-      ?.value
-      .trim();
-  const roomType =
-    $("roomType")
-      ?.value || "public";
+    $("roomDescription")?.value.trim();
+  const type =
+    $("roomType")?.value === "private"
+      ? "private"
+      : "public";
   if (!name) {
-    showToast(
-      "Room name डालिए।"
-    );
+    toast("Room name डालें।");
     return;
   }
   const button =
     $("saveRoomBtn");
   if (button) {
     button.disabled = true;
-    button.textContent =
-      "Creating...";
+    button.textContent = "Creating...";
   }
   try {
-    const result =
+    const data =
       await api(
         "/api/rooms",
         {
@@ -480,124 +383,339 @@ async function createRoom() {
           body: JSON.stringify({
             name,
             description,
-            room_type: roomType
+            room_type: type
           })
         }
       );
     closeCreateRoom();
     $("roomName").value = "";
     $("roomDescription").value = "";
-    showToast(
-      "Room successfully बनाया गया।"
-    );
     await loadRooms();
-    if (result.room_id) {
-      await joinRoom(
-        result.room_id
-      );
-    }
-  } catch (error) {
-    showToast(
-      error.message
+    await openRoom(
+      data.room_id
     );
+  } catch (error) {
+    toast(error.message);
   } finally {
     if (button) {
       button.disabled = false;
-      button.textContent =
-        "Create Room";
+      button.textContent = "Create Room";
     }
   }
 }
 /* =====================================================
-   JOIN ROOM
+   OPEN ROOM
    ===================================================== */
-async function joinRoom(
-  roomId
-) {
-  try {
-    const result =
-      await api(
-        `/api/rooms/${roomId}/join`,
-        {
-          method: "POST"
-        }
-      );
-    currentRoom = {
-      id: Number(roomId),
-      ...(
-        result.room || {}
-      )
-    };
-    hide(
-      $("mainApp")
-    );
-    show(
-      $("roomPage")
-    );
-    const title =
-      document.querySelector(
-        ".room-title"
-      );
-    if (title) {
-      title.textContent =
-        currentRoom.name ||
-        "Live Room";
-    }
-    await loadRoomMessages();
-    startRoomRefresh(
-      roomId
-    );
-  } catch (error) {
-    showToast(
-      error.message
-    );
-  }
-}
-/* =====================================================
-   LEAVE ROOM
-   ===================================================== */
-async function leaveRoom() {
-  if (!currentRoom) {
-    showMainApp();
-    return;
-  }
-  const roomId =
-    currentRoom.id;
-  clearRoomTimers();
+async function openRoom(roomId) {
   try {
     await api(
-      `/api/rooms/${roomId}/leave`,
+      `/api/rooms/${roomId}/join`,
       {
         method: "POST"
       }
     );
-  } catch (error) {
-    showToast(
-      error.message
+    const data =
+      await api(
+        `/api/rooms/${roomId}`
+      );
+    currentRoom = data.room;
+    hide("mainApp");
+    show("roomPage");
+    updateRoomHeader();
+    renderRoomSeats(
+      data.seats || []
     );
+    renderRoomMembers(
+      data.members || []
+    );
+    await loadMessages();
+    startRoomTimers();
+  } catch (error) {
+    toast(error.message);
   }
-  currentRoom = null;
-  showMainApp();
-  await loadRooms();
+}
+function updateRoomHeader() {
+  if (!currentRoom) return;
+  const title =
+    document.querySelector(
+      ".room-title"
+    );
+  if (title) {
+    title.textContent =
+      currentRoom.name ||
+      "Live Room";
+  }
 }
 /* =====================================================
-   ROOM MESSAGES
+   ROOM REFRESH
    ===================================================== */
-async function loadRoomMessages() {
+function startRoomTimers() {
+  stopRoomTimers();
+  roomTimer =
+    setInterval(
+      refreshRoom,
+      3000
+    );
+  messageTimer =
+    setInterval(
+      loadMessages,
+      2500
+    );
+}
+function stopRoomTimers() {
+  if (roomTimer) {
+    clearInterval(roomTimer);
+    roomTimer = null;
+  }
+  if (messageTimer) {
+    clearInterval(messageTimer);
+    messageTimer = null;
+  }
+}
+async function refreshRoom() {
   if (!currentRoom) return;
   try {
-    const result =
+    const data =
+      await api(
+        `/api/rooms/${currentRoom.id}`
+      );
+    renderRoomSeats(
+      data.seats || []
+    );
+    renderRoomMembers(
+      data.members || []
+    );
+  } catch {}
+}
+/* =====================================================
+   SEATS
+   ===================================================== */
+function renderRoomSeats(seats) {
+  const area =
+    document.querySelector(
+      ".voice-area"
+    );
+  if (!area) return;
+  const byNumber = {};
+  seats.forEach(seat => {
+    byNumber[
+      Number(seat.seat_number)
+    ] = seat;
+  });
+  let html = "";
+  for (
+    let number = 1;
+    number <= 8;
+    number++
+  ) {
+    const seat =
+      byNumber[number];
+    const occupied =
+      seat &&
+      Number(seat.is_occupied) === 1;
+    if (occupied) {
+      const isMe =
+        Number(seat.user_id) ===
+        Number(currentUser?.id);
+      const avatar =
+        seat.avatar_url
+          ? `<img src="${escapeHTML(seat.avatar_url)}" alt="">`
+          : "👤";
+      html += `
+        <div
+          class="voice-seat occupied-seat"
+          data-seat="${number}"
+        >
+          <div class="seat-avatar">
+            ${avatar}
+          </div>
+          <strong>
+            ${escapeHTML(
+              seat.name ||
+              seat.username ||
+              "User"
+            )}
+          </strong>
+          <small>
+            ${
+              Number(seat.mic_on)
+                ? "🎙️ Live"
+                : "🔇 Muted"
+            }
+          </small>
+          ${
+            isMe
+              ? `
+                <button
+                  type="button"
+                  class="seat-action"
+                  data-leave-seat="${number}"
+                >
+                  Leave Seat
+                </button>
+              `
+              : ""
+          }
+        </div>
+      `;
+    } else {
+      html += `
+        <button
+          type="button"
+          class="voice-seat empty-seat"
+          data-join-seat="${number}"
+        >
+          <div class="seat-avatar">
+            +
+          </div>
+          <strong>
+            Seat ${number}
+          </strong>
+          <small>
+            Join
+          </small>
+        </button>
+      `;
+    }
+  }
+  area.innerHTML = html;
+}
+async function joinSeat(seatNumber) {
+  if (!currentRoom) return;
+  try {
+    await api(
+      `/api/rooms/${currentRoom.id}/seats/${seatNumber}/join`,
+      {
+        method: "POST"
+      }
+    );
+    toast(
+      `Seat ${seatNumber} join हो गई।`
+    );
+    await refreshRoom();
+  } catch (error) {
+    toast(error.message);
+  }
+}
+async function leaveSeat(seatNumber) {
+  if (!currentRoom) return;
+  try {
+    await api(
+      `/api/rooms/${currentRoom.id}/seats/${seatNumber}/leave`,
+      {
+        method: "POST"
+      }
+    );
+    await refreshRoom();
+  } catch (error) {
+    toast(error.message);
+  }
+}
+/* =====================================================
+   REAL MICROPHONE
+   ===================================================== */
+let localAudioStream = null;
+let microphoneOn = false;
+async function startMicrophone() {
+  if (!currentRoom) {
+    toast("पहले room join करें।");
+    return;
+  }
+  const mySeat =
+    await getMySeat();
+  if (!mySeat) {
+    toast(
+      "पहले voice seat join करें।"
+    );
+    return;
+  }
+  try {
+    if (!localAudioStream) {
+      if (
+        !navigator.mediaDevices ||
+        !navigator.mediaDevices.getUserMedia
+      ) {
+        throw new Error(
+          "इस browser में microphone उपलब्ध नहीं है।"
+        );
+      }
+      localAudioStream =
+        await navigator.mediaDevices.getUserMedia({
+          audio: true,
+          video: false
+        });
+    }
+    microphoneOn = !microphoneOn;
+    localAudioStream
+      .getAudioTracks()
+      .forEach(track => {
+        track.enabled =
+          microphoneOn;
+      });
+    await api(
+      `/api/rooms/${currentRoom.id}/seats/${mySeat.seat_number}/mic`,
+      {
+        method: "POST",
+        body: JSON.stringify({
+          mic_on: microphoneOn
+        })
+      }
+    );
+    updateMicButton();
+    await refreshRoom();
+  } catch (error) {
+    microphoneOn = false;
+    toast(
+      error.message ||
+      "Microphone access नहीं मिला।"
+    );
+  }
+}
+function updateMicButton() {
+  const button =
+    document.querySelector(
+      ".room-controls button[data-action='mic']"
+    );
+  if (!button) return;
+  button.innerHTML =
+    microphoneOn
+      ? "🔊<span>Mic On</span>"
+      : "🎙️<span>Mic</span>";
+}
+async function getMySeat() {
+  if (!currentRoom || !currentUser) {
+    return null;
+  }
+  try {
+    const data =
+      await api(
+        `/api/rooms/${currentRoom.id}/seats`
+      );
+    return (
+      data.seats || []
+    ).find(
+      seat =>
+        Number(seat.user_id) ===
+        Number(currentUser.id)
+    ) || null;
+  } catch {
+    return null;
+  }
+}
+/* =====================================================
+   CHAT
+   ===================================================== */
+async function loadMessages() {
+  if (!currentRoom) return;
+  try {
+    const data =
       await api(
         `/api/rooms/${currentRoom.id}/messages`
       );
     renderMessages(
-      result.messages || []
+      data.messages || []
     );
-  } catch (error) {
-    showToast(
-      error.message
-    );
-  }
+  } catch {}
 }
 function renderMessages(messages) {
   const box =
@@ -605,58 +723,55 @@ function renderMessages(messages) {
   if (!box) return;
   if (!messages.length) {
     box.innerHTML = `
-      <div
-        style="
-          text-align:center;
-          color:#777;
-          padding:30px 10px;
-        "
-      >
+      <div class="empty-chat">
         अभी कोई message नहीं है।
       </div>
     `;
     return;
   }
   box.innerHTML =
-    messages.map(
-      message => `
+    messages.map(message => {
+      const mine =
+        Number(message.user_id) ===
+        Number(currentUser?.id);
+      return `
         <div
-          class="chat-message"
+          class="chat-message ${mine ? "mine" : ""}"
         >
-          <strong>
-            ${escapeHtml(
-              message.name ||
-              message.username ||
-              "User"
-            )}
-          </strong>
-          <span>
-            ${escapeHtml(
-              message.message
-            )}
-          </span>
+          <div class="chat-avatar">
+            ${
+              message.avatar_url
+                ? `<img src="${escapeHTML(message.avatar_url)}" alt="">`
+                : "👤"
+            }
+          </div>
+          <div class="chat-message-content">
+            <strong>
+              ${escapeHTML(
+                message.name ||
+                message.username ||
+                "User"
+              )}
+            </strong>
+            <p>
+              ${escapeHTML(
+                message.message
+              )}
+            </p>
+          </div>
         </div>
-      `
-    )
-    .join("");
+      `;
+    }).join("");
   box.scrollTop =
     box.scrollHeight;
 }
-async function sendRoomMessage() {
-  if (!currentRoom) {
-    showToast(
-      "Room join नहीं हुआ है।"
-    );
-    return;
-  }
+async function sendMessage() {
+  if (!currentRoom) return;
   const input =
     $("roomMessageInput");
   const message =
-    input?.value
-      .trim();
-  if (!message) {
-    return;
-  }
+    input?.value.trim();
+  if (!message) return;
   const button =
     $("sendRoomMessageBtn");
   if (button) {
@@ -673,11 +788,9 @@ async function sendRoomMessage() {
       }
     );
     input.value = "";
-    await loadRoomMessages();
+    await loadMessages();
   } catch (error) {
-    showToast(
-      error.message
-    );
+    toast(error.message);
   } finally {
     if (button) {
       button.disabled = false;
@@ -685,60 +798,109 @@ async function sendRoomMessage() {
   }
 }
 /* =====================================================
-   ROOM AUTO REFRESH
+   MEMBERS
    ===================================================== */
-function startRoomRefresh(
-  roomId
-) {
-  clearRoomTimers();
-  messageRefreshTimer =
-    setInterval(
-      () => {
-        if (
-          currentRoom &&
-          currentRoom.id ===
-            Number(roomId)
-        ) {
-          loadRoomMessages();
-        }
-      },
-      2500
+function renderRoomMembers(members) {
+  const info =
+    document.querySelector(
+      ".room-info-card"
     );
-  roomRefreshTimer =
-    setInterval(
-      () => {
-        loadRooms();
-      },
-      10000
+  if (!info) return;
+  const count =
+    members.length;
+  const old =
+    info.querySelector(
+      ".room-member-count"
     );
+  if (old) {
+    old.textContent =
+      `${count} member${count === 1 ? "" : "s"}`;
+  } else {
+    const counter =
+      document.createElement("span");
+    counter.className =
+      "room-member-count";
+    counter.textContent =
+      `${count} member${count === 1 ? "" : "s"}`;
+    info.appendChild(counter);
+  }
 }
-function clearRoomTimers() {
-  if (roomRefreshTimer) {
-    clearInterval(
-      roomRefreshTimer
+/* =====================================================
+   REACTIONS
+   ===================================================== */
+async function sendReaction(emoji) {
+  if (!currentRoom) return;
+  try {
+    await api(
+      `/api/rooms/${currentRoom.id}/reactions`,
+      {
+        method: "POST",
+        body: JSON.stringify({
+          emoji
+        })
+      }
     );
+    showFloatingReaction(emoji);
+  } catch (error) {
+    toast(error.message);
   }
-  if (messageRefreshTimer) {
-    clearInterval(
-      messageRefreshTimer
+}
+function showFloatingReaction(emoji) {
+  const item =
+    document.createElement("div");
+  item.className =
+    "floating-reaction";
+  item.textContent =
+    emoji;
+  document.body.appendChild(item);
+  setTimeout(() => {
+    item.remove();
+  }, 1800);
+}
+/* =====================================================
+   LEAVE ROOM
+   ===================================================== */
+async function leaveRoom() {
+  if (!currentRoom) return;
+  stopRoomTimers();
+  try {
+    await api(
+      `/api/rooms/${currentRoom.id}/leave`,
+      {
+        method: "POST"
+      }
     );
+  } catch {}
+  if (localAudioStream) {
+    localAudioStream
+      .getTracks()
+      .forEach(track =>
+        track.stop()
+      );
+    localAudioStream = null;
   }
-  roomRefreshTimer = null;
-  messageRefreshTimer = null;
+  microphoneOn = false;
+  currentRoom = null;
+  hide("roomPage");
+  show("mainApp");
+  openPage("homePage");
+  await loadRooms();
+}
+/* =====================================================
+   SUPPORT
+   ===================================================== */
+function openSupport() {
+  openPage("helpPage");
 }
 /* =====================================================
    SEARCH
    ===================================================== */
-async function searchRooms() {
-  await loadRooms();
-}
+let cachedRooms = [];
 /* =====================================================
-   HTML ESCAPE
+   SAFE HTML
    ===================================================== */
-function escapeHtml(value) {
-  return String(
-    value ?? ""
-  )
+function escapeHTML(value) {
+  return String(value ?? "")
     .replaceAll("&", "&amp;")
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;")
@@ -746,171 +908,198 @@ function escapeHtml(value) {
     .replaceAll("'", "&#039;");
 }
 /* =====================================================
-   EVENT LISTENERS
+   EVENTS
    ===================================================== */
 document.addEventListener(
-  "DOMContentLoaded",
-  () => {
-    /* -----------------------------
-       AUTH
-       ----------------------------- */
-    $("showRegisterBtn")
-      ?.addEventListener(
-        "click",
-        showRegisterForm
+  "click",
+  async event => {
+    const target =
+      event.target.closest(
+        "button"
       );
-    $("showLoginBtn")
-      ?.addEventListener(
-        "click",
-        showLoginForm
+    if (!target) return;
+    if (
+      target.id ===
+      "showRegisterBtn"
+    ) {
+      showRegister();
+      return;
+    }
+    if (
+      target.id ===
+      "showLoginBtn"
+    ) {
+      showLogin();
+      return;
+    }
+    if (
+      target.id ===
+      "loginBtn"
+    ) {
+      await login();
+      return;
+    }
+    if (
+      target.id ===
+      "registerBtn"
+    ) {
+      await register();
+      return;
+    }
+    if (
+      target.id ===
+      "logoutBtn"
+    ) {
+      await logout();
+      return;
+    }
+    if (
+      target.id ===
+      "createRoomBtn" ||
+      target.id ===
+      "bottomCreateRoomBtn"
+    ) {
+      openCreateRoom();
+      return;
+    }
+    if (
+      target.id ===
+      "closeCreateRoomBtn"
+    ) {
+      closeCreateRoom();
+      return;
+    }
+    if (
+      target.id ===
+      "saveRoomBtn"
+    ) {
+      await createRoom();
+      return;
+    }
+    if (
+      target.id ===
+      "leaveRoomBtn"
+    ) {
+      await leaveRoom();
+      return;
+    }
+    if (
+      target.id ===
+      "sendRoomMessageBtn"
+    ) {
+      await sendMessage();
+      return;
+    }
+    if (
+      target.id ===
+      "openSupportBtn"
+    ) {
+      openSupport();
+      return;
+    }
+    if (
+      target.dataset.joinRoom
+    ) {
+      await openRoom(
+        Number(
+          target.dataset.joinRoom
+        )
       );
-    $("loginBtn")
-      ?.addEventListener(
-        "click",
-        loginUser
+      return;
+    }
+    if (
+      target.dataset.joinSeat
+    ) {
+      await joinSeat(
+        Number(
+          target.dataset.joinSeat
+        )
       );
-    $("registerBtn")
-      ?.addEventListener(
-        "click",
-        registerUser
+      return;
+    }
+    if (
+      target.dataset.leaveSeat
+    ) {
+      await leaveSeat(
+        Number(
+          target.dataset.leaveSeat
+        )
       );
-    $("logoutBtn")
-      ?.addEventListener(
-        "click",
-        () => logout(true)
+      return;
+    }
+    if (
+      target.dataset.action ===
+      "mic"
+    ) {
+      await startMicrophone();
+      return;
+    }
+    if (
+      target.dataset.reaction
+    ) {
+      await sendReaction(
+        target.dataset.reaction
       );
-    $("loginPassword")
-      ?.addEventListener(
-        "keydown",
-        event => {
-          if (
-            event.key === "Enter"
-          ) {
-            loginUser();
-          }
-        }
+      return;
+    }
+    if (
+      target.dataset.page
+    ) {
+      openPage(
+        target.dataset.page
       );
-    $("registerPasswordConfirm")
-      ?.addEventListener(
-        "keydown",
-        event => {
-          if (
-            event.key === "Enter"
-          ) {
-            registerUser();
-          }
-        }
-      );
-    /* -----------------------------
-       NAVIGATION
-       ----------------------------- */
-    document
-      .querySelectorAll(
-        ".nav-item[data-page]"
-      )
-      .forEach(
-        button => {
-          button.addEventListener(
-            "click",
-            () => {
-              openPage(
-                button.dataset.page
-              );
-            }
-          );
-        }
-      );
-    /* -----------------------------
-       CREATE ROOM
-       ----------------------------- */
-    $("createRoomBtn")
-      ?.addEventListener(
-        "click",
-        openCreateRoom
-      );
-    $("bottomCreateRoomBtn")
-      ?.addEventListener(
-        "click",
-        openCreateRoom
-      );
-    $("closeCreateRoomBtn")
-      ?.addEventListener(
-        "click",
-        closeCreateRoom
-      );
-    $("saveRoomBtn")
-      ?.addEventListener(
-        "click",
-        createRoom
-      );
-    $("createRoomModal")
-      ?.addEventListener(
-        "click",
-        event => {
-          if (
-            event.target ===
-            $("createRoomModal")
-          ) {
-            closeCreateRoom();
-          }
-        }
-      );
-    /* -----------------------------
-       ROOM LIST
-       ----------------------------- */
-    $("roomsContainer")
-      ?.addEventListener(
-        "click",
-        event => {
-          const button =
-            event.target.closest(
-              ".join-room-btn"
-            );
-          if (!button) {
-            return;
-          }
-          const roomId =
-            Number(
-              button.dataset.roomId
-            );
-          if (roomId) {
-            joinRoom(roomId);
-          }
-        }
-      );
-    $("roomSearch")
-      ?.addEventListener(
-        "input",
-        searchRooms
-      );
-    /* -----------------------------
-       ROOM
-       ----------------------------- */
-    $("leaveRoomBtn")
-      ?.addEventListener(
-        "click",
-        leaveRoom
-      );
-    $("sendRoomMessageBtn")
-      ?.addEventListener(
-        "click",
-        sendRoomMessage
-      );
-    $("roomMessageInput")
-      ?.addEventListener(
-        "keydown",
-        event => {
-          if (
-            event.key === "Enter"
-          ) {
-            event.preventDefault();
-            sendRoomMessage();
-          }
-        }
-      );
-    /* -----------------------------
-       START
-       ----------------------------- */
-    restoreSession();
+      return;
+    }
   }
 );
+/* =====================================================
+   CHAT ENTER KEY
+   ===================================================== */
+$("roomMessageInput")
+  ?.addEventListener(
+    "keydown",
+    async event => {
+      if (
+        event.key === "Enter" &&
+        !event.shiftKey
+      ) {
+        event.preventDefault();
+        await sendMessage();
+      }
+    }
+  );
+/* =====================================================
+   SEARCH
+   ===================================================== */
+$("roomSearch")
+  ?.addEventListener(
+    "input",
+    async () => {
+      await loadRooms();
+    }
+  );
+/* =====================================================
+   INIT
+   ===================================================== */
+async function init() {
+  if (!token) {
+    show("authScreen");
+    hide("mainApp");
+    hide("roomPage");
+    showLogin();
+    return;
+  }
+  try {
+    await openApp();
+  } catch {
+    token = null;
+    localStorage.removeItem(
+      "rahul_live_token"
+    );
+    show("authScreen");
+    hide("mainApp");
+    hide("roomPage");
+    showLogin();
+  }
+}
+init();
