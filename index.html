@@ -2,20 +2,13 @@
 <html lang="hi">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0, viewport-fit=cover"
-  >
+  <title>Rahul Live Rooms</title>
 
-  <meta name="theme-color" content="#ffffff">
-
-  <meta
-    name="description"
-    content="Rahul Live - Chat Only LIVE"
-  >
-
-  <title>Rahul Live</title>
+  <meta name="theme-color" content="#12052b">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
   <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="style.css">
@@ -23,588 +16,1111 @@
 
 <body>
 
-<div id="app">
+  <!-- ================= APP ================= -->
+  <div id="app">
 
-  <!-- ==================================================
-       LOGIN / REGISTER
-       ================================================== -->
+    <!-- ================= LOGIN ================= -->
+    <section id="loginScreen" class="screen">
 
-  <section id="authScreen" class="screen">
+      <div class="login-box">
 
-    <div class="auth-box">
+        <div class="app-logo">
+          🎙️
+        </div>
 
-      <div class="app-logo">RL</div>
-
-      <h1>Rahul Live</h1>
-
-      <p class="subtitle">
-        Chat • LIVE • Connect
-      </p>
-
-
-      <!-- LOGIN -->
-
-      <div id="loginForm" class="auth-form">
-
-        <h2>Login</h2>
+        <h1>Rahul Live</h1>
+        <p>Voice Chat Rooms</p>
 
         <input
-          type="text"
           id="loginUsername"
+          type="text"
           placeholder="Username"
           autocomplete="username"
         >
 
         <input
-          type="password"
           id="loginPassword"
+          type="password"
           placeholder="Password"
           autocomplete="current-password"
         >
 
-        <button
-          id="loginBtn"
-          type="button"
-        >
+        <button id="loginBtn" class="primary-btn">
           Login
         </button>
 
-        <p>
-          Account नहीं है?
-
-          <button
-            id="showRegisterBtn"
-            class="link-btn"
-            type="button"
-          >
-            Register
-          </button>
-        </p>
+        <button id="showRegisterBtn" class="text-btn">
+          Create New Account
+        </button>
 
       </div>
 
+    </section>
 
-      <!-- REGISTER -->
 
-      <div
-        id="registerForm"
-        class="auth-form hidden"
-      >
+    <!-- ================= REGISTER ================= -->
+    <section id="registerScreen" class="screen hidden">
 
-        <h2>Register</h2>
+      <div class="login-box">
+
+        <div class="app-logo">
+          🎙️
+        </div>
+
+        <h1>Create Account</h1>
+        <p>Join Rahul Live</p>
 
         <input
-          type="text"
           id="registerUsername"
+          type="text"
           placeholder="Username"
           autocomplete="username"
         >
 
         <input
-          type="email"
           id="registerEmail"
+          type="email"
           placeholder="Email"
           autocomplete="email"
         >
 
         <input
-          type="password"
           id="registerPassword"
+          type="password"
           placeholder="Password"
           autocomplete="new-password"
         >
 
-        <button
-          id="registerBtn"
-          type="button"
-        >
+        <button id="registerBtn" class="primary-btn">
           Register
         </button>
 
-        <p>
-          पहले से account है?
+        <button id="showLoginBtn" class="text-btn">
+          Already have an account? Login
+        </button>
 
-          <button
-            id="showLoginBtn"
-            class="link-btn"
-            type="button"
-          >
-            Login
+      </div>
+
+    </section>
+
+
+    <!-- ================= HOME ================= -->
+    <section id="homeScreen" class="screen hidden">
+
+      <!-- TOP BAR -->
+      <header class="top-bar">
+
+        <div class="brand">
+          <div class="brand-icon">🎙️</div>
+
+          <div>
+            <strong>Rahul Live</strong>
+            <small>Voice Chat Rooms</small>
+          </div>
+        </div>
+
+        <div class="top-actions">
+
+          <button id="searchBtn" class="icon-btn">
+            🔍
           </button>
-        </p>
 
-      </div>
+          <button id="notificationBtn" class="icon-btn">
+            🔔
+          </button>
 
-      <div
-        id="authMessage"
-        class="message"
-      ></div>
+          <button id="profileBtn" class="icon-btn">
+            👤
+          </button>
 
-    </div>
-
-  </section>
-
-
-
-  <!-- ==================================================
-       LIVE APP
-       ================================================== -->
-
-  <section
-    id="liveApp"
-    class="screen hidden"
-  >
-
-    <!-- TOP BAR -->
-
-    <header class="top-bar">
-
-      <div class="brand">
-        <strong>Rahul Live</strong>
-      </div>
-
-      <div class="top-actions">
-
-        <span
-          id="onlineStatus"
-          class="online-status"
-        >
-          ● Online
-        </span>
-
-        <button
-          id="logoutBtn"
-          class="icon-btn"
-          type="button"
-        >
-          Logout
-        </button>
-
-      </div>
-
-    </header>
-
-
-
-    <!-- ==================================================
-         HOME / LIVE START
-         ================================================== -->
-
-    <main class="home-screen">
-
-      <div class="home-header">
-
-        <h1>
-          Hello 👋
-          <span id="homeUsername"></span>
-        </h1>
-
-        <p>
-          अपना LIVE शुरू करें या किसी LIVE में जाएँ
-        </p>
-
-      </div>
-
-
-      <!-- START LIVE -->
-
-      <button
-        id="startLiveBtn"
-        class="start-live-btn"
-        type="button"
-      >
-        🔴 Start LIVE
-      </button>
-
-
-      <!-- LIVE ROOMS -->
-
-      <div class="live-section-title">
-
-        <strong>
-          🔴 LIVE Rooms
-        </strong>
-
-        <button
-          id="refreshRoomsBtn"
-          class="refresh-btn"
-          type="button"
-        >
-          ↻ Refresh
-        </button>
-
-      </div>
-
-
-      <div
-        id="liveRoomsList"
-        class="live-rooms-grid"
-      >
-
-        <div class="empty-rooms">
-          अभी कोई LIVE नहीं चल रहा
-        </div>
-
-      </div>
-
-    </main>
-
-
-
-    <!-- ==================================================
-         LIVE ROOM
-         ================================================== -->
-
-    <section
-      id="liveRoomScreen"
-      class="hidden"
-    >
-
-      <!-- ROOM HEADER -->
-
-      <header class="live-room-header">
-
-        <button
-          id="backFromLiveBtn"
-          class="back-btn"
-          type="button"
-        >
-          ←
-        </button>
-
-        <div
-          id="roomTitle"
-          class="room-title"
-        >
-          Chat LIVE
-        </div>
-
-        <div class="room-viewers">
-          👥
-          <span id="viewerCount">
-            0
-          </span>
         </div>
 
       </header>
 
 
+      <!-- SEARCH -->
+      <div id="searchBox" class="search-box hidden">
 
-      <!-- HOST -->
-
-      <section class="room-host">
-
-        <div
-          id="hostAvatar"
-          class="room-host-avatar"
+        <input
+          id="roomSearch"
+          type="search"
+          placeholder="Search live rooms..."
         >
-          H
+
+      </div>
+
+
+      <!-- CATEGORY -->
+      <div class="categories">
+
+        <button class="category active" data-category="all">
+          🔥 All
+        </button>
+
+        <button class="category" data-category="popular">
+          👑 Popular
+        </button>
+
+        <button class="category" data-category="music">
+          🎵 Music
+        </button>
+
+        <button class="category" data-category="chat">
+          💬 Chat
+        </button>
+
+        <button class="category" data-category="games">
+          🎮 Games
+        </button>
+
+      </div>
+
+
+      <!-- LIVE BANNER -->
+      <div class="live-banner">
+
+        <div>
+          <span class="live-dot"></span>
+          <strong>LIVE NOW</strong>
+
+          <p>
+            Join people and start talking
+          </p>
         </div>
 
-        <div class="room-host-info">
+        <button id="createRoomBtn" class="create-room-btn">
+          ＋ Create Room
+        </button>
 
-          <strong id="hostName">
-            Host
+      </div>
+
+
+      <!-- ROOM LIST -->
+      <main>
+
+        <div class="section-title">
+
+          <div>
+            <h2>Live Rooms</h2>
+            <span>People are talking now</span>
+          </div>
+
+          <button id="refreshRoomsBtn" class="small-icon">
+            ↻
+          </button>
+
+        </div>
+
+
+        <div id="roomList" class="room-list">
+
+
+          <!-- ROOM 1 -->
+          <article
+            class="room-card"
+            data-room="music"
+            data-room-id="room001"
+          >
+
+            <div class="room-cover room-cover-1">
+
+              <div class="room-top">
+
+                <span class="live-label">
+                  ● LIVE
+                </span>
+
+                <span class="viewer-label">
+                  👁 1.2K
+                </span>
+
+              </div>
+
+
+              <div class="host-avatar">
+                <div class="avatar-frame gold">
+                  👩🏻
+                </div>
+
+                <span class="host-crown">👑</span>
+              </div>
+
+
+              <h3>
+                Music Lovers 🎵
+              </h3>
+
+              <p>
+                Live music & friendship
+              </p>
+
+
+              <div class="mini-users">
+
+                <span>👩🏻</span>
+                <span>👨🏻</span>
+                <span>👩🏽</span>
+                <span>👨🏽</span>
+
+                <b>+108</b>
+
+              </div>
+
+            </div>
+
+
+            <div class="room-info">
+
+              <div>
+                <strong>Music Lovers</strong>
+                <span>Hosted by Blake</span>
+              </div>
+
+              <button
+                class="join-room-btn"
+                data-room-id="room001"
+              >
+                Join
+              </button>
+
+            </div>
+
+          </article>
+
+
+          <!-- ROOM 2 -->
+          <article
+            class="room-card"
+            data-room="chat"
+            data-room-id="room002"
+          >
+
+            <div class="room-cover room-cover-2">
+
+              <div class="room-top">
+
+                <span class="live-label">
+                  ● LIVE
+                </span>
+
+                <span class="viewer-label">
+                  👁 892
+                </span>
+
+              </div>
+
+
+              <div class="host-avatar">
+
+                <div class="avatar-frame purple">
+                  👩🏼
+                </div>
+
+                <span class="host-crown">👑</span>
+
+              </div>
+
+
+              <h3>
+                Friends Forever ❤️
+              </h3>
+
+              <p>
+                Talk • Laugh • Connect
+              </p>
+
+
+              <div class="mini-users">
+
+                <span>👩🏻</span>
+                <span>👨🏼</span>
+                <span>👩🏾</span>
+                <span>👨🏻</span>
+
+                <b>+74</b>
+
+              </div>
+
+            </div>
+
+
+            <div class="room-info">
+
+              <div>
+                <strong>Friends Forever</strong>
+                <span>Hosted by Teresa</span>
+              </div>
+
+              <button
+                class="join-room-btn"
+                data-room-id="room002"
+              >
+                Join
+              </button>
+
+            </div>
+
+          </article>
+
+
+          <!-- ROOM 3 -->
+          <article
+            class="room-card"
+            data-room="games"
+            data-room-id="room003"
+          >
+
+            <div class="room-cover room-cover-3">
+
+              <div class="room-top">
+
+                <span class="live-label">
+                  ● LIVE
+                </span>
+
+                <span class="viewer-label">
+                  👁 564
+                </span>
+
+              </div>
+
+
+              <div class="host-avatar">
+
+                <div class="avatar-frame blue">
+                  👨🏻
+                </div>
+
+                <span class="host-crown">👑</span>
+
+              </div>
+
+
+              <h3>
+                Game Night 🎮
+              </h3>
+
+              <p>
+                Games • Fun • Competition
+              </p>
+
+
+              <div class="mini-users">
+
+                <span>👨🏽</span>
+                <span>👩🏻</span>
+                <span>👨🏻</span>
+                <span>👩🏽</span>
+
+                <b>+43</b>
+
+              </div>
+
+            </div>
+
+
+            <div class="room-info">
+
+              <div>
+                <strong>Game Night</strong>
+                <span>Hosted by Harry</span>
+              </div>
+
+              <button
+                class="join-room-btn"
+                data-room-id="room003"
+              >
+                Join
+              </button>
+
+            </div>
+
+          </article>
+
+
+        </div>
+
+      </main>
+
+
+      <!-- BOTTOM NAV -->
+      <nav class="bottom-nav">
+
+        <button class="nav-item active" data-page="home">
+          <span>🏠</span>
+          <small>Home</small>
+        </button>
+
+        <button class="nav-item" data-page="rooms">
+          <span>🎙️</span>
+          <small>Rooms</small>
+        </button>
+
+        <button
+          id="bottomCreateRoom"
+          class="nav-create"
+        >
+          ＋
+        </button>
+
+        <button class="nav-item" data-page="wallet">
+          <span>🪙</span>
+          <small>Wallet</small>
+        </button>
+
+        <button class="nav-item" data-page="profile">
+          <span>👤</span>
+          <small>Profile</small>
+        </button>
+
+      </nav>
+
+    </section>
+
+
+    <!-- ================================================= -->
+    <!--                  LIVE ROOM                         -->
+    <!-- ================================================= -->
+
+    <section id="liveRoomScreen" class="live-room hidden">
+
+      <!-- ROOM HEADER -->
+      <header class="room-header">
+
+        <button id="leaveRoomBtn" class="room-control">
+          ✕
+        </button>
+
+
+        <div class="room-title">
+
+          <strong id="liveRoomName">
+            Music Lovers
           </strong>
 
-          <span>
-            🎙️ LIVE Host
-          </span>
+          <small>
+            ID: <span id="liveRoomId">954032</span>
+          </small>
 
         </div>
 
-        <span class="host-badge">
-          HOST
+
+        <div class="room-header-actions">
+
+          <button id="shareRoomBtn" class="room-control">
+            ↗
+          </button>
+
+          <button id="roomSettingsBtn" class="room-control">
+            ⚙
+          </button>
+
+        </div>
+
+      </header>
+
+
+      <!-- ROOM STATUS -->
+      <div class="room-status">
+
+        <span class="room-level">
+          🏆 160K
         </span>
 
-      </section>
+        <span class="pk-timer">
+          PK 00:59:55
+        </span>
+
+        <span class="room-viewers">
+          👁 <span id="roomViewerCount">1092</span>
+        </span>
+
+      </div>
 
 
+      <!-- ROOM BACKGROUND -->
+      <div class="room-background">
 
-      <!-- CHAT -->
 
-      <section class="chat-section">
+        <!-- HOST -->
+        <div class="host-area">
 
-        <div class="chat-header">
+          <div class="host-large-avatar">
 
-          <strong>
-            Live Chat
+            <div class="large-avatar-frame">
+              👩🏻
+            </div>
+
+            <span class="host-badge">
+              👑
+            </span>
+
+          </div>
+
+          <strong id="hostName">
+            Blake Kim
           </strong>
 
-          <span id="chatUserCount">
-            0 viewers
-          </span>
+          <small>
+            Host
+          </small>
 
         </div>
 
 
-        <!-- MESSAGES -->
+        <!-- SPEAKER SEATS -->
+        <div class="speaker-grid">
 
-        <div
-          id="chatMessages"
-          class="chat-messages"
-        >
 
-          <div class="system-message">
-            LIVE room में आपका स्वागत है 👋
+          <div class="speaker">
+
+            <div class="speaker-avatar frame-gold">
+              👨🏻
+            </div>
+
+            <span>Teresa</span>
+
+            <small>🎤</small>
+
+          </div>
+
+
+          <div class="speaker">
+
+            <div class="speaker-avatar frame-blue">
+              👩🏻
+            </div>
+
+            <span>Virgie</span>
+
+            <small>🎤</small>
+
+          </div>
+
+
+          <div class="speaker">
+
+            <div class="speaker-avatar frame-gold">
+              👩🏽
+            </div>
+
+            <span>Jeremy</span>
+
+            <small>🔇</small>
+
+          </div>
+
+
+          <div class="speaker">
+
+            <div class="speaker-avatar frame-purple">
+              👩🏻
+            </div>
+
+            <span>Emily</span>
+
+            <small>🎤</small>
+
+          </div>
+
+
+          <div class="speaker">
+
+            <div class="speaker-avatar frame-red">
+              🧑🏻
+            </div>
+
+            <span>Brent</span>
+
+            <small>🔇</small>
+
+          </div>
+
+
+          <div class="speaker">
+
+            <div class="speaker-avatar frame-gold">
+              👨🏻
+            </div>
+
+            <span>Virgie</span>
+
+            <small>🎤</small>
+
+          </div>
+
+
+          <div class="speaker">
+
+            <div class="speaker-avatar frame-pink">
+              👩🏻
+            </div>
+
+            <span>Billy</span>
+
+            <small>🎤</small>
+
+          </div>
+
+
+          <div class="speaker">
+
+            <div class="speaker-avatar frame-gold">
+              👨🏻
+            </div>
+
+            <span>Harry</span>
+
+            <small>🔇</small>
+
+          </div>
+
+
+        </div>
+
+
+        <!-- ROOM CHAT -->
+        <div id="roomChat" class="room-chat">
+
+
+          <div class="chat-message">
+
+            <span class="chat-avatar">
+              👩🏻
+            </span>
+
+            <div class="chat-bubble">
+              <strong>Emilie</strong>
+              <span>Welcome everyone ❤️</span>
+            </div>
+
+          </div>
+
+
+          <div class="chat-message">
+
+            <span class="chat-avatar">
+              👨🏻
+            </span>
+
+            <div class="chat-bubble">
+              <strong>Harry</strong>
+              <span>Hello everyone 👋</span>
+            </div>
+
+          </div>
+
+
+          <div class="chat-message">
+
+            <span class="chat-avatar">
+              👩🏽
+            </span>
+
+            <div class="chat-bubble">
+              <strong>Teresa</strong>
+              <span>Great room 🔥</span>
+            </div>
+
+          </div>
+
+
+        </div>
+
+
+        <!-- FLOATING REACTIONS -->
+        <div id="reactionArea" class="reaction-area"></div>
+
+
+        <!-- GIFT ANIMATION -->
+        <div id="giftAnimation" class="gift-animation hidden">
+          🎁
+        </div>
+
+
+      </div>
+
+
+      <!-- ROOM BOTTOM -->
+      <div class="room-bottom">
+
+
+        <!-- QUICK REACTIONS -->
+        <div class="quick-reactions">
+
+          <button data-reaction="❤️">
+            ❤️
+          </button>
+
+          <button data-reaction="😂">
+            😂
+          </button>
+
+          <button data-reaction="🔥">
+            🔥
+          </button>
+
+          <button data-reaction="😍">
+            😍
+          </button>
+
+          <button data-reaction="👏">
+            👏
+          </button>
+
+        </div>
+
+
+        <!-- MESSAGE BAR -->
+        <div class="message-bar">
+
+          <button
+            id="emojiBtn"
+            class="bottom-control"
+          >
+            😊
+          </button>
+
+
+          <input
+            id="chatInput"
+            type="text"
+            placeholder="Say something..."
+            maxlength="300"
+          >
+
+
+          <button
+            id="sendMessageBtn"
+            class="send-btn"
+          >
+            ➤
+          </button>
+
+        </div>
+
+
+        <!-- CONTROLS -->
+        <div class="room-controls">
+
+
+          <button
+            id="micBtn"
+            class="control-button"
+          >
+            🎤
+            <small>Mic</small>
+          </button>
+
+
+          <button
+            id="muteBtn"
+            class="control-button"
+          >
+            🔊
+            <small>Sound</small>
+          </button>
+
+
+          <button
+            id="raiseHandBtn"
+            class="control-button"
+          >
+            🙋
+            <small>Hand</small>
+          </button>
+
+
+          <button
+            id="giftBtn"
+            class="control-button gift-button"
+          >
+            🎁
+            <small>Gift</small>
+          </button>
+
+
+          <button
+            id="membersBtn"
+            class="control-button"
+          >
+            👥
+            <small>Members</small>
+          </button>
+
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- ================= GIFT PANEL ================= -->
+    <div
+      id="giftPanel"
+      class="bottom-sheet hidden"
+    >
+
+      <div class="sheet-header">
+
+        <strong>Send Gift 🎁</strong>
+
+        <button id="closeGiftBtn">
+          ✕
+        </button>
+
+      </div>
+
+
+      <div class="gift-grid">
+
+        <button class="gift-item" data-gift="🌹" data-cost="10">
+          <span>🌹</span>
+          <small>10</small>
+        </button>
+
+        <button class="gift-item" data-gift="❤️" data-cost="20">
+          <span>❤️</span>
+          <small>20</small>
+        </button>
+
+        <button class="gift-item" data-gift="💎" data-cost="50">
+          <span>💎</span>
+          <small>50</small>
+        </button>
+
+        <button class="gift-item" data-gift="👑" data-cost="100">
+          <span>👑</span>
+          <small>100</small>
+        </button>
+
+        <button class="gift-item" data-gift="🚗" data-cost="500">
+          <span>🚗</span>
+          <small>500</small>
+        </button>
+
+        <button class="gift-item" data-gift="💰" data-cost="1000">
+          <span>💰</span>
+          <small>1000</small>
+        </button>
+
+        <button class="gift-item" data-gift="🌹" data-cost="5000">
+          <span>🌹</span>
+          <small>5000</small>
+        </button>
+
+        <button class="gift-item" data-gift="💖" data-cost="10000">
+          <span>💖</span>
+          <small>10K</small>
+        </button>
+
+      </div>
+
+    </div>
+
+
+    <!-- ================= MEMBERS ================= -->
+    <div
+      id="membersPanel"
+      class="bottom-sheet hidden"
+    >
+
+      <div class="sheet-header">
+
+        <strong>
+          Room Members
+        </strong>
+
+        <button id="closeMembersBtn">
+          ✕
+        </button>
+
+      </div>
+
+
+      <div class="members-list">
+
+        <div class="member">
+          <span>👩🏻</span>
+          <div>
+            <strong>Blake Kim</strong>
+            <small>👑 Host</small>
+          </div>
+        </div>
+
+        <div class="member">
+          <span>👨🏻</span>
+          <div>
+            <strong>Teresa Moran</strong>
+            <small>🎤 Speaker</small>
+          </div>
+        </div>
+
+        <div class="member">
+          <span>👩🏽</span>
+          <div>
+            <strong>Virgie Cobb</strong>
+            <small>🎤 Speaker</small>
+          </div>
+        </div>
+
+        <div class="member">
+          <span>👨🏽</span>
+          <div>
+            <strong>Harry</strong>
+            <small>Listener</small>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <!-- ================= CREATE ROOM ================= -->
+    <div
+      id="createRoomPanel"
+      class="bottom-sheet hidden"
+    >
+
+      <div class="sheet-header">
+
+        <strong>
+          Create Live Room
+        </strong>
+
+        <button id="closeCreateRoomBtn">
+          ✕
+        </button>
+
+      </div>
+
+
+      <input
+        id="newRoomName"
+        type="text"
+        placeholder="Room name"
+        maxlength="40"
+      >
+
+
+      <select id="newRoomCategory">
+
+        <option value="chat">
+          💬 Chat
+        </option>
+
+        <option value="music">
+          🎵 Music
+        </option>
+
+        <option value="games">
+          🎮 Games
+        </option>
+
+        <option value="popular">
+          👑 Popular
+        </option>
+
+      </select>
+
+
+      <button
+        id="startRoomBtn"
+        class="primary-btn"
+      >
+        🎙️ Start Live Room
+      </button>
+
+    </div>
+
+
+    <!-- ================= PROFILE ================= -->
+    <div
+      id="profilePanel"
+      class="bottom-sheet hidden"
+    >
+
+      <div class="sheet-header">
+
+        <strong>
+          My Profile
+        </strong>
+
+        <button id="closeProfileBtn">
+          ✕
+        </button>
+
+      </div>
+
+
+      <div class="profile-card">
+
+        <div class="profile-avatar">
+          👤
+        </div>
+
+        <h3 id="profileUsername">
+          Guest
+        </h3>
+
+        <p id="profileEmail">
+          guest@example.com
+        </p>
+
+        <div class="profile-stats">
+
+          <div>
+            <strong id="profileFollowers">
+              0
+            </strong>
+
+            <small>Followers</small>
+          </div>
+
+          <div>
+            <strong id="profileFollowing">
+              0
+            </strong>
+
+            <small>Following</small>
+          </div>
+
+          <div>
+            <strong id="profileLevel">
+              1
+            </strong>
+
+            <small>Level</small>
           </div>
 
         </div>
 
-
-        <!-- EMOJI PANEL -->
-
-        <div
-          id="emojiPanel"
-          class="emoji-panel hidden"
-        >
-
-          <button type="button" data-emoji="😀">😀</button>
-          <button type="button" data-emoji="😂">😂</button>
-          <button type="button" data-emoji="🤣">🤣</button>
-          <button type="button" data-emoji="😆">😆</button>
-          <button type="button" data-emoji="😎">😎</button>
-          <button type="button" data-emoji="🤡">🤡</button>
-          <button type="button" data-emoji="😡">😡</button>
-          <button type="button" data-emoji="😭">😭</button>
-
-          <button type="button" data-emoji="❤️">❤️</button>
-          <button type="button" data-emoji="🔥">🔥</button>
-          <button type="button" data-emoji="👍">👍</button>
-          <button type="button" data-emoji="👏">👏</button>
-          <button type="button" data-emoji="🎉">🎉</button>
-          <button type="button" data-emoji="😱">😱</button>
-          <button type="button" data-emoji="💀">💀</button>
-
-          <!-- HAMMER -->
-
-          <button
-            type="button"
-            data-emoji="🔨"
-          >
-            🔨
-          </button>
-
-        </div>
+      </div>
 
 
-        <!-- QUICK REACTIONS -->
-
-        <div class="quick-reactions">
-
-          <button
-            type="button"
-            data-reaction="😂"
-          >
-            😂
-          </button>
-
-          <button
-            type="button"
-            data-reaction="❤️"
-          >
-            ❤️
-          </button>
-
-          <button
-            type="button"
-            data-reaction="🔥"
-          >
-            🔥
-          </button>
-
-          <button
-            type="button"
-            data-reaction="👏"
-          >
-            👏
-          </button>
-
-          <!-- HAMMER -->
-
-          <button
-            type="button"
-            data-reaction="🔨"
-          >
-            🔨
-          </button>
-
-        </div>
-
-
-        <!-- CHAT INPUT -->
-
-        <div class="chat-input-area">
-
-          <button
-            id="emojiBtn"
-            class="emoji-btn"
-            type="button"
-          >
-            😀
-          </button>
-
-          <input
-            type="text"
-            id="chatInput"
-            placeholder="Message लिखें..."
-            maxlength="500"
-            autocomplete="off"
-          >
-
-          <button
-            id="sendChatBtn"
-            class="send-btn"
-            type="button"
-          >
-            Send
-          </button>
-
-        </div>
-
-      </section>
-
-
-
-      <!-- ==================================================
-           VIEWERS
-           ================================================== -->
-
-      <section class="viewers-section">
-
-        <div class="section-title">
-
-          <strong>
-            Viewers
-          </strong>
-
-          <span id="viewerTotal">
-            0
-          </span>
-
-        </div>
-
-        <div
-          id="viewerList"
-          class="viewer-list"
-        ></div>
-
-      </section>
-
-
-
-      <!-- ==================================================
-           HOST CONTROLS
-           ================================================== -->
-
-      <section
-        id="hostControls"
-        class="host-controls hidden"
+      <button
+        id="logoutBtn"
+        class="logout-btn"
       >
+        Logout
+      </button>
 
-        <h3>
-          Host Controls
-        </h3>
-
-        <p
-          style="
-            font-size:13px;
-            color:#777;
-            margin-bottom:12px;
-          "
-        >
-          Viewer पर action करने के लिए उसकी User ID डालें।
-        </p>
-
-        <div class="control-buttons">
-
-          <button
-            id="muteBtn"
-            type="button"
-          >
-            🔇 Mute
-          </button>
-
-          <button
-            id="kickBtn"
-            type="button"
-          >
-            👢 Kick
-          </button>
-
-          <button
-            id="blockBtn"
-            type="button"
-          >
-            🚫 Block
-          </button>
-
-          <button
-            id="endLiveBtn"
-            class="danger-btn"
-            type="button"
-          >
-            🛑 End LIVE
-          </button>
-
-        </div>
-
-      </section>
+    </div>
 
 
+    <!-- ================= TOAST ================= -->
+    <div
+      id="toast"
+      class="toast"
+    ></div>
 
-      <!-- ==================================================
-           LIVE ACTIONS
-           ================================================== -->
-
-      <section class="user-actions">
-
-        <button
-          id="joinLiveBtn"
-          type="button"
-        >
-          🔴 Join LIVE
-        </button>
-
-        <button
-          id="leaveLiveBtn"
-          type="button"
-        >
-          🚪 Leave LIVE
-        </button>
-
-      </section>
-
-    </section>
-
-  </section>
-
-</div>
+  </div>
 
 
-
-<!-- ==================================================
-     FLOATING REACTIONS
-     ================================================== -->
-
-<div
-  id="floatingReactions"
-></div>
-
-
-
-<!-- ==================================================
-     TOAST
-     ================================================== -->
-
-<div
-  id="toast"
-  class="toast hidden"
-></div>
-
-
-
-<script src="script.js"></script>
+  <!-- JAVASCRIPT -->
+  <script src="script.js"></script>
 
 </body>
 </html>
