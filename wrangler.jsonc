@@ -1,7 +1,11 @@
 {
-  "name": "rahulsocialhub-db",
+  "$schema": "node_modules/wrangler/config-schema.json",
+
+  "name": "rahul-live",
+
   "main": "worker.js",
-  "compatibility_date": "2026-08-02",
+
+  "compatibility_date": "2026-08-03",
 
   "d1_databases": [
     {
