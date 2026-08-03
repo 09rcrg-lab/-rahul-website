@@ -1,784 +1,528 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="hi">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport"
-        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-  <meta name="theme-color" content="#5d19d9">
-  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+  >
+
+  <meta name="theme-color" content="#050505">
 
   <title>Rahul Live</title>
 
-  <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-<!-- =====================================================
-     APP
-===================================================== -->
+  <!-- ================= APP ================= -->
 
-<div id="app">
+  <div id="app">
 
-  <!-- ===================================================
-       LIVE ROOM
-  ==================================================== -->
+    <!-- ================= LOGIN / REGISTER ================= -->
 
-  <section id="roomPage" class="page active">
+    <section id="authScreen" class="screen">
 
-    <!-- TOP BAR -->
-    <header class="room-top">
+      <div class="auth-box">
 
-      <div class="room-user">
-
-        <div class="small-avatar">
-          <img id="roomHostPhoto"
-               src="https://i.pravatar.cc/100?img=12"
-               alt="Host">
+        <div class="logo">
+          <div class="logo-icon">R</div>
+          <h1>Rahul Live</h1>
+          <p>Live Voice • Chat • Friends</p>
         </div>
 
-        <div class="room-user-info">
+        <!-- LOGIN -->
 
-          <div class="room-name-line">
-            <strong id="roomHostName">Rahul</strong>
+        <div id="loginForm" class="auth-form">
 
-            <button id="roomChatButton" class="mini-chat-btn">
-              ⇄ Chat
+          <h2>Login</h2>
+
+          <input
+            id="loginEmail"
+            type="email"
+            placeholder="Email"
+            autocomplete="email"
+          >
+
+          <input
+            id="loginPassword"
+            type="password"
+            placeholder="Password"
+            autocomplete="current-password"
+          >
+
+          <button id="loginBtn" type="button">
+            Login
+          </button>
+
+          <p class="auth-switch">
+            Account नहीं है?
+            <button id="showRegisterBtn" type="button">
+              Register
             </button>
+          </p>
+
+        </div>
+
+
+        <!-- REGISTER -->
+
+        <div id="registerForm" class="auth-form hidden">
+
+          <h2>Create Account</h2>
+
+          <input
+            id="registerName"
+            type="text"
+            placeholder="Your Name"
+            autocomplete="name"
+          >
+
+          <input
+            id="registerEmail"
+            type="email"
+            placeholder="Email"
+            autocomplete="email"
+          >
+
+          <input
+            id="registerPassword"
+            type="password"
+            placeholder="Password"
+            autocomplete="new-password"
+          >
+
+          <input
+            id="registerPasswordConfirm"
+            type="password"
+            placeholder="Confirm Password"
+            autocomplete="new-password"
+          >
+
+          <button id="registerBtn" type="button">
+            Create Account
+          </button>
+
+          <p class="auth-switch">
+            पहले से account है?
+            <button id="showLoginBtn" type="button">
+              Login
+            </button>
+          </p>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- ================= MAIN APP ================= -->
+
+    <section id="mainApp" class="hidden">
+
+      <!-- TOP BAR -->
+
+      <header class="topbar">
+
+        <div class="brand">
+          <span class="brand-mark">R</span>
+          <span>Rahul Live</span>
+        </div>
+
+        <div class="top-actions">
+
+          <button
+            id="notificationBtn"
+            type="button"
+            aria-label="Notifications"
+          >
+            🔔
+          </button>
+
+          <button
+            id="profileBtn"
+            type="button"
+            aria-label="Profile"
+          >
+            👤
+          </button>
+
+        </div>
+
+      </header>
+
+
+      <!-- ================= HOME ================= -->
+
+      <main id="homePage" class="page active">
+
+        <div class="page-heading">
+
+          <div>
+            <h2>Live Rooms</h2>
+            <p>अपने पसंद के room में जाएँ</p>
           </div>
 
-          <div class="room-id">
-            ID:<span id="roomId">874271</span>
-            <span class="people-icon">♧</span>
-            <span id="viewerCount">1</span>
+          <button id="createRoomBtn" type="button">
+            ＋ Create Room
+          </button>
+
+        </div>
+
+
+        <!-- SEARCH -->
+
+        <div class="search-box">
+
+          <span>🔎</span>
+
+          <input
+            id="roomSearch"
+            type="search"
+            placeholder="Room search करें..."
+          >
+
+        </div>
+
+
+        <!-- ROOM CATEGORIES -->
+
+        <div class="categories">
+
+          <button type="button" class="category active">
+            All
+          </button>
+
+          <button type="button" class="category">
+            🎙️ Voice
+          </button>
+
+          <button type="button" class="category">
+            🎵 Music
+          </button>
+
+          <button type="button" class="category">
+            🎮 Games
+          </button>
+
+          <button type="button" class="category">
+            👥 Friends
+          </button>
+
+        </div>
+
+
+        <!-- LIVE ROOMS -->
+
+        <div id="roomsList" class="rooms-list">
+
+          <!-- Real rooms will be loaded here from database -->
+
+        </div>
+
+
+        <!-- EMPTY ROOM MESSAGE -->
+
+        <div id="roomsEmpty" class="empty-state">
+
+          <div class="empty-icon">🎙️</div>
+
+          <h3>अभी कोई room नहीं मिला</h3>
+
+          <p>अपना पहला room बनाकर दोस्तों को invite करें।</p>
+
+          <button id="emptyCreateRoomBtn" type="button">
+            अपना Room बनाएँ
+          </button>
+
+        </div>
+
+      </main>
+
+
+      <!-- ================= FRIENDS ================= -->
+
+      <main id="friendsPage" class="page hidden">
+
+        <div class="page-heading">
+
+          <div>
+            <h2>Friends</h2>
+            <p>अपने दोस्तों से जुड़ें</p>
+          </div>
+
+          <button id="addFriendBtn" type="button">
+            ＋ Add Friend
+          </button>
+
+        </div>
+
+        <div id="friendsList" class="friends-list">
+          <!-- Real friends will appear here -->
+        </div>
+
+      </main>
+
+
+      <!-- ================= WALLET ================= -->
+
+      <main id="walletPage" class="page hidden">
+
+        <div class="page-heading">
+
+          <div>
+            <h2>Wallet</h2>
+            <p>Coins और gifts</p>
           </div>
 
         </div>
 
-      </div>
+        <div class="wallet-card">
 
-      <div class="top-actions">
+          <span>Available Coins</span>
 
-        <button id="shareRoomBtn" class="top-icon">
-          ↗
-        </button>
-
-        <button id="leaveRoomBtn" class="top-icon">
-          ◯
-        </button>
-
-      </div>
-
-    </header>
-
-
-    <!-- ROOM MUSIC -->
-    <button id="roomMusicBtn" class="music-button">
-      🎵 Add room music&nbsp; +
-    </button>
-
-
-    <!-- HOST -->
-    <div class="room-host">
-
-      <div class="host-frame">
-        <img id="mainHostPhoto"
-             src="https://i.pravatar.cc/180?img=12"
-             alt="Rahul">
-      </div>
-
-      <div id="mainHostName" class="host-name">
-        Rahul
-      </div>
-
-    </div>
-
-
-    <!-- =================================================
-         VOICE SEATS
-    ================================================== -->
-
-    <div id="seatGrid" class="seat-grid">
-
-      <!-- SEAT 1 -->
-      <button class="seat empty"
-              data-seat="1">
-        <span class="seat-circle">
-          +
-        </span>
-        <span class="seat-number">1</span>
-      </button>
-
-
-      <!-- SEAT 2 -->
-      <button class="seat empty"
-              data-seat="2">
-        <span class="seat-circle">
-          +
-        </span>
-        <span class="seat-number">2</span>
-      </button>
-
-
-      <!-- SEAT 3 -->
-      <button class="seat empty"
-              data-seat="3">
-        <span class="seat-circle">
-          +
-        </span>
-        <span class="seat-number">3</span>
-      </button>
-
-
-      <!-- SEAT 4 -->
-      <button class="seat empty"
-              data-seat="4">
-        <span class="seat-circle">
-          +
-        </span>
-        <span class="seat-number">4</span>
-      </button>
-
-
-      <!-- SEAT 5 -->
-      <button class="seat empty"
-              data-seat="5">
-        <span class="seat-circle">
-          +
-        </span>
-        <span class="seat-number">5</span>
-      </button>
-
-
-      <!-- SEAT 6 -->
-      <button class="seat empty"
-              data-seat="6">
-        <span class="seat-circle">
-          +
-        </span>
-        <span class="seat-number">6</span>
-      </button>
-
-
-      <!-- SEAT 7 -->
-      <button class="seat empty"
-              data-seat="7">
-        <span class="seat-circle">
-          +
-        </span>
-        <span class="seat-number">7</span>
-      </button>
-
-
-      <!-- SEAT 8 -->
-      <button class="seat locked"
-              data-seat="8">
-        <span class="seat-circle">
-          🔒
-        </span>
-        <span class="seat-number">8</span>
-      </button>
-
-
-      <!-- SEAT 9 -->
-      <button class="seat empty"
-              data-seat="9">
-        <span class="seat-circle">
-          +
-        </span>
-        <span class="seat-number">9</span>
-      </button>
-
-
-      <!-- SEAT 10 -->
-      <button class="seat empty"
-              data-seat="10">
-        <span class="seat-circle">
-          +
-        </span>
-        <span class="seat-number">10</span>
-      </button>
-
-
-      <!-- SEAT 11 -->
-      <button class="seat locked"
-              data-seat="11">
-        <span class="seat-circle">
-          🔒
-        </span>
-        <span class="seat-number">11</span>
-      </button>
-
-
-      <!-- SEAT 12 -->
-      <button class="seat locked"
-              data-seat="12">
-        <span class="seat-circle">
-          🔒
-        </span>
-        <span class="seat-number">12</span>
-      </button>
-
-    </div>
-
-
-    <!-- =================================================
-         ROOM CHAT
-    ================================================== -->
-
-    <div id="roomMessages" class="room-messages">
-
-      <div class="system-message">
-        Welcome to Rahul Live. Please respect each other and
-        chat in a decent manner.
-      </div>
-
-      <div class="join-message">
-        <span>Rahul</span> entered
-      </div>
-
-      <div class="system-message dark">
-        The owner/admin has set the maximum range for the
-        lucky number to 99
-      </div>
-
-    </div>
-
-
-    <!-- RIGHT SIDE EVENT / GIFT AREA -->
-
-    <div class="event-panel">
-
-      <div class="event-card">
-        <div class="event-title">
-          🎁
-        </div>
-
-        <div class="event-text">
-          Consumption Subsidy
-          <br>
-          The Greatest Rewards
-        </div>
-      </div>
-
-      <div class="pk-card">
-        <strong>PK</strong>
-        <span id="pkTimer">04:54</span>
-      </div>
-
-    </div>
-
-
-    <!-- =================================================
-         BOTTOM CONTROLS
-    ================================================== -->
-
-    <div class="bottom-controls">
-
-      <button id="openRoomChat"
-              class="control-btn">
-        💬
-      </button>
-
-      <button id="messagesBtn"
-              class="control-btn notification">
-        ✉️
-        <span>81</span>
-      </button>
-
-      <button id="speakerBtn"
-              class="control-btn">
-        🔊
-      </button>
-
-      <button id="micBtn"
-              class="control-btn">
-        🎙️
-      </button>
-
-      <button id="emojiBtn"
-              class="control-btn">
-        😊
-      </button>
-
-      <button id="menuBtn"
-              class="control-btn">
-        ▦
-      </button>
-
-      <button id="giftBtn"
-              class="control-btn gift">
-        🎁
-      </button>
-
-    </div>
-
-  </section>
-
-
-  <!-- ===================================================
-       PROFILE PAGE
-  ==================================================== -->
-
-  <section id="profilePage" class="page white-page">
-
-    <header class="simple-header">
-
-      <button class="back-btn" data-back="roomPage">
-        ‹
-      </button>
-
-      <h2>Profile</h2>
-
-      <button id="profileSettingsBtn"
-              class="header-more">
-        ⋯
-      </button>
-
-    </header>
-
-
-    <div class="profile-header">
-
-      <label class="profile-photo-wrapper">
-
-        <img id="profilePhoto"
-             src="https://i.pravatar.cc/200?img=12"
-             alt="Profile">
-
-        <span class="camera-icon">
-          📷
-        </span>
-
-        <input id="profilePhotoInput"
-               type="file"
-               accept="image/*"
-               hidden>
-
-      </label>
-
-      <h1 id="profileName">
-        Rahul
-      </h1>
-
-      <div class="profile-id">
-        ID:<span id="profileId">103021667</span>
-        📋
-      </div>
-
-    </div>
-
-
-    <div class="follow-row">
-
-      <div>
-        <strong id="followingCount">1</strong>
-        <span>Follow</span>
-      </div>
-
-      <div class="follow-line"></div>
-
-      <div>
-        <strong id="fansCount">0</strong>
-        <span>Fans</span>
-      </div>
-
-      <div class="family-badge">
-        👑
-        <small>Family</small>
-      </div>
-
-    </div>
-
-
-    <div class="profile-menu">
-
-      <button class="profile-item">
-        <span>👛</span>
-        <span>Recharge&Income</span>
-        <b>›</b>
-      </button>
-
-      <button class="profile-item">
-        <span>🏅</span>
-        <span>Lama super supporter</span>
-        <b>›</b>
-      </button>
-
-      <button class="profile-item">
-        <span>🏪</span>
-        <span>Store</span>
-        <b>›</b>
-      </button>
-
-      <button class="profile-item">
-        <span>🎒</span>
-        <span>Backpack & Dress Up</span>
-        <b>›</b>
-      </button>
-
-      <button class="profile-item">
-        <span>🏅</span>
-        <span>Medal</span>
-        <b>›</b>
-      </button>
-
-      <button class="profile-item">
-        <span>⭐</span>
-        <span>Level</span>
-        <em>New</em>
-        <strong class="level-badge">💎 LV.1</strong>
-        <b>›</b>
-      </button>
-
-      <button class="profile-item">
-        <span>🛋️</span>
-        <span>SVIP</span>
-        <b>›</b>
-      </button>
-
-      <button class="profile-item">
-        <span>💰</span>
-        <span>Wealth Level</span>
-        <em>New</em>
-        <b>›</b>
-      </button>
-
-      <button class="profile-item">
-        <span>👑</span>
-        <span>Aristocracy</span>
-        <b>›</b>
-      </button>
-
-      <button class="profile-item">
-        <span>💜</span>
-        <span>Love House</span>
-        <b>›</b>
-      </button>
-
-    </div>
-
-
-    <nav class="profile-bottom-nav">
-
-      <button data-page="roomPage">⌂</button>
-      <button>🎮</button>
-      <button>◉</button>
-
-      <button id="personalChatNav"
-              class="nav-message">
-        ✉️
-        <span>81</span>
-      </button>
-
-      <button class="active">
-        👤
-      </button>
-
-    </nav>
-
-  </section>
-
-
-  <!-- ===================================================
-       PERSONAL CHAT PAGE
-  ==================================================== -->
-
-  <section id="chatPage" class="page white-page">
-
-    <header class="chat-header">
-
-      <button class="back-btn" data-back="profilePage">
-        ‹
-      </button>
-
-      <div class="chat-user">
-
-        <img id="chatUserPhoto"
-             src="https://i.pravatar.cc/100?img=12"
-             alt="User">
-
-        <div>
-          <strong id="chatUserName">
-            Rahul
+          <strong id="coinBalance">
+            0
           </strong>
 
-          <small id="chatUserStatus">
-            Online
-          </small>
+          <button id="addCoinsBtn" type="button">
+            Add Coins
+          </button>
+
         </div>
 
-      </div>
+        <div class="wallet-actions">
 
-      <button id="chatMoreBtn">
-        ⋯
-      </button>
+          <button id="giftHistoryBtn" type="button">
+            🎁 Gift History
+          </button>
 
-    </header>
+          <button id="transactionHistoryBtn" type="button">
+            💳 Transactions
+          </button>
 
-
-    <div id="personalMessages"
-         class="personal-messages">
-
-      <div class="chat-date">
-        Today
-      </div>
-
-      <div class="message received">
-        <img src="https://i.pravatar.cc/80?img=5">
-        <div>
-          Hello 👋
-          <small>09:10</small>
         </div>
-      </div>
 
-      <div class="message sent">
-        <div>
-          Hi 😊
-          <small>09:11 ✓✓</small>
+      </main>
+
+
+      <!-- ================= HELP ================= -->
+
+      <main id="helpPage" class="page hidden">
+
+        <div class="page-heading">
+
+          <div>
+            <h2>Personal Help</h2>
+            <p>Website से जुड़ी समस्या के लिए सहायता लें</p>
+          </div>
+
         </div>
+
+        <div class="help-card">
+
+          <div class="help-icon">
+            🆘
+          </div>
+
+          <h3>Rahul Live Support</h3>
+
+          <p>
+            अगर आपको room, account, chat या किसी feature में
+            समस्या आती है तो यहाँ सहायता के लिए request भेजें।
+          </p>
+
+          <button id="createSupportBtn" type="button">
+            Support Request बनाएं
+          </button>
+
+        </div>
+
+        <div id="supportTickets" class="support-tickets">
+          <!-- Real support tickets will appear here -->
+        </div>
+
+      </main>
+
+
+      <!-- ================= PROFILE ================= -->
+
+      <main id="profilePage" class="page hidden">
+
+        <div class="profile-header">
+
+          <div
+            id="profileAvatar"
+            class="profile-avatar"
+          >
+            👤
+          </div>
+
+          <div>
+
+            <h2 id="profileName">
+              User
+            </h2>
+
+            <p id="profileUsername">
+              @user
+            </p>
+
+          </div>
+
+        </div>
+
+        <div class="profile-actions">
+
+          <button id="editProfileBtn" type="button">
+            Edit Profile
+          </button>
+
+          <button id="logoutBtn" type="button">
+            Logout
+          </button>
+
+        </div>
+
+      </main>
+
+
+      <!-- ================= BOTTOM NAVIGATION ================= -->
+
+      <nav class="bottom-nav">
+
+        <button
+          type="button"
+          class="nav-item active"
+          data-page="homePage"
+        >
+          <span>🏠</span>
+          <small>Home</small>
+        </button>
+
+        <button
+          type="button"
+          class="nav-item"
+          data-page="friendsPage"
+        >
+          <span>👥</span>
+          <small>Friends</small>
+        </button>
+
+        <button
+          type="button"
+          class="nav-item create-main"
+          id="bottomCreateRoomBtn"
+        >
+          <span>🎙️</span>
+          <small>Room</small>
+        </button>
+
+        <button
+          type="button"
+          class="nav-item"
+          data-page="walletPage"
+        >
+          <span>💰</span>
+          <small>Wallet</small>
+        </button>
+
+        <button
+          type="button"
+          class="nav-item"
+          data-page="helpPage"
+        >
+          <span>🆘</span>
+          <small>Help</small>
+        </button>
+
+      </nav>
+
+    </section>
+
+
+    <!-- ================= CREATE ROOM MODAL ================= -->
+
+    <div id="createRoomModal" class="modal hidden">
+
+      <div class="modal-box">
+
+        <div class="modal-header">
+
+          <h2>Create Your Room</h2>
+
+          <button
+            id="closeCreateRoomBtn"
+            type="button"
+          >
+            ✕
+          </button>
+
+        </div>
+
+        <label>
+          Room Name
+          <input
+            id="roomName"
+            type="text"
+            placeholder="मेरे दोस्तों का Room"
+          >
+        </label>
+
+        <label>
+          Room Description
+          <textarea
+            id="roomDescription"
+            placeholder="अपने room के बारे में लिखें..."
+          ></textarea>
+        </label>
+
+        <label>
+          Room Type
+
+          <select id="roomType">
+
+            <option value="public">
+              Public Room
+            </option>
+
+            <option value="private">
+              Private / Friends Only
+            </option>
+
+          </select>
+
+        </label>
+
+        <button
+          id="saveRoomBtn"
+          type="button"
+        >
+          Create Room
+        </button>
+
       </div>
 
     </div>
 
 
-    <div class="chat-input-area">
+    <!-- ================= TOAST ================= -->
 
-      <button id="chatEmojiBtn">
-        😊
-      </button>
-
-      <input id="personalMessageInput"
-             type="text"
-             placeholder="Type a message...">
-
-      <button id="chatImageBtn">
-        🖼️
-      </button>
-
-      <button id="sendPersonalMessage">
-        ➤
-      </button>
-
-    </div>
-
-  </section>
-
-
-  <!-- ===================================================
-       SETTINGS PAGE
-  ==================================================== -->
-
-  <section id="settingsPage"
-           class="page white-page">
-
-    <header class="settings-header">
-
-      <button class="back-btn" data-back="profilePage">
-        ‹
-      </button>
-
-      <h2>Settings</h2>
-
-    </header>
-
-
-    <div class="settings-section">
-
-      <h3>Function</h3>
-
-      <button class="settings-item">
-        <span>♡</span>
-        <label>
-          Supporter rankings are visible to others
-        </label>
-        <input type="checkbox" checked>
-      </button>
-
-      <button class="settings-item">
-        <span>💬</span>
-        <label>
-          Voice Match Order
-        </label>
-        <input type="checkbox" checked>
-      </button>
-
-      <button class="settings-item arrow">
-        <span>♙</span>
-        <label>Blacklist</label>
-        <b>›</b>
-      </button>
-
-      <button class="settings-item arrow">
-        <span>💬</span>
-        <label>Message</label>
-        <i></i>
-        <b>›</b>
-      </button>
-
-      <button class="settings-item">
-        <span>👥</span>
-        <label>Guild Tag</label>
-        <input type="checkbox" checked>
-      </button>
-
-    </div>
-
-
-    <div class="settings-section">
-
-      <h3>Game</h3>
-
-      <button class="settings-item">
-        <span>🎲</span>
-        <label>
-          Sound control in game tab
-        </label>
-        <input type="checkbox" checked>
-      </button>
-
-      <button class="settings-item">
-        <span>📳</span>
-        <label>
-          Game Vibration
-        </label>
-        <input type="checkbox" checked>
-      </button>
-
-    </div>
-
-
-    <div class="settings-section">
-
-      <h3>Others</h3>
-
-      <button class="settings-item arrow">
-        <span>🗑️</span>
-        <label>Clear Cache</label>
-        <small>1MB</small>
-        <b>›</b>
-      </button>
-
-      <button class="settings-item arrow">
-        <span>▣</span>
-        <label>APP POLICY</label>
-        <b>›</b>
-      </button>
-
-      <button class="settings-item">
-        <span>!</span>
-        <label>Current Version</label>
-        <small>1.0.0</small>
-      </button>
-
-      <button class="settings-item arrow">
-        <span>⇧</span>
-        <label>Upload Log</label>
-        <b>›</b>
-      </button>
-
-      <button id="signOutBtn"
-              class="settings-item sign-out">
-        <span>⏻</span>
-        <label>Sign Out</label>
-        <b>›</b>
-      </button>
-
-    </div>
-
-  </section>
-
-
-  <!-- ===================================================
-       SEAT JOIN MODAL
-  ==================================================== -->
-
-  <div id="seatModal"
-       class="modal">
-
-    <div class="modal-box">
-
-      <button class="modal-close"
-              id="closeSeatModal">
-        ×
-      </button>
-
-      <h2>Join Voice Seat</h2>
-
-      <p>
-        Seat <strong id="selectedSeatNumber">1</strong>
-      </p>
-
-      <button id="joinSeatBtn"
-              class="primary-btn">
-        🎙️ Sit on this seat
-      </button>
-
-    </div>
+    <div
+      id="toast"
+      class="toast hidden"
+      role="status"
+    ></div>
 
   </div>
 
 
-  <!-- ===================================================
-       GIFT MODAL
-  ==================================================== -->
+  <!-- JavaScript -->
 
-  <div id="giftModal"
-       class="modal">
-
-    <div class="gift-box">
-
-      <button class="modal-close"
-              id="closeGiftModal">
-        ×
-      </button>
-
-      <h2>Send Gift 🎁</h2>
-
-      <div class="gift-grid">
-
-        <button data-gift="🌹">🌹<small>Rose</small></button>
-        <button data-gift="💖">💖<small>Heart</small></button>
-        <button data-gift="💎">💎<small>Diamond</small></button>
-        <button data-gift="👑">👑<small>Crown</small></button>
-        <button data-gift="🚀">🚀<small>Rocket</small></button>
-        <button data-gift="🎂">🎂<small>Cake</small></button>
-
-      </div>
-
-    </div>
-
-  </div>
-
-
-  <!-- ===================================================
-       EMOJI PANEL
-  ==================================================== -->
-
-  <div id="emojiPanel"
-       class="emoji-panel">
-
-    <button>😀</button>
-    <button>😂</button>
-    <button>😍</button>
-    <button>🥰</button>
-    <button>😘</button>
-    <button>😎</button>
-    <button>😭</button>
-    <button>🔥</button>
-    <button>❤️</button>
-    <button>👏</button>
-    <button>🎉</button>
-    <button>💯</button>
-
-  </div>
-
-</div>
-
-
-<script src="script.js"></script>
+  <script src="script.js"></script>
 
 </body>
 </html>
