@@ -1,10 +1,12 @@
 {
   "name": "Rahul Live",
   "short_name": "Rahul Live",
-  "start_url": "/",
+  "description": "Rahul Live Voice Rooms, Chat, Friends and Music",
+  "start_url": "./",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#6c35e9",
+  "background_color": "#050505",
+  "theme_color": "#39ff88",
   "orientation": "portrait",
+  "lang": "hi-IN",
   "icons": []
 }
