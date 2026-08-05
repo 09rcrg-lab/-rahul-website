@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+  >
+
+  <meta name="theme-color" content="#090909">
+
+  <title>Rahul Live</title>
+
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<!-- =====================================================
+     APP
+===================================================== -->
+
+<div id="app">
+
+
+  <!-- ===================================================
+       AUTHENTICATION
+  ==================================================== -->
+
+  <section id="authScreen" class="screen auth-screen">
+
+    <div class="auth-container">
+
+      <div class="app-logo">
+        RL
+      </div>
+
+      <h1>Rahul Live</h1>
+
+      <p class="auth-subtitle">
+        Live Voice • Chat • Friends
+      </p>
+
+
+      <!-- ================= LOGIN ================= -->
+
+      <form id="loginForm" class="auth-form">
+
+        <h2>Welcome Back</h2>
+
+        <p class="form-description">
+          अपने account में Login करें
+        </p>
+
+        <label for="loginIdentifier">
+          Username / Email
+        </label>
+
+        <input
+          id="loginIdentifier"
+          name="identifier"
+          type="text"
+          autocomplete="username"
+          placeholder="Username या Email"
+          required
+        >
+
+
+        <label for="loginPassword">
+          Password
+        </label>
+
+        <input
+          id="loginPassword"
+          name="password"
+          type="password"
+          autocomplete="current-password"
+          placeholder="Password"
+          required
+        >
+
+
+        <button
+          id="loginButton"
+          class="primary-button"
+          type="submit"
+        >
+          Login
+        </button>
+
+
+        <button
+          id="showRegister"
+          class="link-button"
+          type="button"
+        >
+          नया Account बनाएँ
+        </button>
+
+
+        <div
+          id="loginMessage"
+          class="form-message"
+          role="alert"
+        ></div>
+
+      </form>
+
+
+
+      <!-- ================= REGISTER ================= -->
+
+      <form
+        id="registerForm"
+        class="auth-form"
+        hidden
+      >
+
+        <h2>Create Account</h2>
+
+        <p class="form-description">
+          Rahul Live पर अपना account बनाएँ
+        </p>
+
+
+        <label for="registerUsername">
+          Username
+        </label>
+
+        <input
+          id="registerUsername"
+          name="username"
+          type="text"
+          minlength="3"
+          maxlength="30"
+          autocomplete="username"
+          placeholder="अपना Username"
+          required
+        >
+
+
+        <label for="registerEmail">
+          Email
+        </label>
+
+        <input
+          id="registerEmail"
+          name="email"
+          type="email"
+          autocomplete="email"
+          placeholder="आपका Email"
+          required
+        >
+
+
+        <label for="registerPassword">
+          Password
+        </label>
+
+        <input
+          id="registerPassword"
+          name="password"
+          type="password"
+          minlength="6"
+          autocomplete="new-password"
+          placeholder="कम से कम 6 characters"
+          required
+        >
+
+
+        <button
+          id="registerButton"
+          class="primary-button"
+          type="submit"
+        >
+          Register
+        </button>
+
+
+        <button
+          id="showLogin"
+          class="link-button"
+          type="button"
+        >
+          पहले से Account है? Login
+        </button>
+
+
+        <div
+          id="registerMessage"
+          class="form-message"
+          role="alert"
+        ></div>
+
+      </form>
+
+    </div>
+
+  </section>
+
+
+
+  <!-- ===================================================
+       HOME / POPULAR ROOMS
+  ==================================================== -->
+
+  <section
+    id="homeScreen"
+    class="screen"
+    hidden
+  >
+
+    <header class="home-header">
+
+      <div class="user-mini-profile">
+
+        <img
+          id="homeUserAvatar"
+          src=""
+          alt="Profile"
+        >
+
+        <div class="home-user-info">
+
+          <strong id="homeUsername">
+            Rahul
+          </strong>
+
+          <small id="homeUserId">
+            ID: 000000
+          </small>
+
+        </div>
+
+      </div>
+
+
+      <div class="home-header-actions">
+
+        <button
+          id="searchButton"
+          class="header-icon-button"
+          type="button"
+          aria-label="Search"
+        >
+          🔍
+        </button>
+
+        <button
+          id="homeProfileButton"
+          class="header-icon-button"
+          type="button"
+          aria-label="Profile"
+        >
+          👤
+        </button>
+
+      </div>
+
+    </header>
+
+
+
+    <!-- HOME TABS -->
+
+    <div class="home-tabs">
+
+      <button
+        class="home-tab"
+        data-tab="following"
+        type="button"
+      >
+        Following
+      </button>
+
+      <button
+        class="home-tab active"
+        data-tab="popular"
+        type="button"
+      >
+        Popular
+      </button>
+
+      <button
+        class="home-tab"
+        data-tab="rooms"
+        type="button"
+      >
+        Live
+      </button>
+
+    </div>
+
+
+
+    <!-- BANNER -->
+
+    <div
+      id="homeBanner"
+      class="home-banner"
+    >
+
+      <div class="banner-content">
+
+        <span>🎙️</span>
+
+        <div>
+          <strong>
+            Welcome to Rahul Live
+          </strong>
+
+          <small>
+            Join a live voice room
+          </small>
+        </div>
+
+      </div>
+
+    </div>
+
+
+
+    <!-- QUICK FEATURES -->
+
+    <div class="quick-features">
+
+      <button
+        id="rankingButton"
+        class="feature-card"
+        type="button"
+      >
+        <span>🏆</span>
+        <strong>Ranking</strong>
+      </button>
+
+
+      <button
+        id="matchingButton"
+        class="feature-card"
+        type="button"
+      >
+        <span>🎙️</span>
+        <strong>Voice Matching</strong>
+      </button>
+
+
+      <button
+        id="partyButton"
+        class="feature-card"
+        type="button"
+      >
+        <span>🎉</span>
+        <strong>Party Square</strong>
+      </button>
+
+    </div>
+
+
+
+    <!-- LIVE ROOMS -->
+
+    <main class="rooms-section">
+
+      <div class="section-heading">
+
+        <h2>
+          🔴 Live Rooms
+        </h2>
+
+        <button
+          id="refreshRoomsButton"
+          type="button"
+        >
+          ↻
+        </button>
+
+      </div>
+
+
+      <div
+        id="roomList"
+        class="room-grid"
+      >
+
+        <!--
+          JavaScript यहाँ real rooms render करेगा.
+        -->
+
+      </div>
+
+
+      <div
+        id="roomsEmpty"
+        class="empty-state"
+        hidden
+      >
+        अभी कोई Live Room नहीं है।
+      </div>
+
+    </main>
+
+
+
+    <!-- BOTTOM NAVIGATION -->
+
+    <nav class="bottom-navigation">
+
+      <button
+        class="bottom-nav-button active"
+        id="navHome"
+        type="button"
+      >
+        <span>🏠</span>
+        <small>Home</small>
+      </button>
+
+
+      <button
+        class="bottom-nav-button"
+        id="navDiscover"
+        type="button"
+      >
+        <span>🔎</span>
+        <small>Discover</small>
+      </button>
+
+
+      <button
+        class="create-room-button"
+        id="createRoomButton"
+        type="button"
+      >
+        +
+      </button>
+
+
+      <button
+        class="bottom-nav-button"
+        id="navMessages"
+        type="button"
+      >
+        <span>💬</span>
+        <small>Messages</small>
+      </button>
+
+
+      <button
+        class="bottom-nav-button"
+        id="navProfile"
+        type="button"
+      >
+        <span>👤</span>
+        <small>Profile</small>
+      </button>
+
+    </nav>
+
+  </section>
+
+
+
+  <!-- ===================================================
+       LIVE ROOM
+  ==================================================== -->
+
+  <section
+    id="liveRoomScreen"
+    class="screen live-room-screen"
+    hidden
+  >
+
+    <!-- ROOM HEADER -->
+
+    <header class="live-room-header">
+
+      <button
+        id="leaveRoomButton"
+        class="room-header-button"
+        type="button"
+        aria-label="Leave room"
+      >
+        ‹
+      </button>
+
+
+      <div class="live-room-info">
+
+        <strong id="liveRoomName">
+          Live Room
+        </strong>
+
+        <small>
+
+          <span id="liveRoomId">
+            ID: 000000
+          </span>
+
+          <span class="room-viewers">
+            👁
+            <span id="viewerCount">
+              0
+            </span>
+          </span>
+
+        </small>
+
+      </div>
+
+
+      <div class="room-header-actions">
+
+        <button
+          id="shareRoomButton"
+          class="room-header-button"
+          type="button"
+        >
+          ↗
+        </button>
+
+        <button
+          id="roomPowerButton"
+          class="room-header-button"
+          type="button"
+        >
+          ⏻
+        </button>
+
+      </div>
+
+    </header>
+
+
+
+    <!-- ROOM BODY -->
+
+    <main
+      id="liveRoomMain"
+      class="live-room-main"
+    >
+
+
+      <!-- ROOM MUSIC -->
+
+      <div class="room-music-bar">
+
+        🎵
+
+        <span id="roomMusicText">
+          Add room music
+        </span>
+
+        <button
+          id="roomMusicButton"
+          type="button"
+        >
+          +
+        </button>
+
+      </div>
+
+
+
+      <!-- HOST -->
+
+      <div class="room-host">
+
+        <div class="host-avatar-wrapper">
+
+          <img
+            id="hostAvatar"
+            src=""
+            alt="Host"
+          >
+
+          <span
+            id="hostMicStatus"
+            class="mic-status"
+          >
+            🎙️
+          </span>
+
+        </div>
+
+        <strong id="hostName">
+          Host
+        </strong>
+
+      </div>
+
+
+
+      <!-- VOICE SEATS -->
+
+      <section
+        id="voiceSeatGrid"
+        class="voice-seat-grid"
+      >
+
+        <!--
+
+          12 seats
+
+          Seat 1
+          Seat 2
+          Seat 3
+          Seat 4
+          Seat 5
+          Seat 6
+          Seat 7
+          Seat 8
+          Seat 9
+          Seat 10
+          Seat 11
+          Seat 12
+
+          JavaScript इनको real users के
+          हिसाब से भरता रहेगा।
+
+        -->
+
+      </section>
+
+
+
+      <!-- ROOM ANNOUNCEMENT -->
+
+      <div
+        id="roomAnnouncement"
+        class="room-announcement"
+      >
+        <strong>Announcement:</strong>
+
+        <p>
+          Welcome to Rahul Live.
+          Please chat in a decent manner.
+        </p>
+      </div>
+
+
+
+      <!-- CHAT -->
+
+      <section
+        id="roomChat"
+        class="room-chat"
+      >
+
+        <div
+          id="chatMessages"
+          class="chat-messages"
+        ></div>
+
+      </section>
+
+
+
+      <!-- GIFT / PROMOTION AREA -->
+
+      <div
+        id="giftAnimationLayer"
+        class="gift-animation-layer"
+      ></div>
+
+    </main>
+
+
+
+    <!-- LIVE ROOM CONTROLS -->
+
+    <footer class="live-room-footer">
+
+
+      <button
+        id="chatOpenButton"
+        class="room-control-button"
+        type="button"
+      >
+        💬
+      </button>
+
+
+      <button
+        id="roomMailButton"
+        class="room-control-button"
+        type="button"
+      >
+        ✉️
+        <span
+          id="messageBadge"
+          class="notification-badge"
+          hidden
+        >
+          0
+        </span>
+      </button>
+
+
+      <button
+        id="muteButton"
+        class="room-control-button"
+        type="button"
+      >
+        🔊
+      </button>
+
+
+      <button
+        id="micButton"
+        class="room-control-button"
+        type="button"
+      >
+        🎙️
+      </button>
+
+
+      <button
+        id="emojiButton"
+        class="room-control-button"
+        type="button"
+      >
+        😊
+      </button>
+
+
+      <button
+        id="seatMenuButton"
+        class="room-control-button"
+        type="button"
+      >
+        ▦
+      </button>
+
+
+      <button
+        id="giftButton"
+        class="room-control-button gift-control"
+        type="button"
+      >
+        🎁
+      </button>
+
+    </footer>
+
+
+
+    <!-- MESSAGE INPUT -->
+
+    <form
+      id="roomMessageForm"
+      class="room-message-form"
+    >
+
+      <input
+        id="roomMessageInput"
+        type="text"
+        maxlength="300"
+        autocomplete="off"
+        placeholder="Chat in a decent manner..."
+      >
+
+      <button
+        id="sendMessageButton"
+        type="submit"
+      >
+        ➤
+      </button>
+
+    </form>
+
+
+  </section>
+
+
+
+  <!-- ===================================================
+       PROFILE
+  ==================================================== -->
+
+  <section
+    id="profileScreen"
+    class="screen"
+    hidden
+  >
+
+    <header class="page-header">
+
+      <button
+        id="profileBackButton"
+        class="back-button"
+        type="button"
+      >
+        ‹
+      </button>
+
+      <h2>
+        Profile
+      </h2>
+
+      <button
+        id="logoutButton"
+        class="header-icon-button"
+        type="button"
+      >
+        ↪
+      </button>
+
+    </header>
+
+
+    <main class="profile-page">
+
+      <div class="profile-cover"></div>
+
+
+      <div class="profile-photo-container">
+
+        <img
+          id="profileAvatar"
+          class="profile-avatar"
+          src=""
+          alt="Profile photo"
+        >
+
+        <button
+          id="changeAvatarButton"
+          type="button"
+        >
+          📷
+        </button>
+
+      </div>
+
+
+      <h2 id="profileName">
+        Rahul
+      </h2>
+
+
+      <p id="profileEmail">
+        user@email.com
+      </p>
+
+
+      <div class="profile-stats">
+
+        <div>
+          <strong id="profileFollowers">
+            0
+          </strong>
+          <small>Followers</small>
+        </div>
+
+        <div>
+          <strong id="profileFollowing">
+            0
+          </strong>
+          <small>Following</small>
+        </div>
+
+        <div>
+          <strong id="profileRooms">
+            0
+          </strong>
+          <small>Rooms</small>
+        </div>
+
+      </div>
+
+
+      <input
+        id="avatarInput"
+        type="file"
+        accept="image/*"
+        hidden
+      >
+
+
+      <button
+        id="editProfileButton"
+        class="secondary-button"
+        type="button"
+      >
+        Edit Profile
+      </button>
+
+    </main>
+
+  </section>
+
+
+
+  <!-- ===================================================
+       GIFT PANEL
+  ==================================================== -->
+
+  <div
+    id="giftPanel"
+    class="bottom-panel"
+    hidden
+  >
+
+    <div class="panel-header">
+
+      <strong>
+        🎁 Send Gift
+      </strong>
+
+      <button
+        id="closeGiftPanel"
+        type="button"
+      >
+        ✕
+      </button>
+
+    </div>
+
+
+    <div
+      id="giftList"
+      class="gift-list"
+    >
+
+      <button
+        class="gift-item"
+        data-gift="Rose"
+        type="button"
+      >
+        🌹
+        <span>Rose</span>
+      </button>
+
+      <button
+        class="gift-item"
+        data-gift="Heart"
+        type="button"
+      >
+        ❤️
+        <span>Heart</span>
+      </button>
+
+      <button
+        class="gift-item"
+        data-gift="Star"
+        type="button"
+      >
+        ⭐
+        <span>Star</span>
+      </button>
+
+      <button
+        class="gift-item"
+        data-gift="Crown"
+        type="button"
+      >
+        👑
+        <span>Crown</span>
+      </button>
+
+    </div>
+
+  </div>
+
+
+
+  <!-- ===================================================
+       EMOJI PANEL
+  ==================================================== -->
+
+  <div
+    id="emojiPanel"
+    class="emoji-panel"
+    hidden
+  >
+
+    <button type="button">❤️</button>
+    <button type="button">😂</button>
+    <button type="button">😍</button>
+    <button type="button">🔥</button>
+    <button type="button">👏</button>
+    <button type="button">🎉</button>
+    <button type="button">👍</button>
+    <button type="button">😘</button>
+
+  </div>
+
+
+
+  <!-- ===================================================
+       TOAST
+  ==================================================== -->
+
+  <div
+    id="toast"
+    class="toast"
+    role="status"
+    aria-live="polite"
+  ></div>
+
+
+  <!-- ===================================================
+       LOADING
+  ==================================================== -->
+
+  <div
+    id="loadingOverlay"
+    class="loading-overlay"
+    hidden
+  >
+
+    <div class="loading-spinner"></div>
+
+    <p>
+      Please wait...
+    </p>
+
+  </div>
+
+
+</div>
+
+
+<script src="script.js"></script>
+
+</body>
+</html>
