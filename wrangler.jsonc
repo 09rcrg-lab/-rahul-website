@@ -1,14 +1,9 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "rahul-live",
+  "name": "live-chat-app",
   "main": "worker.js",
-  "compatibility_date": "2026-08-05",
-
-  "d1_databases": [
-    {
-      "binding": "DB",
-      "database_name": "rahulsocialhub-db",
-      "database_id": "ca8c7270-d634-4b1d-8229-ef10b1af2655"
-    }
-  ]
+  "compatibility_date": "2024-01-01",
+  "assets": {
+    "directory": "./"
+  }
 }
