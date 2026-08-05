@@ -1,0 +1,1125 @@
+/* =========================================================
+   RAHUL LIVE — MAIN STYLE
+   Mobile-first / iPhone friendly
+========================================================= */
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  min-height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display",
+    "Segoe UI", Arial, sans-serif;
+  background: #090909;
+  color: #fff;
+}
+
+body {
+  overflow-x: hidden;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+button {
+  border: 0;
+  cursor: pointer;
+}
+
+button:active {
+  transform: scale(.96);
+}
+
+input {
+  outline: none;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+
+/* =========================================================
+   COMMON
+========================================================= */
+
+.screen {
+  width: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
+  position: relative;
+}
+
+.primary-button {
+  width: 100%;
+  min-height: 52px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #ff2f9f, #7c3cff);
+  color: #fff;
+  font-weight: 800;
+  font-size: 16px;
+  box-shadow: 0 10px 30px rgba(124, 60, 255, .25);
+}
+
+.secondary-button {
+  padding: 13px 20px;
+  border-radius: 14px;
+  background: #222;
+  color: #fff;
+  font-weight: 700;
+}
+
+.link-button {
+  width: 100%;
+  margin-top: 15px;
+  padding: 10px;
+  background: transparent;
+  color: #bda7ff;
+  font-weight: 700;
+}
+
+.form-message {
+  min-height: 22px;
+  margin-top: 10px;
+  text-align: center;
+  font-size: 13px;
+}
+
+.toast {
+  position: fixed;
+  z-index: 9999;
+  left: 50%;
+  bottom: 95px;
+  transform: translateX(-50%);
+  max-width: calc(100% - 40px);
+  padding: 12px 18px;
+  border-radius: 14px;
+  background: rgba(20,20,25,.94);
+  color: #fff;
+  font-size: 14px;
+  text-align: center;
+  box-shadow: 0 10px 35px rgba(0,0,0,.35);
+  pointer-events: none;
+}
+
+
+/* =========================================================
+   LOGIN / REGISTER
+========================================================= */
+
+.auth-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 25px 18px;
+  background:
+    radial-gradient(circle at 20% 10%, rgba(255,0,150,.22), transparent 32%),
+    radial-gradient(circle at 90% 80%, rgba(90,50,255,.25), transparent 35%),
+    #090909;
+}
+
+.auth-container {
+  width: min(100%, 430px);
+  padding: 30px 23px;
+  border: 1px solid rgba(255,255,255,.09);
+  border-radius: 28px;
+  background: rgba(20,20,25,.88);
+  box-shadow: 0 25px 70px rgba(0,0,0,.5);
+  backdrop-filter: blur(20px);
+}
+
+.auth-header {
+  text-align: center;
+}
+
+.app-logo {
+  width: 76px;
+  height: 76px;
+  margin: 0 auto 15px;
+  display: grid;
+  place-items: center;
+  border-radius: 24px;
+  background: linear-gradient(135deg,#ff2fa4,#713cff);
+  color: #fff;
+  font-size: 26px;
+  font-weight: 900;
+  box-shadow: 0 12px 35px rgba(174,45,255,.35);
+}
+
+.auth-container h1 {
+  margin: 0;
+  font-size: 30px;
+}
+
+.auth-subtitle {
+  margin: 7px 0 30px;
+  color: #a8a8b0;
+}
+
+.auth-form h2 {
+  margin: 0 0 5px;
+}
+
+.form-description {
+  margin: 0 0 22px;
+  color: #9999a4;
+  font-size: 14px;
+}
+
+.auth-form label {
+  display: block;
+  margin: 14px 0 7px;
+  color: #cfcfd7;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.auth-form input {
+  width: 100%;
+  height: 51px;
+  padding: 0 15px;
+  border: 1px solid #303039;
+  border-radius: 14px;
+  background: #15151b;
+  color: #fff;
+}
+
+.auth-form input:focus {
+  border-color: #9a58ff;
+}
+
+
+/* =========================================================
+   HOME
+========================================================= */
+
+#homeScreen {
+  background: #f8f8fa;
+  color: #17171b;
+  padding-bottom: 90px;
+}
+
+.home-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 13px 16px 10px;
+  background: #fff;
+}
+
+.user-mini-profile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.user-mini-profile img {
+  width: 43px;
+  height: 43px;
+  border-radius: 12px;
+  object-fit: cover;
+  background: #ddd;
+}
+
+.home-user-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.home-user-info strong {
+  font-size: 15px;
+}
+
+.home-user-info small {
+  margin-top: 3px;
+  color: #999;
+}
+
+.home-header-actions {
+  display: flex;
+  gap: 7px;
+}
+
+.header-icon-button {
+  width: 43px;
+  height: 43px;
+  border-radius: 50%;
+  background: #f2f2f4;
+  font-size: 20px;
+}
+
+.home-tabs {
+  display: flex;
+  align-items: center;
+  gap: 25px;
+  height: 54px;
+  padding: 0 25px;
+  background: #fff;
+}
+
+.home-tab {
+  position: relative;
+  height: 54px;
+  padding: 0;
+  background: transparent;
+  color: #707078;
+  font-size: 16px;
+}
+
+.home-tab.active {
+  color: #17171b;
+  font-weight: 800;
+}
+
+.home-tab.active::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 7px;
+  width: 24px;
+  height: 4px;
+  transform: translateX(-50%);
+  border-radius: 10px;
+  background: #222;
+}
+
+.home-banner {
+  margin: 10px 16px;
+  min-height: 145px;
+  overflow: hidden;
+  border-radius: 20px;
+  display: flex;
+  align-items: flex-end;
+  background:
+    linear-gradient(135deg, rgba(40,20,90,.75), rgba(230,80,150,.55)),
+    radial-gradient(circle at 80% 30%, #f7b31b, transparent 25%),
+    #33225e;
+}
+
+.banner-content {
+  width: 100%;
+  padding: 18px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  background: linear-gradient(transparent,rgba(0,0,0,.55));
+}
+
+.banner-content span {
+  font-size: 35px;
+}
+
+.banner-content strong,
+.banner-content small {
+  display: block;
+  color: #fff;
+}
+
+.banner-content small {
+  margin-top: 5px;
+  opacity: .8;
+}
+
+.quick-features {
+  display: grid;
+  grid-template-columns: repeat(3,1fr);
+  gap: 9px;
+  padding: 2px 16px 14px;
+}
+
+.feature-card {
+  min-height: 100px;
+  border-radius: 18px;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: linear-gradient(145deg,#ffb71b,#ff7b1b);
+}
+
+.feature-card:nth-child(2) {
+  background: linear-gradient(145deg,#48a7ff,#4775ee);
+}
+
+.feature-card:nth-child(3) {
+  background: linear-gradient(145deg,#ff63ad,#ef3e8e);
+}
+
+.feature-card span {
+  font-size: 28px;
+}
+
+.feature-card strong {
+  font-size: 13px;
+}
+
+.rooms-section {
+  padding: 0 16px;
+}
+
+.section-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.section-heading h2 {
+  margin: 8px 0 12px;
+  font-size: 20px;
+}
+
+.section-heading button {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: #eeeef2;
+  font-size: 22px;
+}
+
+.room-grid {
+  display: grid;
+  grid-template-columns: repeat(2,1fr);
+  gap: 12px;
+}
+
+.room-card {
+  min-width: 0;
+  overflow: hidden;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 4px 18px rgba(0,0,0,.08);
+}
+
+.room-cover {
+  position: relative;
+  aspect-ratio: .92;
+  overflow: hidden;
+  background: linear-gradient(135deg,#392a65,#ef5caa);
+}
+
+.room-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.room-live-badge {
+  position: absolute;
+  top: 9px;
+  left: 9px;
+  padding: 5px 8px;
+  border-radius: 8px;
+  background: rgba(255,30,90,.9);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.room-viewers-badge {
+  position: absolute;
+  right: 8px;
+  top: 8px;
+  padding: 4px 7px;
+  border-radius: 8px;
+  background: rgba(0,0,0,.45);
+  color: #fff;
+  font-size: 11px;
+}
+
+.room-card-info {
+  padding: 9px 10px 11px;
+}
+
+.room-card-info strong,
+.room-card-info small {
+  display: block;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.room-card-info strong {
+  font-size: 14px;
+}
+
+.room-card-info small {
+  margin-top: 4px;
+  color: #888;
+}
+
+.empty-state {
+  padding: 45px 10px;
+  color: #888;
+  text-align: center;
+}
+
+
+/* =========================================================
+   BOTTOM NAVIGATION
+========================================================= */
+
+.bottom-navigation {
+  position: fixed;
+  z-index: 500;
+  left: 12px;
+  right: 12px;
+  bottom: max(10px, env(safe-area-inset-bottom));
+  height: 67px;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+  align-items: center;
+  border-radius: 24px;
+  background: rgba(255,255,255,.88);
+  box-shadow: 0 8px 30px rgba(0,0,0,.18);
+  backdrop-filter: blur(18px);
+}
+
+.bottom-nav-button {
+  height: 60px;
+  background: transparent;
+  color: #555;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 3px;
+}
+
+.bottom-nav-button span {
+  font-size: 22px;
+}
+
+.bottom-nav-button small {
+  font-size: 10px;
+}
+
+.bottom-nav-button.active {
+  color: #14cfc2;
+}
+
+.create-room-button {
+  width: 53px;
+  height: 53px;
+  margin: auto;
+  border-radius: 50%;
+  background: linear-gradient(135deg,#13e0d0,#09aef2);
+  color: #fff;
+  font-size: 31px;
+  box-shadow: 0 8px 20px rgba(0,180,200,.28);
+}
+
+
+/* =========================================================
+   LIVE ROOM
+========================================================= */
+
+.live-room-screen {
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 25%, rgba(125,55,255,.8), transparent 32%),
+    linear-gradient(180deg,#391c88 0%,#1d1760 50%,#101127 100%);
+}
+
+.live-room-main {
+  position: absolute;
+  inset: 60px 0 75px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 7px 12px 25px;
+  background:
+    radial-gradient(circle at 15% 30%, rgba(60,150,255,.25), transparent 25%),
+    radial-gradient(circle at 85% 70%, rgba(255,100,200,.2), transparent 30%);
+}
+
+.live-room-header {
+  position: relative;
+  z-index: 30;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 7px 10px;
+  background: rgba(20,10,45,.35);
+  backdrop-filter: blur(14px);
+}
+
+.room-header-button {
+  width: 43px;
+  height: 43px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.13);
+  color: #fff;
+  font-size: 25px;
+}
+
+.live-room-info {
+  flex: 1;
+  margin: 0 9px;
+  overflow: hidden;
+}
+
+.live-room-info strong,
+.live-room-info small {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.live-room-info small {
+  margin-top: 3px;
+  color: rgba(255,255,255,.7);
+  font-size: 11px;
+}
+
+.room-header-actions {
+  display: flex;
+  gap: 5px;
+}
+
+.room-music-bar {
+  width: max-content;
+  max-width: 90%;
+  padding: 7px 11px;
+  border-radius: 20px;
+  background: rgba(255,255,255,.13);
+  color: #fff;
+  font-size: 12px;
+}
+
+.room-music-bar button {
+  margin-left: 5px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.15);
+  color: #fff;
+}
+
+.room-host {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 13px 0 10px;
+}
+
+.host-avatar-wrapper {
+  position: relative;
+}
+
+.host-avatar-wrapper img {
+  width: 94px;
+  height: 94px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 4px solid rgba(255,255,255,.7);
+  box-shadow: 0 0 0 7px rgba(255,255,255,.08),
+              0 8px 30px rgba(0,0,0,.3);
+}
+
+.mic-status {
+  position: absolute;
+  right: -2px;
+  bottom: 2px;
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #15d8c4;
+  font-size: 15px;
+}
+
+.room-host strong {
+  margin-top: 8px;
+  font-size: 15px;
+}
+
+
+/* =========================================================
+   VOICE SEATS
+========================================================= */
+
+.voice-seat-grid {
+  display: grid;
+  grid-template-columns: repeat(4,1fr);
+  gap: 17px 8px;
+  padding: 12px 5px 20px;
+}
+
+.voice-seat {
+  min-width: 0;
+  text-align: center;
+}
+
+.seat-circle {
+  position: relative;
+  width: clamp(58px,18vw,78px);
+  height: clamp(58px,18vw,78px);
+  margin: auto;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(0,0,0,.14);
+  border: 1px solid rgba(255,255,255,.06);
+}
+
+.seat-circle.empty::before {
+  content: "+";
+  color: rgba(255,255,255,.65);
+  font-size: 32px;
+  font-weight: 200;
+}
+
+.seat-circle.locked::before {
+  content: "🔒";
+  font-size: 22px;
+}
+
+.seat-avatar {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 3px solid rgba(255,255,255,.75);
+}
+
+.seat-mic {
+  position: absolute;
+  right: -2px;
+  bottom: -1px;
+  width: 23px;
+  height: 23px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #12d5c3;
+  font-size: 12px;
+}
+
+.seat-number {
+  display: block;
+  margin-top: 5px;
+  color: rgba(255,255,255,.75);
+  font-size: 11px;
+}
+
+.seat-name {
+  display: block;
+  margin-top: 2px;
+  overflow: hidden;
+  color: #fff;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 10px;
+}
+
+
+/* =========================================================
+   ANNOUNCEMENT / CHAT
+========================================================= */
+
+.room-announcement {
+  margin: 3px 0 10px;
+  padding: 12px;
+  border-radius: 14px;
+  background: rgba(0,0,0,.22);
+  color: #1ee8db;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.room-announcement p {
+  margin: 4px 0 0;
+}
+
+.room-chat {
+  min-height: 120px;
+}
+
+.chat-messages {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.chat-message {
+  width: fit-content;
+  max-width: 88%;
+  padding: 7px 10px;
+  border-radius: 12px;
+  background: rgba(0,0,0,.35);
+  color: #fff;
+  font-size: 13px;
+}
+
+.chat-message .chat-user {
+  margin-right: 5px;
+  color: #21e5d5;
+  font-weight: 800;
+}
+
+.chat-message.system {
+  color: #ffe24d;
+}
+
+.chat-message.gift {
+  color: #ff9be3;
+}
+
+
+/* =========================================================
+   ROOM FOOTER
+========================================================= */
+
+.live-room-footer {
+  position: fixed;
+  z-index: 100;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 72px;
+  padding: 7px 10px calc(7px + env(safe-area-inset-bottom));
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  background: linear-gradient(transparent,rgba(0,0,0,.62));
+}
+
+.room-control-button {
+  position: relative;
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.13);
+  color: #fff;
+  font-size: 21px;
+}
+
+.room-control-button.gift-control {
+  background: linear-gradient(135deg,#ffbb26,#ff3f84);
+}
+
+.notification-badge {
+  position: absolute;
+  right: -4px;
+  top: -5px;
+  min-width: 19px;
+  height: 19px;
+  padding: 2px 5px;
+  border-radius: 20px;
+  background: #ff334f;
+  color: #fff;
+  font-size: 10px;
+}
+
+.room-message-form {
+  position: fixed;
+  z-index: 110;
+  left: 10px;
+  right: 10px;
+  bottom: 76px;
+  display: flex;
+  gap: 7px;
+}
+
+.room-message-form input {
+  flex: 1;
+  min-width: 0;
+  height: 43px;
+  padding: 0 14px;
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 22px;
+  background: rgba(0,0,0,.5);
+  color: #fff;
+  backdrop-filter: blur(12px);
+}
+
+.room-message-form button {
+  width: 43px;
+  height: 43px;
+  border-radius: 50%;
+  background: #15d8c4;
+  color: #fff;
+  font-size: 18px;
+}
+
+
+/* =========================================================
+   GIFTS / EMOJIS
+========================================================= */
+
+.bottom-panel {
+  position: fixed;
+  z-index: 700;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 18px;
+  border-radius: 24px 24px 0 0;
+  background: #17171c;
+  box-shadow: 0 -15px 50px rgba(0,0,0,.4);
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.panel-header button {
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  background: #292930;
+  color: #fff;
+}
+
+.gift-list {
+  display: grid;
+  grid-template-columns: repeat(4,1fr);
+  gap: 12px;
+}
+
+.gift-item {
+  padding: 12px 5px;
+  border-radius: 15px;
+  background: #24242b;
+  color: #fff;
+}
+
+.gift-item:first-child {
+  font-size: 25px;
+}
+
+.gift-item span {
+  display: block;
+  margin-top: 5px;
+  font-size: 11px;
+}
+
+.emoji-panel {
+  position: fixed;
+  z-index: 800;
+  right: 10px;
+  bottom: 78px;
+  display: grid;
+  grid-template-columns: repeat(4,1fr);
+  gap: 5px;
+  padding: 10px;
+  border-radius: 17px;
+  background: rgba(20,20,25,.95);
+}
+
+.emoji-panel button {
+  width: 45px;
+  height: 40px;
+  border-radius: 10px;
+  background: #2b2b32;
+  font-size: 22px;
+}
+
+
+/* =========================================================
+   PROFILE
+========================================================= */
+
+#profileScreen {
+  background: #f8f8fa;
+  color: #17171b;
+}
+
+.page-header {
+  height: 58px;
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fff;
+}
+
+.page-header h2 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.back-button {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: #f0f0f2;
+  font-size: 28px;
+}
+
+.profile-page {
+  text-align: center;
+}
+
+.profile-cover {
+  height: 150px;
+  background:
+    radial-gradient(circle at 30% 30%,#ff83c9,transparent 30%),
+    linear-gradient(135deg,#4820a4,#ef408c);
+}
+
+.profile-photo-container {
+  position: relative;
+  width: 110px;
+  margin: -55px auto 10px;
+}
+
+.profile-avatar {
+  width: 110px;
+  height: 110px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 5px solid #fff;
+  background: #ddd;
+}
+
+.profile-photo-container button {
+  position: absolute;
+  right: 0;
+  bottom: 4px;
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  background: #222;
+  color: #fff;
+}
+
+.profile-page > h2 {
+  margin: 8px 0 3px;
+}
+
+.profile-page > p {
+  margin: 0;
+  color: #888;
+}
+
+.profile-stats {
+  width: min(100% - 35px,420px);
+  margin: 25px auto;
+  display: grid;
+  grid-template-columns: repeat(3,1fr);
+  padding: 15px;
+  border-radius: 18px;
+  background: #fff;
+}
+
+.profile-stats strong,
+.profile-stats small {
+  display: block;
+}
+
+.profile-stats strong {
+  font-size: 18px;
+}
+
+.profile-stats small {
+  margin-top: 4px;
+  color: #888;
+  font-size: 11px;
+}
+
+
+/* =========================================================
+   LOADING
+========================================================= */
+
+.loading-overlay {
+  position: fixed;
+  z-index: 10000;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,.72);
+  backdrop-filter: blur(8px);
+}
+
+.loading-spinner {
+  width: 42px;
+  height: 42px;
+  border: 4px solid rgba(255,255,255,.2);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin .8s linear infinite;
+}
+
+.loading-overlay p {
+  margin-top: 12px;
+  color: #fff;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+
+/* =========================================================
+   REACTION ANIMATION
+========================================================= */
+
+.floating-reaction {
+  position: absolute;
+  bottom: 25%;
+  font-size: 30px;
+  pointer-events: none;
+  animation: floatReaction 1.8s ease-out forwards;
+}
+
+@keyframes floatReaction {
+  0% {
+    opacity: 0;
+    transform: translateY(0) scale(.7);
+  }
+
+  15% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(-230px) scale(1.3);
+  }
+}
+
+
+/* =========================================================
+   DESKTOP
+========================================================= */
+
+@media (min-width: 700px) {
+
+  .home-header,
+  .home-tabs,
+  .rooms-section {
+    max-width: 1000px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .room-grid {
+    grid-template-columns: repeat(3,1fr);
+  }
+
+  .live-room-screen {
+    max-width: 500px;
+    margin: auto;
+    box-shadow: 0 0 80px rgba(0,0,0,.4);
+  }
+
+}
