@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>QR Scanner | Rahul Social Hub</title>
+
+<style>
+*{
+  box-sizing:border-box;
+}
+
+body{
+  margin:0;
+  min-height:100vh;
+  background:#050505;
+  color:#fff;
+  font-family:Arial,sans-serif;
+}
+
+.header{
+  text-align:center;
+  padding:22px 15px;
+  background:#0b0b0b;
+  border-bottom:1px solid #222;
+}
+
+.logo{
+  font-size:24px;
+  font-weight:bold;
+}
+
+.subtitle{
+  color:#888;
+  font-size:13px;
+  margin-top:5px;
+}
+
+.container{
+  max-width:550px;
+  margin:auto;
+  padding:20px;
+}
+
+.card{
+  background:#101010;
+  border:1px solid #252525;
+  border-radius:18px;
+  padding:20px;
+  margin-bottom:18px;
+}
+
+#reader{
+  width:100%;
+  overflow:hidden;
+  border-radius:14px;
+}
+
+button{
+  width:100%;
+  padding:15px;
+  margin-top:12px;
+  border:0;
+  border-radius:11px;
+  background:#20d66b;
+  color:#000;
+  font-size:16px;
+  font-weight:bold;
+}
+
+input{
+  width:100%;
+  padding:14px;
+  background:#181818;
+  color:#fff;
+  border:1px solid #333;
+  border-radius:10px;
+  font-size:16px;
+}
+
+.message{
+  text-align:center;
+  color:#888;
+  line-height:1.5;
+}
+
+.success{
+  color:#20d66b;
+}
+
+.error{
+  color:#ff5555;
+}
+</style>
+
+<!-- QR SCANNER LIBRARY -->
+<script src="https://unpkg.com/html5-qrcode"></script>
+
+</head>
+
+<body>
+
+<div class="header">
+
+  <div class="logo">
+    Rahul Social Hub
+  </div>
+
+  <div class="subtitle">
+    Order QR Scanner
+  </div>
+
+</div>
+
+
+<div class="container">
+
+  <div class="card">
+
+    <h2>📷 QR Scan करें</h2>
+
+    <p class="message">
+      Customer अपने Order का QR Code
+      कैमरा से scan कर सकता है।
+    </p>
+
+    <div id="reader"></div>
+
+    <div id="message"
+         class="message">
+      Camera शुरू करने के लिए नीचे
+      button दबाएँ।
+    </div>
+
+    <button onclick="startScanner()">
+      📷 Camera शुरू करें
+    </button>
+
+    <button
+      onclick="stopScanner()"
+      style="
+        background:#222;
+        color:#fff;
+      "
+    >
+      ⏹️ Scanner बंद करें
+    </button>
+
+  </div>
+
+
+  <div class="card">
+
+    <h2>🔎 Order ID से खोजें</h2>
+
+    <input
+      id="manualOrder"
+      placeholder="जैसे RH123456"
+    >
+
+    <button onclick="openOrder()">
+      Order खोलें
+    </button>
+
+  </div>
+
+</div>
+
+
+<script>
+
+let scanner = null;
+let running = false;
+
+
+/* =================================
+   START CAMERA
+================================= */
+
+function startScanner(){
+
+  if(running){
+    return;
+  }
+
+  document.getElementById(
+    "message"
+  ).innerHTML =
+    "📷 Camera शुरू हो रहा है...";
+
+
+  scanner =
+    new Html5Qrcode("reader");
+
+
+  scanner.start(
+
+    {
+      facingMode:"environment"
+    },
+
+    {
+      fps:10,
+
+      qrbox:{
+        width:250,
+        height:250
+      }
+
+    },
+
+    function(decodedText){
+
+      handleQR(decodedText);
+
+    },
+
+    function(errorMessage){
+
+      // Normal scanning errors
+      // intentionally ignored
+
+    }
+
+  ).then(function(){
+
+    running = true;
+
+    document.getElementById(
+      "message"
+    ).innerHTML =
+      "🟢 QR Code camera के सामने रखें।";
+
+  }).catch(function(error){
+
+    console.error(error);
+
+    document.getElementById(
+      "message"
+    ).innerHTML =
+      "❌ Camera शुरू नहीं हो पाया। Camera permission दें।";
+
+  });
+
+}
+
+
+/* =================================
+   QR RESULT
+================================= */
+
+function handleQR(text){
+
+  if(!text){
+    return;
+  }
+
+
+  document.getElementById(
+    "message"
+  ).innerHTML =
+    "✅ QR मिल गया! Order खोल रहे हैं...";
+
+
+  /*
+    QR में हमारी website का
+    customer.html?order=... URL होगा।
+  */
+
+
+  if(
+    text.includes("customer.html")
+    ||
+    text.includes("?order=")
+  ){
+
+    stopScanner();
+
+
+    window.location.href =
+      text;
+
+    return;
+
+  }
+
+
+  /*
+    अगर QR में सिर्फ Order ID है
+  */
+
+  const orderId =
+    text.trim();
+
+
+  if(
+    orderId.toUpperCase()
+      .startsWith("RH")
+  ){
+
+    stopScanner();
+
+    window.location.href =
+      "customer.html?order=" +
+      encodeURIComponent(orderId);
+
+    return;
+
+  }
+
+
+  document.getElementById(
+    "message"
+  ).innerHTML =
+    "❌ यह Rahul Social Hub का Order QR नहीं है।";
+
+}
+
+
+/* =================================
+   STOP CAMERA
+================================= */
+
+function stopScanner(){
+
+  if(!scanner || !running){
+    return;
+  }
+
+
+  scanner.stop()
+    .then(function(){
+
+      running = false;
+
+      scanner.clear();
+
+      document.getElementById(
+        "message"
+      ).innerHTML =
+        "⏹️ Scanner बंद है।";
+
+    })
+    .catch(function(error){
+
+      console.error(error);
+
+    });
+
+}
+
+
+/* =================================
+   MANUAL ORDER
+================================= */
+
+function openOrder(){
+
+  const id =
+    document.getElementById(
+      "manualOrder"
+    ).value
+    .trim()
+    .toUpperCase();
+
+
+  if(!id){
+
+    alert(
+      "पहले Order ID डालें।"
+    );
+
+    return;
+
+  }
+
+
+  window.location.href =
+    "customer.html?order=" +
+    encodeURIComponent(id);
+
+}
+
+
+/* =================================
+   PAGE CLOSE
+================================= */
+
+window.addEventListener(
+  "beforeunload",
+  function(){
+
+    if(scanner && running){
+
+      scanner.stop()
+        .catch(()=>{});
+
+    }
+
+  }
+);
+
+</script>
+
+</body>
+</html>
