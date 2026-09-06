@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Order Status | Rahul Social Hub</title>
+
+<style>
+
+*{
+  box-sizing:border-box;
+}
+
+body{
+  margin:0;
+  min-height:100vh;
+  background:#050505;
+  color:#fff;
+  font-family:Arial,sans-serif;
+}
+
+.header{
+  padding:22px 18px;
+  text-align:center;
+  background:#0b0b0b;
+  border-bottom:1px solid #222;
+}
+
+.logo{
+  font-size:24px;
+  font-weight:bold;
+}
+
+.subtitle{
+  color:#888;
+  margin-top:5px;
+  font-size:13px;
+}
+
+.container{
+  width:100%;
+  max-width:550px;
+  margin:auto;
+  padding:20px;
+}
+
+.card{
+  background:#101010;
+  border:1px solid #252525;
+  border-radius:18px;
+  padding:20px;
+  margin-bottom:18px;
+}
+
+h2{
+  margin-top:0;
+}
+
+input{
+  width:100%;
+  padding:15px;
+  background:#181818;
+  color:#fff;
+  border:1px solid #333;
+  border-radius:11px;
+  outline:none;
+  font-size:16px;
+}
+
+button{
+  width:100%;
+  padding:15px;
+  margin-top:10px;
+  border:0;
+  border-radius:11px;
+  background:#20d66b;
+  color:#000;
+  font-size:16px;
+  font-weight:bold;
+}
+
+.order-box{
+  margin-top:18px;
+  background:#151515;
+  border:1px solid #292929;
+  border-radius:14px;
+  padding:17px;
+}
+
+.order-id{
+  color:#20d66b;
+  font-size:18px;
+  font-weight:bold;
+}
+
+.service{
+  font-size:20px;
+  font-weight:bold;
+  margin:12px 0;
+}
+
+.row{
+  display:flex;
+  justify-content:space-between;
+  gap:15px;
+  padding:11px 0;
+  border-bottom:1px solid #252525;
+}
+
+.row:last-child{
+  border-bottom:0;
+}
+
+.label{
+  color:#888;
+}
+
+.value{
+  text-align:right;
+}
+
+.status{
+  margin-top:18px;
+  padding:13px;
+  border-radius:11px;
+  text-align:center;
+  background:#202020;
+  font-weight:bold;
+}
+
+.success{
+  border:1px solid #20d66b;
+}
+
+.pending{
+  border:1px solid #777;
+}
+
+.cancelled{
+  border:1px solid #e44;
+}
+
+.error{
+  text-align:center;
+  color:#ff5555;
+  padding:15px;
+}
+
+.empty{
+  text-align:center;
+  color:#888;
+  padding:20px;
+}
+
+.footer{
+  text-align:center;
+  color:#666;
+  font-size:12px;
+  padding:25px;
+}
+
+</style>
+</head>
+
+
+<body>
+
+
+<div class="header">
+
+  <div class="logo">
+    Rahul Social Hub
+  </div>
+
+  <div class="subtitle">
+    Order Status
+  </div>
+
+</div>
+
+
+
+<div class="container">
+
+
+  <!-- SEARCH -->
+
+  <div class="card">
+
+    <h2>🔎 अपना Order देखें</h2>
+
+    <p style="color:#888;font-size:13px;">
+      QR से आने पर Order ID अपने-आप भर जाएगी।
+    </p>
+
+    <input
+      id="orderId"
+      placeholder="Order ID जैसे RH123456"
+      autocomplete="off"
+    >
+
+    <button onclick="searchOrder()">
+      🔍 Order देखें
+    </button>
+
+  </div>
+
+
+
+  <!-- RESULT -->
+
+  <div class="card">
+
+    <h2>📦 Order Details</h2>
+
+    <div id="result">
+
+      <div class="empty">
+        Order ID डालकर अपना Order देखें।
+      </div>
+
+    </div>
+
+  </div>
+
+
+</div>
+
+
+
+<div class="footer">
+  Rahul Social Hub © 2026
+</div>
+
+
+
+<script>
+
+/* =====================================
+   IMPORTANT
+
+   Customer page owner का phone number
+   बिल्कुल use/display नहीं करता।
+===================================== */
+
+
+/* -------------------------------------
+   GET ORDER ID FROM URL
+------------------------------------- */
+
+function getOrderIdFromURL(){
+
+  const params =
+    new URLSearchParams(
+      window.location.search
+    );
+
+  return params.get("order");
+
+}
+
+
+/* -------------------------------------
+   GET ORDERS
+------------------------------------- */
+
+function getOrders(){
+
+  try{
+
+    const data =
+      localStorage.getItem(
+        "rahul_orders"
+      );
+
+    return data
+      ? JSON.parse(data)
+      : [];
+
+  }catch(error){
+
+    return [];
+
+  }
+
+}
+
+
+/* -------------------------------------
+   SEARCH ORDER
+------------------------------------- */
+
+function searchOrder(){
+
+  const input =
+    document.getElementById(
+      "orderId"
+    );
+
+  const id =
+    input.value
+      .trim()
+      .toUpperCase();
+
+
+  if(!id){
+
+    showError(
+      "कृपया Order ID डालें।"
+    );
+
+    return;
+
+  }
+
+
+  const orders =
+    getOrders();
+
+
+  const order =
+    orders.find(
+      item =>
+        String(item.id)
+          .toUpperCase() === id
+    );
+
+
+  if(!order){
+
+    showError(
+      "यह Order नहीं मिला।"
+    );
+
+    return;
+
+  }
+
+
+  showOrder(order);
+
+}
+
+
+/* -------------------------------------
+   SHOW ORDER
+------------------------------------- */
+
+function showOrder(order){
+
+  const result =
+    document.getElementById(
+      "result"
+    );
+
+
+  let statusClass =
+    "pending";
+
+
+  if(order.status === "Completed"){
+
+    statusClass =
+      "success";
+
+  }
+
+
+  if(order.status === "Cancelled"){
+
+    statusClass =
+      "cancelled";
+
+  }
+
+
+  let statusText =
+    "⏳ Pending";
+
+
+  if(order.status === "Processing"){
+
+    statusText =
+      "⚙️ Processing";
+
+  }
+
+
+  if(order.status === "Completed"){
+
+    statusText =
+      "✅ Completed";
+
+  }
+
+
+  if(order.status === "Cancelled"){
+
+    statusText =
+      "❌ Cancelled";
+
+  }
+
+
+  result.innerHTML = `
+
+    <div class="order-box">
+
+      <div class="order-id">
+
+        Order ID:
+        ${safe(order.id)}
+
+      </div>
+
+
+      <div class="service">
+
+        ${safe(order.serviceName)}
+
+      </div>
+
+
+      <div class="row">
+
+        <span class="label">
+          Quantity
+        </span>
+
+        <span class="value">
+          ${safe(order.quantity)}
+        </span>
+
+      </div>
+
+
+      <div class="row">
+
+        <span class="label">
+          Total Units
+        </span>
+
+        <span class="value">
+          ${Number(order.units || 0)
+            .toLocaleString("en-IN")}
+        </span>
+
+      </div>
+
+
+      <div class="row">
+
+        <span class="label">
+          Amount
+        </span>
+
+        <span class="value">
+          ₹${Number(order.amount || 0)
+            .toLocaleString("en-IN")}
+        </span>
+
+      </div>
+
+
+      ${
+        order.lifetimeRefill
+        ? `
+
+          <div class="row">
+
+            <span class="label">
+              Refill
+            </span>
+
+            <span class="value">
+              ♾️ Lifetime Refill
+            </span>
+
+          </div>
+
+        `
+        : ""
+      }
+
+
+      <div class="status ${statusClass}">
+
+        ${statusText}
+
+      </div>
+
+
+      <p
+        style="
+          color:#777;
+          font-size:12px;
+          text-align:center;
+          margin-bottom:0;
+        "
+      >
+
+        यह Order ID संभालकर रखें।
+
+      </p>
+
+    </div>
+
+  `;
+
+}
+
+
+/* -------------------------------------
+   ERROR
+------------------------------------- */
+
+function showError(message){
+
+  document.getElementById(
+    "result"
+  ).innerHTML = `
+
+    <div class="error">
+
+      ❌ ${safe(message)}
+
+    </div>
+
+  `;
+
+}
+
+
+/* -------------------------------------
+   SECURITY
+------------------------------------- */
+
+function safe(value){
+
+  return String(value ?? "")
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+
+}
+
+
+/* -------------------------------------
+   QR AUTO LOAD
+------------------------------------- */
+
+window.addEventListener(
+  "DOMContentLoaded",
+  function(){
+
+    const orderId =
+      getOrderIdFromURL();
+
+
+    if(!orderId){
+      return;
+    }
+
+
+    document.getElementById(
+      "orderId"
+    ).value =
+      orderId;
+
+
+    searchOrder();
+
+  }
+);
+
+</script>
+
+</body>
+</html>
