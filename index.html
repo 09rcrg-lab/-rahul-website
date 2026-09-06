@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rahul Social Hub</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- LOGIN / REGISTER -->
+  <div id="authPage" class="auth-page">
+    <div class="auth-box">
+      <h1>Rahul Social Hub</h1>
+      <p class="subtitle">Social Media Services</p>
+      <div class="tabs">
+        <button id="loginTab" class="active" onclick="showLogin()">Login</button>
+        <button id="registerTab" onclick="showRegister()">Register</button>
+      </div>
+      <!-- LOGIN -->
+      <form id="loginForm">
+        <input
+          type="text"
+          id="loginUsername"
+          placeholder="Username"
+          required
+        >
+        <input
+          type="password"
+          id="loginPassword"
+          placeholder="Password"
+          required
+        >
+        <button type="submit" class="main-btn">
+          Login
+        </button>
+      </form>
+      <!-- REGISTER -->
+      <form id="registerForm" style="display:none;">
+        <input
+          type="text"
+          id="registerUsername"
+          placeholder="Username"
+          required
+        >
+        <input
+          type="email"
+          id="registerEmail"
+          placeholder="Email"
+          required
+        >
+        <input
+          type="password"
+          id="registerPassword"
+          placeholder="Password"
+          required
+        >
+        <input
+          type="text"
+          id="referralCode"
+          placeholder="Referral Code (Optional)"
+        >
+        <button type="submit" class="main-btn">
+          Create Account
+        </button>
+      </form>
+      <p id="authMessage"></p>
+    </div>
+  </div>
+  <!-- DASHBOARD -->
+  <div id="dashboardPage" style="display:none;">
+    <header class="topbar">
+      <div>
+        <h2>Rahul Social Hub</h2>
+      </div>
+      <button onclick="logout()" class="logout-btn">
+        Logout
+      </button>
+    </header>
+    <main class="dashboard">
+      <section class="welcome">
+        <h1>Welcome 👋</h1>
+        <p id="welcomeUser"></p>
+      </section>
+      <!-- SERVICES -->
+      <section>
+        <h2 class="section-title">Our Services</h2>
+        <div class="services-grid">
+          <div class="service-card">
+            <h3>👥 1,000 Followers</h3>
+            <p>Without Referral</p>
+            <strong>₹50</strong>
+            <button onclick="openOrder('1000 Followers', 50)">
+              Order Now
+            </button>
+          </div>
+          <div class="service-card">
+            <h3>👥 1,000 Followers</h3>
+            <p>With Referral</p>
+            <strong>₹100</strong>
+            <button onclick="openOrder('1000 Followers + Referral', 100)">
+              Order Now
+            </button>
+          </div>
+          <div class="service-card">
+            <h3>👁️ 10,000 Views</h3>
+            <strong>₹10</strong>
+            <button onclick="openOrder('10,000 Views', 10)">
+              Order Now
+            </button>
+          </div>
+          <div class="service-card">
+            <h3>❤️ 1,000 Likes</h3>
+            <strong>₹20</strong>
+            <button onclick="openOrder('1,000 Likes', 20)">
+              Order Now
+            </button>
+          </div>
+          <div class="service-card">
+            <h3>💬 Comments</h3>
+            <strong>₹50</strong>
+            <button onclick="openOrder('Comments', 50)">
+              Order Now
+            </button>
+          </div>
+        </div>
+      </section>
+      <!-- PAYMENT -->
+      <section class="payment-panel">
+        <h2>💳 Payment</h2>
+        <p>Payment Number</p>
+        <div class="payment-number">
+          9131922170
+        </div>
+        <div class="qr-box">
+          <p>Payment QR / Scanner</p>
+          <!-- बाद में यहाँ आपका असली QR लगाया जाएगा -->
+          <div class="qr-placeholder">
+            QR SCANNER
+          </div>
+        </div>
+        <p>
+          Payment करने के बाद screenshot भेजें।
+        </p>
+        <button onclick="sendPaymentWhatsApp()" class="whatsapp-btn">
+          📲 Payment Screenshot WhatsApp पर भेजें
+        </button>
+      </section>
+      <!-- ORDER HISTORY -->
+      <section>
+        <h2 class="section-title">📦 My Orders</h2>
+        <div id="orderHistory" class="orders">
+          अभी कोई order नहीं है।
+        </div>
+      </section>
+    </main>
+  </div>
+  <!-- ORDER MODAL -->
+  <div id="orderModal" class="modal">
+    <div class="modal-box">
+      <button class="close-btn" onclick="closeOrder()">×</button>
+      <h2>Confirm Order</h2>
+      <p id="selectedService"></p>
+      <div class="price-box">
+        ₹<span id="selectedPrice"></span>
+      </div>
+      <input
+        type="text"
+        id="instagramUsername"
+        placeholder="Instagram Username"
+      >
+      <button onclick="createOrder()" class="main-btn">
+        Confirm Order
+      </button>
+      <p id="orderMessage"></p>
+    </div>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>
