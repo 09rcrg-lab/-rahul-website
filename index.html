@@ -153,7 +153,6 @@ button{
   <div class="small">Social Media Services</div>
 </header>
 
-
 <div class="container">
 
 <!-- SERVICES -->
@@ -162,7 +161,7 @@ button{
 
 <h2>🛍️ Services</h2>
 
-<div class="service" onclick="selectService(1)">
+<div class="service" onclick="selectService(1,this)">
   <div class="service-title">
     1,000 Followers
   </div>
@@ -170,8 +169,7 @@ button{
   <span class="badge">Referral ❌</span>
 </div>
 
-
-<div class="service" onclick="selectService(2)">
+<div class="service" onclick="selectService(2,this)">
   <div class="service-title">
     1,000 Followers
   </div>
@@ -181,8 +179,7 @@ button{
   </span>
 </div>
 
-
-<div class="service" onclick="selectService(3)">
+<div class="service" onclick="selectService(3,this)">
   <div class="service-title">
     1,000 Likes
   </div>
@@ -192,8 +189,7 @@ button{
   </span>
 </div>
 
-
-<div class="service" onclick="selectService(4)">
+<div class="service" onclick="selectService(4,this)">
   <div class="service-title">
     1,000 Live
   </div>
@@ -203,16 +199,14 @@ button{
   </span>
 </div>
 
-
-<div class="service" onclick="selectService(5)">
+<div class="service" onclick="selectService(5,this)">
   <div class="service-title">
     1,000 Shares
   </div>
   <div class="price">₹20</div>
 </div>
 
-
-<div class="service" onclick="selectService(6)">
+<div class="service" onclick="selectService(6,this)">
   <div class="service-title">
     10,000 Views
   </div>
@@ -256,7 +250,7 @@ button{
   Total: ₹<span id="total">0</span>
 </div>
 
-<button onclick="createOrder()">
+<button id="orderButton" onclick="createOrder()">
   ✅ Order करें
 </button>
 
@@ -291,16 +285,25 @@ button{
 
 <script>
 
-/* =========================
-   WHATSAPP
-========================= */
+/* =========================================
+   CLOUDFLARE WORKER API
+========================================= */
 
-const WHATSAPP_NUMBER = "919131922170";
+const API_BASE =
+  "https://rahulsocialhub-db.09rcrg.workers.dev";
 
 
-/* =========================
+/* =========================================
+   OWNER WHATSAPP
+========================================= */
+
+const WHATSAPP_NUMBER =
+  "919131922170";
+
+
+/* =========================================
    SERVICES
-========================= */
+========================================= */
 
 const services = {
 
@@ -358,66 +361,73 @@ const services = {
 let selectedService = null;
 
 
-/* =========================
+/* =========================================
    SELECT SERVICE
-========================= */
+========================================= */
 
-function selectService(id){
+function selectService(id, element){
 
-  selectedService = services[id];
+  selectedService =
+    services[id];
 
-  document.querySelectorAll(".service")
+  document
+    .querySelectorAll(".service")
     .forEach(x =>
       x.classList.remove("selected")
     );
 
-  event.currentTarget
-    .classList.add("selected");
+  element.classList.add("selected");
 
-  document.getElementById("selectedService")
-    .innerHTML =
+  document.getElementById(
+    "selectedService"
+  ).innerHTML =
     "Selected: <b>" +
-    selectedService.name +
+    escapeHTML(selectedService.name) +
     "</b>";
 
   calculatePrice();
 }
 
 
-/* =========================
+/* =========================================
    PRICE
-========================= */
+========================================= */
 
 function calculatePrice(){
 
   if(!selectedService){
 
-    document.getElementById("total")
-      .innerText="0";
+    document.getElementById(
+      "total"
+    ).innerText = "0";
 
     return;
   }
 
   let quantity =
     Number(
-      document.getElementById("quantity").value
+      document.getElementById(
+        "quantity"
+      ).value
     );
 
   if(quantity < 1)
-    quantity=1;
+    quantity = 1;
 
-  let total =
-    selectedService.price * quantity;
+  const total =
+    selectedService.price *
+    quantity;
 
-  document.getElementById("total")
-    .innerText =
+  document.getElementById(
+    "total"
+  ).innerText =
     total.toLocaleString("en-IN");
 }
 
 
-/* =========================
-   GET ORDERS
-========================= */
+/* =========================================
+   LOCAL ORDERS
+========================================= */
 
 function getOrders(){
 
@@ -438,10 +448,6 @@ function getOrders(){
 }
 
 
-/* =========================
-   SAVE ORDERS
-========================= */
-
 function saveOrders(orders){
 
   localStorage.setItem(
@@ -452,17 +458,133 @@ function saveOrders(orders){
 }
 
 
-/* =========================
-   CREATE ORDER
-========================= */
+/* =========================================
+   GENERATE ORDER ID
+========================================= */
 
-function createOrder(){
+function generateOrderId(){
+
+  const random =
+    Math.random()
+      .toString(36)
+      .substring(2,8)
+      .toUpperCase();
+
+  return (
+    "RH" +
+    Date.now()
+      .toString()
+      .slice(-8) +
+    random
+  );
+}
+
+
+/* =========================================
+   SAVE ORDER TO D1
+========================================= */
+
+async function saveOrderToD1(order){
+
+  try{
+
+    const response =
+      await fetch(
+        API_BASE + "/api/orders",
+        {
+          method:"POST",
+
+          headers:{
+            "Content-Type":
+              "application/json"
+          },
+
+          body:JSON.stringify({
+
+            id:order.id,
+
+            customerName:
+              order.customer,
+
+            username:
+              order.username,
+
+            serviceId:
+              order.serviceId,
+
+            serviceName:
+              order.service,
+
+            quantity:
+              order.quantity,
+
+            units:
+              order.units,
+
+            amount:
+              order.amount,
+
+            referral:
+              order.referral,
+
+            lifetimeRefill:
+              order.refill,
+
+            status:
+              order.status,
+
+            createdAt:
+              order.createdAt
+
+          })
+        }
+      );
+
+
+    const data =
+      await response.json();
+
+
+    if(
+      !response.ok ||
+      !data.success
+    ){
+
+      throw new Error(
+        data.error ||
+        "Database error"
+      );
+
+    }
+
+
+    return true;
+
+  }catch(error){
+
+    console.log(
+      "D1 Save Error:",
+      error
+    );
+
+    return false;
+  }
+}
+
+
+/* =========================================
+   CREATE ORDER
+========================================= */
+
+async function createOrder(){
 
   if(!selectedService){
 
-    alert("पहले Service select करें।");
-    return;
+    alert(
+      "पहले Service select करें।"
+    );
 
+    return;
   }
 
 
@@ -478,7 +600,7 @@ function createOrder(){
     ).value.trim();
 
 
-  const quantity =
+  let quantity =
     Number(
       document.getElementById(
         "quantity"
@@ -486,9 +608,12 @@ function createOrder(){
     );
 
 
-  if(!customer ||
-     !username ||
-     !quantity){
+  if(
+    !customer ||
+    !username ||
+    !quantity ||
+    quantity < 1
+  ){
 
     alert(
       "Customer Name, Username और Quantity भरें।"
@@ -504,10 +629,12 @@ function createOrder(){
 
 
   const orderId =
-    "RH" +
-    Date.now()
-      .toString()
-      .slice(-8);
+    generateOrderId();
+
+
+  const units =
+    selectedService.unit *
+    quantity;
 
 
   const order = {
@@ -518,25 +645,47 @@ function createOrder(){
 
     username:username,
 
-    service:selectedService.name,
+    serviceId:
+      Object.keys(services)
+        .find(
+          key =>
+            services[key] ===
+            selectedService
+        ),
 
-    quantity:quantity,
+    service:
+      selectedService.name,
 
-    amount:total,
+    quantity:
+      quantity,
 
-    referral:selectedService.referral,
+    units:
+      units,
 
-    refill:selectedService.refill,
+    amount:
+      total,
 
-    status:"Pending",
+    referral:
+      selectedService.referral,
 
-    date:new Date()
-      .toLocaleString("hi-IN")
+    refill:
+      selectedService.refill,
+
+    status:
+      "Pending",
+
+    createdAt:
+      new Date().toISOString()
 
   };
 
 
-  const orders = getOrders();
+  /* =====================================
+     LOCAL BACKUP
+  ===================================== */
+
+  const orders =
+    getOrders();
 
   orders.unshift(order);
 
@@ -547,33 +696,65 @@ function createOrder(){
   createQR(orderId);
 
 
-  /* =========================
-     WHATSAPP MESSAGE
-  ========================= */
+  /* =====================================
+     D1 DATABASE
+  ===================================== */
 
-  let message =
+  const saved =
+    await saveOrderToD1(order);
+
+
+  if(saved){
+
+    order.syncStatus =
+      "synced";
+
+  }else{
+
+    order.syncStatus =
+      "offline";
+
+  }
+
+
+  saveOrders(
+    getOrders().map(item =>
+      item.id === order.id
+        ? order
+        : item
+    )
+  );
+
+
+  /* =====================================
+     WHATSAPP
+  ===================================== */
+
+  const message =
 `🛒 नया Order प्राप्त हुआ
 
-Order ID: ${orderId}
+Order ID: ${order.id}
 
-Service: ${selectedService.name}
+Service: ${order.service}
 
-Username: ${username}
+Username: ${order.username}
 
-Quantity: ${quantity}
+Quantity: ${order.quantity}
 
-Amount: ₹${total}
+Units: ${order.units}
+
+Amount: ₹${order.amount}
 
 Referral: ${
-  selectedService.referral
-  ? "हाँ"
-  : "नहीं"
+  order.referral
+    ? "हाँ"
+    : "नहीं"
 }
 
 ${
-  selectedService.refill
-  ? "Lifetime Refill: हाँ"
-  : ""
+  order.refill
+    ? "Lifetime Refill: हाँ"
+    : ""
 }
 
 Status: Pending`;
@@ -583,7 +764,9 @@ Status: Pending`;
     "https://wa.me/" +
     WHATSAPP_NUMBER +
     "?text=" +
-    encodeURIComponent(message);
+    encodeURIComponent(
+      message
+    );
 
 
   window.open(
@@ -593,25 +776,61 @@ Status: Pending`;
 
 
   alert(
-    "Order सफलतापूर्वक बन गया।\nOrder ID: " +
-    orderId
+    "Order सफलतापूर्वक बन गया।\n\n" +
+    "Order ID: " +
+    order.id +
+    "\n\n" +
+    (
+      saved
+        ? "Database में Save हो गया ✅"
+        : "Offline में Save हुआ। Internet आने पर Sync होगा।"
+    )
   );
 
 
+  /* =====================================
+     CLEAR FORM
+  ===================================== */
+
   document.getElementById(
     "customerName"
-  ).value="";
+  ).value = "";
 
   document.getElementById(
     "username"
-  ).value="";
+  ).value = "";
+
+  document.getElementById(
+    "quantity"
+  ).value = "1";
+
+
+  selectedService = null;
+
+
+  document
+    .querySelectorAll(".service")
+    .forEach(x =>
+      x.classList.remove("selected")
+    );
+
+
+  document.getElementById(
+    "selectedService"
+  ).innerText =
+    "कोई Service select नहीं की गई";
+
+
+  document.getElementById(
+    "total"
+  ).innerText = "0";
 
 }
 
 
-/* =========================
+/* =========================================
    ORDER HISTORY
-========================= */
+========================================= */
 
 function showOrders(){
 
@@ -632,7 +851,6 @@ function showOrders(){
       </p>`;
 
     return;
-
   }
 
 
@@ -654,7 +872,7 @@ function showOrders(){
         </p>
 
         <p>
-          📦 Quantity: ${order.quantity}
+          📦 Quantity: ${Number(order.quantity)}
         </p>
 
         <p>
@@ -664,12 +882,19 @@ function showOrders(){
 
         <p>
           <span class="status">
-            ${escapeHTML(order.status)}
+            ${escapeHTML(
+              order.status || "Pending"
+            )}
           </span>
         </p>
 
         <p class="small">
-          ${escapeHTML(order.date)}
+          ${escapeHTML(
+            order.date ||
+            new Date(
+              order.createdAt
+            ).toLocaleString("hi-IN")
+          )}
         </p>
 
         <button
@@ -684,9 +909,9 @@ function showOrders(){
 }
 
 
-/* =========================
+/* =========================================
    QR CODE
-========================= */
+========================================= */
 
 function createQR(orderId){
 
@@ -706,47 +931,69 @@ function createQR(orderId){
     );
 
 
+  /* Customer status page */
+
   const qrData =
     location.origin +
-    location.pathname +
-    "?order=" +
-    encodeURIComponent(orderId);
+    "/customer.html?order=" +
+    encodeURIComponent(
+      orderId
+    );
 
 
   qrImage.src =
     "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=" +
-    encodeURIComponent(qrData);
+    encodeURIComponent(
+      qrData
+    );
 
 
   qrText.innerText =
-    "Order ID: " + orderId;
+    "Order ID: " +
+    orderId;
 
 
   qrBox.style.display =
     "block";
-
 }
 
 
-/* =========================
+/* =========================================
    HTML SECURITY
-========================= */
+========================================= */
 
 function escapeHTML(value){
 
-  return String(value)
-    .replaceAll("&","&amp;")
-    .replaceAll("<","&lt;")
-    .replaceAll(">","&gt;")
-    .replaceAll('"',"&quot;")
-    .replaceAll("'","&#039;");
+  return String(
+    value ?? ""
+  )
+  .replaceAll(
+    "&",
+    "&amp;"
+  )
+  .replaceAll(
+    "<",
+    "&lt;"
+  )
+  .replaceAll(
+    ">",
+    "&gt;"
+  )
+  .replaceAll(
+    '"',
+    "&quot;"
+  )
+  .replaceAll(
+    "'",
+    "&#039;"
+  );
 
 }
 
 
-/* =========================
+/* =========================================
    START
-========================= */
+========================================= */
 
 showOrders();
 
