@@ -1,331 +1,747 @@
-// ==========================================
-// RAHUL SOCIAL HUB - LOCAL STORAGE VERSION
-// ==========================================
-const WHATSAPP_NUMBER = "919131922170";
-// ---------- STORAGE ----------
-const USERS_KEY = "rahul_users";
-const ORDERS_KEY = "rahul_orders";
-const SESSION_KEY = "rahul_session";
-function getUsers() {
-    return JSON.parse(localStorage.getItem(USERS_KEY) || "[]");
-}
-function saveUsers(users) {
-    localStorage.setItem(USERS_KEY, JSON.stringify(users));
-}
+/* =========================================
+   RAHUL SOCIAL HUB
+   ORDER + QR + LOCAL STORAGE SYSTEM
+========================================= */
+
+const STORAGE_KEY = "rahul_orders";
+
+/* -----------------------------------------
+   SERVICES
+----------------------------------------- */
+
+const SERVICES = [
+  {
+    id: "followers50",
+    name: "1,000 Followers",
+    price: 50,
+    quantity: 1000,
+    referral: false,
+    refill: false
+  },
+  {
+    id: "followers100",
+    name: "1,000 Followers",
+    price: 100,
+    quantity: 1000,
+    referral: false,
+    refill: true
+  },
+  {
+    id: "likes20",
+    name: "1,000 Likes",
+    price: 20,
+    quantity: 1000,
+    referral: true,
+    refill: false
+  },
+  {
+    id: "live10",
+    name: "1,000 Live",
+    price: 10,
+    quantity: 1000,
+    referral: false,
+    refill: false
+  },
+  {
+    id: "shares20",
+    name: "1,000 Shares",
+    price: 20,
+    quantity: 1000,
+    referral: false,
+    refill: false
+  },
+  {
+    id: "views10",
+    name: "10,000 Views",
+    price: 10,
+    quantity: 10000,
+    referral: false,
+    refill: false
+  }
+];
+
+
+/* -----------------------------------------
+   STORAGE
+----------------------------------------- */
+
 function getOrders() {
-    return JSON.parse(localStorage.getItem(ORDERS_KEY) || "[]");
+
+  try {
+
+    const data =
+      localStorage.getItem(STORAGE_KEY);
+
+    return data ? JSON.parse(data) : [];
+
+  } catch (error) {
+
+    console.error("Storage error:", error);
+
+    return [];
+
+  }
 }
+
+
 function saveOrders(orders) {
-    localStorage.setItem(ORDERS_KEY, JSON.stringify(orders));
+
+  localStorage.setItem(
+    STORAGE_KEY,
+    JSON.stringify(orders)
+  );
+
 }
-function getSession() {
-    return JSON.parse(localStorage.getItem(SESSION_KEY) || "null");
-}
-// ---------- PAGE ELEMENTS ----------
-const loginTab = document.getElementById("loginTab");
-const registerTab = document.getElementById("registerTab");
-const loginForm = document.getElementById("loginForm");
-const registerForm = document.getElementById("registerForm");
-const dashboard = document.getElementById("dashboard");
-const authSection = document.getElementById("authSection");
-// ---------- TAB SWITCH ----------
-if (loginTab) {
-    loginTab.addEventListener("click", () => {
-        loginTab.classList.add("active");
-        registerTab.classList.remove("active");
-        loginForm.style.display = "block";
-        registerForm.style.display = "none";
-    });
-}
-if (registerTab) {
-    registerTab.addEventListener("click", () => {
-        registerTab.classList.add("active");
-        loginTab.classList.remove("active");
-        registerForm.style.display = "block";
-        loginForm.style.display = "none";
-    });
-}
-// ---------- REGISTER ----------
-if (registerForm) {
-    registerForm.addEventListener("submit", function (e) {
-        e.preventDefault();
-        const username =
-            document.getElementById("registerUsername")?.value.trim();
-        const email =
-            document.getElementById("registerEmail")?.value.trim();
-        const password =
-            document.getElementById("registerPassword")?.value;
-        if (!username || !email || !password) {
-            alert("सभी जानकारी भरें।");
-            return;
-        }
-        if (password.length < 4) {
-            alert("Password कम से कम 4 अक्षर का रखें।");
-            return;
-        }
-        const users = getUsers();
-        const alreadyExists = users.some(
-            user =>
-                user.username.toLowerCase() === username.toLowerCase() ||
-                user.email.toLowerCase() === email.toLowerCase()
-        );
-        if (alreadyExists) {
-            alert("Username या Gmail पहले से मौजूद है।");
-            return;
-        }
-        const user = {
-            id: Date.now(),
-            username: username,
-            email: email,
-            password: password,
-            createdAt: new Date().toISOString()
-        };
-        users.push(user);
-        saveUsers(users);
-        alert("Registration सफल हो गया। अब Login करें।");
-        loginTab?.click();
-        if (document.getElementById("loginUsername")) {
-            document.getElementById("loginUsername").value = username;
-        }
-    });
-}
-// ---------- LOGIN ----------
-if (loginForm) {
-    loginForm.addEventListener("submit", function (e) {
-        e.preventDefault();
-        const username =
-            document.getElementById("loginUsername")?.value.trim();
-        const password =
-            document.getElementById("loginPassword")?.value;
-        const users = getUsers();
-        const user = users.find(
-            u =>
-                u.username.toLowerCase() === username.toLowerCase() &&
-                u.password === password
-        );
-        if (!user) {
-            alert("Username या Password गलत है।");
-            return;
-        }
-        localStorage.setItem(
-            SESSION_KEY,
-            JSON.stringify({
-                id: user.id,
-                username: user.username,
-                email: user.email
-            })
-        );
-        showDashboard();
-    });
-}
-// ---------- SHOW DASHBOARD ----------
-function showDashboard() {
-    if (authSection) authSection.style.display = "none";
-    if (dashboard) dashboard.style.display = "block";
-    loadUserInfo();
-    loadOrders();
-}
-// ---------- LOGOUT ----------
-function logout() {
-    localStorage.removeItem(SESSION_KEY);
-    if (dashboard) dashboard.style.display = "none";
-    if (authSection) authSection.style.display = "block";
-    alert("Logout हो गया।");
-}
-window.logout = logout;
-// ---------- USER INFO ----------
-function loadUserInfo() {
-    const session = getSession();
-    if (!session) return;
-    const elements = document.querySelectorAll(
-        ".username, #profileUsername, #welcomeUsername"
+
+
+/* -----------------------------------------
+   ORDER ID
+----------------------------------------- */
+
+function generateOrderId() {
+
+  const random =
+    Math.floor(
+      1000 +
+      Math.random() * 9000
     );
-    elements.forEach(el => {
-        el.textContent = session.username;
-    });
+
+  return "RH" + Date.now().toString().slice(-6) + random;
+
 }
-// ---------- ORDER ID ----------
-function createOrderId() {
-    const random = Math.floor(100000 + Math.random() * 900000);
-    return "RSH" + Date.now().toString().slice(-6) + random;
-}
-// ---------- CREATE ORDER ----------
-function createOrder(service, quantity, amount, instagramUsername) {
-    const session = getSession();
-    if (!session) {
-        alert("पहले Login करें।");
-        return;
-    }
-    if (!service) {
-        alert("Service select करें।");
-        return;
-    }
-    if (!quantity || Number(quantity) <= 0) {
-        alert("Quantity सही डालें।");
-        return;
-    }
-    if (!instagramUsername) {
-        alert("Instagram Username डालें।");
-        return;
-    }
-    const order = {
-        id: Date.now(),
-        orderId: createOrderId(),
-        username: session.username,
-        service: service,
-        quantity: Number(quantity),
-        instagramUsername: instagramUsername,
-        amount: Number(amount),
-        paymentStatus: "Pending",
-        orderStatus: "New",
-        createdAt: new Date().toLocaleString("en-IN")
-    };
-    const orders = getOrders();
-    orders.unshift(order);
-    saveOrders(orders);
-    alert(
-        "Order सफलतापूर्वक बन गया!\n\n" +
-        "Order ID: " + order.orderId
+
+
+/* -----------------------------------------
+   CREATE ORDER
+----------------------------------------- */
+
+function createNewOrder({
+  customerName,
+  username,
+  serviceId,
+  quantity
+}) {
+
+  const service =
+    SERVICES.find(
+      item => item.id === serviceId
     );
-    loadOrders();
-    sendOrderWhatsApp(order);
+
+
+  if (!service) {
+    throw new Error("Service not found");
+  }
+
+
+  const qty =
+    Number(quantity);
+
+
+  if (!qty || qty < 1) {
+    throw new Error("Invalid quantity");
+  }
+
+
+  const units =
+    service.quantity * qty;
+
+
+  const total =
+    service.price * qty;
+
+
+  const order = {
+
+    id: generateOrderId(),
+
+    customerName:
+      customerName.trim(),
+
+    username:
+      username.trim(),
+
+    serviceId:
+      service.id,
+
+    serviceName:
+      service.name,
+
+    quantity:
+      qty,
+
+    units:
+      units,
+
+    amount:
+      total,
+
+    referral:
+      service.referral,
+
+    lifetimeRefill:
+      service.refill,
+
+    status:
+      "Pending",
+
+    createdAt:
+      new Date().toISOString()
+
+  };
+
+
+  const orders =
+    getOrders();
+
+
+  orders.unshift(order);
+
+  saveOrders(orders);
+
+
+  return order;
+
 }
-window.createOrder = createOrder;
-// ---------- WHATSAPP ----------
-function sendOrderWhatsApp(order) {
-    const message =
-        "🟢 RAHUL SOCIAL HUB - NEW ORDER\n\n" +
-        "Order ID: " + order.orderId + "\n" +
-        "Customer: " + order.username + "\n" +
-        "Service: " + order.service + "\n" +
-        "Quantity: " + order.quantity + "\n" +
-        "Instagram: @" + order.instagramUsername.replace("@", "") + "\n" +
-        "Amount: ₹" + order.amount + "\n" +
-        "Payment: " + order.paymentStatus + "\n" +
-        "Status: " + order.orderStatus + "\n\n" +
-        "Please check this order.";
-    const url =
-        "https://wa.me/" +
-        WHATSAPP_NUMBER +
-        "?text=" +
-        encodeURIComponent(message);
-    window.open(url, "_blank");
+
+
+/* -----------------------------------------
+   FIND ORDER
+----------------------------------------- */
+
+function findOrder(orderId) {
+
+  if (!orderId) {
+    return null;
+  }
+
+
+  const cleanId =
+    String(orderId)
+      .trim()
+      .toUpperCase();
+
+
+  return getOrders().find(
+    order =>
+      String(order.id)
+        .toUpperCase() === cleanId
+  ) || null;
+
 }
-window.sendOrderWhatsApp = sendOrderWhatsApp;
-// ---------- ORDER HISTORY ----------
-function loadOrders() {
-    const session = getSession();
-    if (!session) return;
-    const orders = getOrders().filter(
-        order => order.username === session.username
+
+
+/* -----------------------------------------
+   UPDATE ORDER STATUS
+----------------------------------------- */
+
+function updateOrderStatus(
+  orderId,
+  newStatus
+) {
+
+  const orders =
+    getOrders();
+
+
+  const index =
+    orders.findIndex(
+      order =>
+        order.id === orderId
     );
-    const container =
-        document.getElementById("orderHistory") ||
-        document.getElementById("ordersList");
-    if (!container) return;
-    if (orders.length === 0) {
-        container.innerHTML =
-            "<p>No orders yet.</p>";
-        return;
-    }
-    container.innerHTML = orders.map(order => {
-        return `
-            <div class="order-card">
-                <div>
-                    <strong>${escapeHTML(order.service)}</strong>
-                </div>
-                <div>
-                    Order ID:
-                    <strong>${escapeHTML(order.orderId)}</strong>
-                </div>
-                <div>
-                    Quantity:
-                    ${escapeHTML(String(order.quantity))}
-                </div>
-                <div>
-                    Instagram:
-                    @${escapeHTML(
-                        order.instagramUsername.replace("@", "")
-                    )}
-                </div>
-                <div>
-                    Amount:
-                    ₹${escapeHTML(String(order.amount))}
-                </div>
-                <div>
-                    Payment:
-                    <strong>${escapeHTML(order.paymentStatus)}</strong>
-                </div>
-                <div>
-                    Status:
-                    <strong>${escapeHTML(order.orderStatus)}</strong>
-                </div>
-                <small>
-                    ${escapeHTML(order.createdAt)}
-                </small>
-            </div>
-        `;
-    }).join("");
+
+
+  if (index === -1) {
+    return false;
+  }
+
+
+  orders[index].status =
+    newStatus;
+
+
+  orders[index].updatedAt =
+    new Date().toISOString();
+
+
+  saveOrders(orders);
+
+  return true;
+
 }
-// ---------- HTML SECURITY ----------
+
+
+/* -----------------------------------------
+   STATUS TEXT
+----------------------------------------- */
+
+function getStatusText(status) {
+
+  const statusMap = {
+
+    Pending:
+      "⏳ Order Pending",
+
+    Processing:
+      "⚙️ Order Processing",
+
+    Completed:
+      "✅ Order Completed",
+
+    Cancelled:
+      "❌ Order Cancelled"
+
+  };
+
+
+  return (
+    statusMap[status] ||
+    status
+  );
+
+}
+
+
+/* -----------------------------------------
+   CUSTOMER ORDER PAGE
+----------------------------------------- */
+
+function showCustomerOrder(order) {
+
+  const box =
+    document.getElementById(
+      "customerOrder"
+    );
+
+
+  if (!box) {
+    return;
+  }
+
+
+  if (!order) {
+
+    box.innerHTML = `
+      <div class="order">
+        <h3>❌ Order नहीं मिला</h3>
+        <p>
+          कृपया सही Order ID से QR खोलें।
+        </p>
+      </div>
+    `;
+
+    return;
+
+  }
+
+
+  box.innerHTML = `
+
+    <div class="order">
+
+      <div class="order-id">
+        Order ID: ${escapeHTML(order.id)}
+      </div>
+
+      <h3>
+        ${escapeHTML(order.serviceName)}
+      </h3>
+
+      <p>
+        📦 Quantity:
+        ${order.quantity}
+      </p>
+
+      <p>
+        🔢 Total Units:
+        ${Number(order.units)
+          .toLocaleString("en-IN")}
+      </p>
+
+      <p>
+        💰 Amount:
+        ₹${Number(order.amount)
+          .toLocaleString("en-IN")}
+      </p>
+
+      <p>
+        📊 Status:
+        <strong>
+          ${getStatusText(order.status)}
+        </strong>
+      </p>
+
+      ${
+        order.lifetimeRefill
+        ? `
+          <p>
+            ♾️ Lifetime Refill:
+            Available
+          </p>
+        `
+        : ""
+      }
+
+      <p class="small">
+        Order Date:
+        ${formatDate(order.createdAt)}
+      </p>
+
+    </div>
+
+  `;
+
+}
+
+
+/* -----------------------------------------
+   QR URL
+----------------------------------------- */
+
+function getOrderQRUrl(orderId) {
+
+  const base =
+    window.location.origin +
+    window.location.pathname;
+
+
+  return (
+    base +
+    "?order=" +
+    encodeURIComponent(orderId)
+  );
+
+}
+
+
+/* -----------------------------------------
+   GENERATE QR
+----------------------------------------- */
+
+function generateOrderQR(orderId) {
+
+  const qrImage =
+    document.getElementById(
+      "qrImage"
+    );
+
+
+  if (!qrImage) {
+    return;
+  }
+
+
+  const url =
+    getOrderQRUrl(orderId);
+
+
+  qrImage.src =
+    "https://api.qrserver.com/v1/create-qr-code/" +
+    "?size=300x300&data=" +
+    encodeURIComponent(url);
+
+}
+
+
+/* -----------------------------------------
+   CHECK QR URL
+----------------------------------------- */
+
+function checkOrderFromURL() {
+
+  const params =
+    new URLSearchParams(
+      window.location.search
+    );
+
+
+  const orderId =
+    params.get("order");
+
+
+  if (!orderId) {
+    return;
+  }
+
+
+  const order =
+    findOrder(orderId);
+
+
+  showCustomerOrder(order);
+
+}
+
+
+/* -----------------------------------------
+   WHATSAPP
+----------------------------------------- */
+
+function sendOrderToWhatsApp(order) {
+
+  /*
+    यह नंबर केवल owner notification
+    के लिए है।
+
+    Customer page पर इसे display
+    नहीं किया जाता।
+  */
+
+  const ownerNumber =
+    "919131922170";
+
+
+  const message = `
+🛒 नया Order
+
+Order ID: ${order.id}
+
+Service:
+${order.serviceName}
+
+Username:
+${order.username}
+
+Quantity:
+${order.quantity}
+
+Total Units:
+${order.units}
+
+Amount:
+₹${order.amount}
+
+Referral:
+${order.referral ? "हाँ" : "नहीं"}
+
+Lifetime Refill:
+${order.lifetimeRefill ? "हाँ" : "नहीं"}
+
+Status:
+${order.status}
+`;
+
+
+  const url =
+    "https://wa.me/" +
+    ownerNumber +
+    "?text=" +
+    encodeURIComponent(message);
+
+
+  window.open(
+    url,
+    "_blank"
+  );
+
+}
+
+
+/* -----------------------------------------
+   DATE
+----------------------------------------- */
+
+function formatDate(date) {
+
+  if (!date) {
+    return "-";
+  }
+
+
+  try {
+
+    return new Date(date)
+      .toLocaleString(
+        "hi-IN",
+        {
+          dateStyle: "medium",
+          timeStyle: "short"
+        }
+      );
+
+  } catch {
+
+    return date;
+
+  }
+
+}
+
+
+/* -----------------------------------------
+   SECURITY
+----------------------------------------- */
+
 function escapeHTML(value) {
-    return String(value)
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
-}
-// ---------- PAYMENT WHATSAPP ----------
-function sendPaymentWhatsApp() {
-    const session = getSession();
-    if (!session) {
-        alert("पहले Login करें।");
-        return;
-    }
-    const orders = getOrders().filter(
-        order => order.username === session.username
+
+  return String(value)
+
+    .replaceAll(
+      "&",
+      "&amp;"
+    )
+
+    .replaceAll(
+      "<",
+      "&lt;"
+    )
+
+    .replaceAll(
+      ">",
+      "&gt;"
+    )
+
+    .replaceAll(
+      '"',
+      "&quot;"
+    )
+
+    .replaceAll(
+      "'",
+      "&#039;"
     );
-    if (orders.length === 0) {
-        alert("पहले Order बनाइए।");
-        return;
-    }
-    const order = orders[0];
-    const message =
-        "💳 PAYMENT SCREENSHOT\n\n" +
-        "Order ID: " + order.orderId + "\n" +
-        "Customer: " + order.username + "\n" +
-        "Service: " + order.service + "\n" +
-        "Amount: ₹" + order.amount + "\n\n" +
-        "मैं payment screenshot भेज रहा/रही हूँ।";
-    const url =
-        "https://wa.me/" +
-        WHATSAPP_NUMBER +
-        "?text=" +
-        encodeURIComponent(message);
-    window.open(url, "_blank");
+
 }
-window.sendPaymentWhatsApp = sendPaymentWhatsApp;
-// ---------- QR ----------
-function openQR() {
-    const qr = document.getElementById("qrScanner");
-    if (qr) {
-        qr.style.display =
-            qr.style.display === "none" ? "block" : "none";
-    }
+
+
+/* -----------------------------------------
+   EXPORT ORDERS
+----------------------------------------- */
+
+function exportOrders() {
+
+  const orders =
+    getOrders();
+
+
+  const blob =
+    new Blob(
+      [
+        JSON.stringify(
+          orders,
+          null,
+          2
+        )
+      ],
+      {
+        type:
+          "application/json"
+      }
+    );
+
+
+  const url =
+    URL.createObjectURL(blob);
+
+
+  const a =
+    document.createElement("a");
+
+
+  a.href = url;
+
+  a.download =
+    "rahul-social-hub-orders.json";
+
+
+  a.click();
+
+
+  URL.revokeObjectURL(url);
+
 }
-window.openQR = openQR;
-// ---------- AUTO LOGIN ----------
-document.addEventListener("DOMContentLoaded", () => {
-    const session = getSession();
-    if (session) {
-        showDashboard();
-    } else {
-        if (dashboard) {
-            dashboard.style.display = "none";
+
+
+/* -----------------------------------------
+   IMPORT ORDERS
+----------------------------------------- */
+
+function importOrders(file) {
+
+  if (!file) {
+    return;
+  }
+
+
+  const reader =
+    new FileReader();
+
+
+  reader.onload =
+    function () {
+
+      try {
+
+        const orders =
+          JSON.parse(
+            reader.result
+          );
+
+
+        if (!Array.isArray(orders)) {
+          throw new Error();
         }
-        if (authSection) {
-            authSection.style.display = "block";
-        }
-    }
-});
+
+
+        saveOrders(orders);
+
+
+        alert(
+          "Order History वापस आ गई।"
+        );
+
+
+        location.reload();
+
+
+      } catch {
+
+        alert(
+          "गलत backup file है।"
+        );
+
+      }
+
+    };
+
+
+  reader.readAsText(file);
+
+}
+
+
+/* -----------------------------------------
+   START
+----------------------------------------- */
+
+document.addEventListener(
+  "DOMContentLoaded",
+  function () {
+
+    checkOrderFromURL();
+
+  }
+);
+
+
+/*
+-------------------------------------------
+IMPORTANT
+
+Customer को:
+- Owner WhatsApp number
+- Owner phone number
+- Internal order data
+
+नहीं दिखाया जाता।
+
+Customer QR खोलने पर केवल:
+- Order ID
+- Service
+- Quantity
+- Amount
+- Status
+- Refill information
+
+दिखेगी।
+-------------------------------------------
+*/
