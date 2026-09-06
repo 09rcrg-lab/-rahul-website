@@ -1,415 +1,331 @@
-const API_URL = "https://rahulsocialhub-db.09rcrg.workers.dev";
+// ==========================================
+// RAHUL SOCIAL HUB - LOCAL STORAGE VERSION
+// ==========================================
 const WHATSAPP_NUMBER = "919131922170";
-const authPage = document.getElementById("authPage");
-const dashboardPage = document.getElementById("dashboardPage");
-const loginForm = document.getElementById("loginForm");
-const registerForm = document.getElementById("registerForm");
+// ---------- STORAGE ----------
+const USERS_KEY = "rahul_users";
+const ORDERS_KEY = "rahul_orders";
+const SESSION_KEY = "rahul_session";
+function getUsers() {
+    return JSON.parse(localStorage.getItem(USERS_KEY) || "[]");
+}
+function saveUsers(users) {
+    localStorage.setItem(USERS_KEY, JSON.stringify(users));
+}
+function getOrders() {
+    return JSON.parse(localStorage.getItem(ORDERS_KEY) || "[]");
+}
+function saveOrders(orders) {
+    localStorage.setItem(ORDERS_KEY, JSON.stringify(orders));
+}
+function getSession() {
+    return JSON.parse(localStorage.getItem(SESSION_KEY) || "null");
+}
+// ---------- PAGE ELEMENTS ----------
 const loginTab = document.getElementById("loginTab");
 const registerTab = document.getElementById("registerTab");
-const authMessage = document.getElementById("authMessage");
-const orderModal = document.getElementById("orderModal");
-const selectedService = document.getElementById("selectedService");
-const selectedPrice = document.getElementById("selectedPrice");
-const welcomeUser = document.getElementById("welcomeUser");
-const orderHistory = document.getElementById("orderHistory");
-let currentService = "";
-let currentPrice = 0;
-// ===============================
-// LOGIN / REGISTER TABS
-// ===============================
-function showLogin() {
-  loginForm.style.display = "block";
-  registerForm.style.display = "none";
-  loginTab.classList.add("active");
-  registerTab.classList.remove("active");
-  authMessage.textContent = "";
+const loginForm = document.getElementById("loginForm");
+const registerForm = document.getElementById("registerForm");
+const dashboard = document.getElementById("dashboard");
+const authSection = document.getElementById("authSection");
+// ---------- TAB SWITCH ----------
+if (loginTab) {
+    loginTab.addEventListener("click", () => {
+        loginTab.classList.add("active");
+        registerTab.classList.remove("active");
+        loginForm.style.display = "block";
+        registerForm.style.display = "none";
+    });
 }
-function showRegister() {
-  loginForm.style.display = "none";
-  registerForm.style.display = "block";
-  registerTab.classList.add("active");
-  loginTab.classList.remove("active");
-  authMessage.textContent = "";
+if (registerTab) {
+    registerTab.addEventListener("click", () => {
+        registerTab.classList.add("active");
+        loginTab.classList.remove("active");
+        registerForm.style.display = "block";
+        loginForm.style.display = "none";
+    });
 }
-// ===============================
-// REGISTER
-// ===============================
-registerForm.addEventListener("submit", async function(event) {
-  event.preventDefault();
-  const username =
-    document.getElementById("registerUsername").value.trim();
-  const email =
-    document.getElementById("registerEmail").value.trim();
-  const password =
-    document.getElementById("registerPassword").value;
-  const referral =
-    document.getElementById("referralCode").value.trim();
-  authMessage.textContent = "Account बनाया जा रहा है...";
-  try {
-    const response = await fetch(
-      API_URL + "/api/register",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          username,
-          email,
-          password,
-          referral
-        })
-      }
-    );
-    const data = await response.json();
-    if (!response.ok || !data.success) {
-      throw new Error(
-        data.message || "Registration failed."
-      );
-    }
-    registerForm.reset();
-    authMessage.textContent =
-      "✅ Account बन गया। अब Login करें।";
-    showLogin();
-  } catch (error) {
-    authMessage.textContent =
-      "❌ " + error.message;
-  }
-});
-// ===============================
-// LOGIN
-// ===============================
-loginForm.addEventListener("submit", async function(event) {
-  event.preventDefault();
-  const username =
-    document.getElementById("loginUsername").value.trim();
-  const password =
-    document.getElementById("loginPassword").value;
-  authMessage.textContent = "Login हो रहा है...";
-  try {
-    const response = await fetch(
-      API_URL + "/api/login",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          username,
-          password
-        })
-      }
-    );
-    const data = await response.json();
-    if (!response.ok || !data.success) {
-      throw new Error(
-        data.message || "Login failed."
-      );
-    }
-    localStorage.setItem(
-      "rahul_session",
-      JSON.stringify(data.user)
-    );
-    loginForm.reset();
-    openDashboard(data.user);
-  } catch (error) {
-    authMessage.textContent =
-      "❌ " + error.message;
-  }
-});
-// ===============================
-// DASHBOARD
-// ===============================
-function openDashboard(user) {
-  authPage.style.display = "none";
-  dashboardPage.style.display = "block";
-  welcomeUser.textContent =
-    "Logged in as @" + user.username;
-  loadOrders();
+// ---------- REGISTER ----------
+if (registerForm) {
+    registerForm.addEventListener("submit", function (e) {
+        e.preventDefault();
+        const username =
+            document.getElementById("registerUsername")?.value.trim();
+        const email =
+            document.getElementById("registerEmail")?.value.trim();
+        const password =
+            document.getElementById("registerPassword")?.value;
+        if (!username || !email || !password) {
+            alert("सभी जानकारी भरें।");
+            return;
+        }
+        if (password.length < 4) {
+            alert("Password कम से कम 4 अक्षर का रखें।");
+            return;
+        }
+        const users = getUsers();
+        const alreadyExists = users.some(
+            user =>
+                user.username.toLowerCase() === username.toLowerCase() ||
+                user.email.toLowerCase() === email.toLowerCase()
+        );
+        if (alreadyExists) {
+            alert("Username या Gmail पहले से मौजूद है।");
+            return;
+        }
+        const user = {
+            id: Date.now(),
+            username: username,
+            email: email,
+            password: password,
+            createdAt: new Date().toISOString()
+        };
+        users.push(user);
+        saveUsers(users);
+        alert("Registration सफल हो गया। अब Login करें।");
+        loginTab?.click();
+        if (document.getElementById("loginUsername")) {
+            document.getElementById("loginUsername").value = username;
+        }
+    });
 }
-// ===============================
-// LOGOUT
-// ===============================
-function logout() {
-  localStorage.removeItem("rahul_session");
-  dashboardPage.style.display = "none";
-  authPage.style.display = "flex";
-  showLogin();
+// ---------- LOGIN ----------
+if (loginForm) {
+    loginForm.addEventListener("submit", function (e) {
+        e.preventDefault();
+        const username =
+            document.getElementById("loginUsername")?.value.trim();
+        const password =
+            document.getElementById("loginPassword")?.value;
+        const users = getUsers();
+        const user = users.find(
+            u =>
+                u.username.toLowerCase() === username.toLowerCase() &&
+                u.password === password
+        );
+        if (!user) {
+            alert("Username या Password गलत है।");
+            return;
+        }
+        localStorage.setItem(
+            SESSION_KEY,
+            JSON.stringify({
+                id: user.id,
+                username: user.username,
+                email: user.email
+            })
+        );
+        showDashboard();
+    });
 }
-// ===============================
-// SESSION CHECK
-// ===============================
-function checkSession() {
-  const session =
-    localStorage.getItem("rahul_session");
-  if (!session) {
-    authPage.style.display = "flex";
-    dashboardPage.style.display = "none";
-    return;
-  }
-  try {
-    const user = JSON.parse(session);
-    openDashboard(user);
-  } catch {
-    localStorage.removeItem("rahul_session");
-    authPage.style.display = "flex";
-    dashboardPage.style.display = "none";
-  }
-}
-// ===============================
-// OPEN ORDER
-// ===============================
-function openOrder(service, price) {
-  const session =
-    localStorage.getItem("rahul_session");
-  if (!session) {
-    alert("पहले Login करें।");
-    return;
-  }
-  currentService = service;
-  currentPrice = price;
-  selectedService.textContent =
-    "Service: " + service;
-  selectedPrice.textContent =
-    price;
-  document.getElementById(
-    "instagramUsername"
-  ).value = "";
-  document.getElementById(
-    "orderMessage"
-  ).textContent = "";
-  orderModal.style.display = "flex";
-}
-// ===============================
-// CLOSE ORDER
-// ===============================
-function closeOrder() {
-  orderModal.style.display = "none";
-}
-// ===============================
-// CREATE ORDER
-// ===============================
-async function createOrder() {
-  const instagramUsername =
-    document
-      .getElementById("instagramUsername")
-      .value
-      .trim();
-  if (!instagramUsername) {
-    document.getElementById(
-      "orderMessage"
-    ).textContent =
-      "Instagram Username डालें।";
-    return;
-  }
-  const session =
-    JSON.parse(
-      localStorage.getItem("rahul_session")
-    );
-  const button =
-    document.querySelector(
-      "#orderModal .main-btn"
-    );
-  button.disabled = true;
-  button.textContent = "Order बनाया जा रहा है...";
-  try {
-    const response = await fetch(
-      API_URL + "/api/orders",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          username: session.username,
-          service: currentService,
-          price: currentPrice,
-          instagram: instagramUsername
-        })
-      }
-    );
-    const data = await response.json();
-    if (!response.ok || !data.success) {
-      throw new Error(
-        data.message || "Order failed."
-      );
-    }
-    closeOrder();
+// ---------- SHOW DASHBOARD ----------
+function showDashboard() {
+    if (authSection) authSection.style.display = "none";
+    if (dashboard) dashboard.style.display = "block";
+    loadUserInfo();
     loadOrders();
-    sendOrderWhatsApp(data.order);
-  } catch (error) {
-    document.getElementById(
-      "orderMessage"
-    ).textContent =
-      "❌ " + error.message;
-  } finally {
-    button.disabled = false;
-    button.textContent = "Confirm Order";
-  }
 }
-// ===============================
-// LOAD ORDERS FROM D1
-// ===============================
-async function loadOrders() {
-  const session =
-    localStorage.getItem("rahul_session");
-  if (!session) return;
-  const user =
-    JSON.parse(session);
-  orderHistory.innerHTML =
-    "Orders loading...";
-  try {
-    const response = await fetch(
-      API_URL +
-      "/api/orders?username=" +
-      encodeURIComponent(user.username)
+// ---------- LOGOUT ----------
+function logout() {
+    localStorage.removeItem(SESSION_KEY);
+    if (dashboard) dashboard.style.display = "none";
+    if (authSection) authSection.style.display = "block";
+    alert("Logout हो गया।");
+}
+window.logout = logout;
+// ---------- USER INFO ----------
+function loadUserInfo() {
+    const session = getSession();
+    if (!session) return;
+    const elements = document.querySelectorAll(
+        ".username, #profileUsername, #welcomeUsername"
     );
-    const data = await response.json();
-    if (!response.ok || !data.success) {
-      throw new Error(
-        data.message || "Orders load नहीं हुए।"
-      );
-    }
-    if (!data.orders || data.orders.length === 0) {
-      orderHistory.innerHTML =
-        "अभी कोई order नहीं है।";
-      return;
-    }
-    orderHistory.innerHTML =
-      data.orders.map(order => `
-        <div style="
-          background:#080808;
-          border:1px solid #252525;
-          border-radius:12px;
-          padding:15px;
-          margin-bottom:10px;
-        ">
-          <div style="
-            color:#39ff14;
-            font-weight:bold;
-          ">
-            ${escapeHTML(order.order_id)}
-          </div>
-          <div style="margin-top:7px;">
-            ${escapeHTML(order.service)}
-          </div>
-          <div style="
-            color:#39ff14;
-            margin-top:5px;
-          ">
-            ₹${escapeHTML(String(order.amount))}
-          </div>
-          <div style="
-            color:#aaa;
-            font-size:13px;
-            margin-top:5px;
-          ">
-            @${escapeHTML(order.instagram_username)}
-          </div>
-          <div style="
-            color:#ffd166;
-            font-size:13px;
-            margin-top:8px;
-          ">
-            Payment: ${escapeHTML(order.payment_status)}
-          </div>
-          <div style="
-            color:#aaa;
-            font-size:13px;
-            margin-top:5px;
-          ">
-            Order: ${escapeHTML(order.order_status)}
-          </div>
-          <div style="
-            color:#777;
-            font-size:12px;
-            margin-top:7px;
-          ">
-            ${escapeHTML(order.created_at)}
-          </div>
-        </div>
-      `).join("");
-  } catch (error) {
-    orderHistory.innerHTML =
-      "❌ Orders load नहीं हुए।";
-  }
+    elements.forEach(el => {
+        el.textContent = session.username;
+    });
 }
-// ===============================
-// WHATSAPP ORDER
-// ===============================
+// ---------- ORDER ID ----------
+function createOrderId() {
+    const random = Math.floor(100000 + Math.random() * 900000);
+    return "RSH" + Date.now().toString().slice(-6) + random;
+}
+// ---------- CREATE ORDER ----------
+function createOrder(service, quantity, amount, instagramUsername) {
+    const session = getSession();
+    if (!session) {
+        alert("पहले Login करें।");
+        return;
+    }
+    if (!service) {
+        alert("Service select करें।");
+        return;
+    }
+    if (!quantity || Number(quantity) <= 0) {
+        alert("Quantity सही डालें।");
+        return;
+    }
+    if (!instagramUsername) {
+        alert("Instagram Username डालें।");
+        return;
+    }
+    const order = {
+        id: Date.now(),
+        orderId: createOrderId(),
+        username: session.username,
+        service: service,
+        quantity: Number(quantity),
+        instagramUsername: instagramUsername,
+        amount: Number(amount),
+        paymentStatus: "Pending",
+        orderStatus: "New",
+        createdAt: new Date().toLocaleString("en-IN")
+    };
+    const orders = getOrders();
+    orders.unshift(order);
+    saveOrders(orders);
+    alert(
+        "Order सफलतापूर्वक बन गया!\n\n" +
+        "Order ID: " + order.orderId
+    );
+    loadOrders();
+    sendOrderWhatsApp(order);
+}
+window.createOrder = createOrder;
+// ---------- WHATSAPP ----------
 function sendOrderWhatsApp(order) {
-  const message =
-`🚀 NEW ORDER - RAHUL SOCIAL HUB
-🧾 Order ID:
-${order.orderId}
-👤 Customer:
-@${order.username}
-📱 Instagram:
-@${order.instagram}
-🛒 Service:
-${order.service}
-💰 Amount:
-₹${order.amount}
-💳 Payment:
-Pending
-कृपया payment verify करें।`;
-  openWhatsApp(message);
+    const message =
+        "🟢 RAHUL SOCIAL HUB - NEW ORDER\n\n" +
+        "Order ID: " + order.orderId + "\n" +
+        "Customer: " + order.username + "\n" +
+        "Service: " + order.service + "\n" +
+        "Quantity: " + order.quantity + "\n" +
+        "Instagram: @" + order.instagramUsername.replace("@", "") + "\n" +
+        "Amount: ₹" + order.amount + "\n" +
+        "Payment: " + order.paymentStatus + "\n" +
+        "Status: " + order.orderStatus + "\n\n" +
+        "Please check this order.";
+    const url =
+        "https://wa.me/" +
+        WHATSAPP_NUMBER +
+        "?text=" +
+        encodeURIComponent(message);
+    window.open(url, "_blank");
 }
-// ===============================
-// PAYMENT WHATSAPP
-// ===============================
-function sendPaymentWhatsApp() {
-  const session =
-    localStorage.getItem("rahul_session");
-  if (!session) {
-    alert("पहले Login करें।");
-    return;
-  }
-  const user =
-    JSON.parse(session);
-  const message =
-`💳 PAYMENT SCREENSHOT
-👤 Username:
-@${user.username}
-मैंने Rahul Social Hub पर payment किया है।
-📸 Payment screenshot भेज रहा/रही हूँ।
-कृपया payment verify करें।`;
-  openWhatsApp(message);
-}
-// ===============================
-// OPEN WHATSAPP
-// ===============================
-function openWhatsApp(message) {
-  const url =
-    "https://wa.me/" +
-    WHATSAPP_NUMBER +
-    "?text=" +
-    encodeURIComponent(message);
-  window.open(url, "_blank");
-}
-// ===============================
-// SECURITY
-// ===============================
-function escapeHTML(value) {
-  return String(value)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
-}
-// ===============================
-// MODAL CLOSE
-// ===============================
-orderModal.addEventListener(
-  "click",
-  function(event) {
-    if (event.target === orderModal) {
-      closeOrder();
+window.sendOrderWhatsApp = sendOrderWhatsApp;
+// ---------- ORDER HISTORY ----------
+function loadOrders() {
+    const session = getSession();
+    if (!session) return;
+    const orders = getOrders().filter(
+        order => order.username === session.username
+    );
+    const container =
+        document.getElementById("orderHistory") ||
+        document.getElementById("ordersList");
+    if (!container) return;
+    if (orders.length === 0) {
+        container.innerHTML =
+            "<p>No orders yet.</p>";
+        return;
     }
-  }
-);
-// ===============================
-// START
-// ===============================
-checkSession();
+    container.innerHTML = orders.map(order => {
+        return `
+            <div class="order-card">
+                <div>
+                    <strong>${escapeHTML(order.service)}</strong>
+                </div>
+                <div>
+                    Order ID:
+                    <strong>${escapeHTML(order.orderId)}</strong>
+                </div>
+                <div>
+                    Quantity:
+                    ${escapeHTML(String(order.quantity))}
+                </div>
+                <div>
+                    Instagram:
+                    @${escapeHTML(
+                        order.instagramUsername.replace("@", "")
+                    )}
+                </div>
+                <div>
+                    Amount:
+                    ₹${escapeHTML(String(order.amount))}
+                </div>
+                <div>
+                    Payment:
+                    <strong>${escapeHTML(order.paymentStatus)}</strong>
+                </div>
+                <div>
+                    Status:
+                    <strong>${escapeHTML(order.orderStatus)}</strong>
+                </div>
+                <small>
+                    ${escapeHTML(order.createdAt)}
+                </small>
+            </div>
+        `;
+    }).join("");
+}
+// ---------- HTML SECURITY ----------
+function escapeHTML(value) {
+    return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+}
+// ---------- PAYMENT WHATSAPP ----------
+function sendPaymentWhatsApp() {
+    const session = getSession();
+    if (!session) {
+        alert("पहले Login करें।");
+        return;
+    }
+    const orders = getOrders().filter(
+        order => order.username === session.username
+    );
+    if (orders.length === 0) {
+        alert("पहले Order बनाइए।");
+        return;
+    }
+    const order = orders[0];
+    const message =
+        "💳 PAYMENT SCREENSHOT\n\n" +
+        "Order ID: " + order.orderId + "\n" +
+        "Customer: " + order.username + "\n" +
+        "Service: " + order.service + "\n" +
+        "Amount: ₹" + order.amount + "\n\n" +
+        "मैं payment screenshot भेज रहा/रही हूँ।";
+    const url =
+        "https://wa.me/" +
+        WHATSAPP_NUMBER +
+        "?text=" +
+        encodeURIComponent(message);
+    window.open(url, "_blank");
+}
+window.sendPaymentWhatsApp = sendPaymentWhatsApp;
+// ---------- QR ----------
+function openQR() {
+    const qr = document.getElementById("qrScanner");
+    if (qr) {
+        qr.style.display =
+            qr.style.display === "none" ? "block" : "none";
+    }
+}
+window.openQR = openQR;
+// ---------- AUTO LOGIN ----------
+document.addEventListener("DOMContentLoaded", () => {
+    const session = getSession();
+    if (session) {
+        showDashboard();
+    } else {
+        if (dashboard) {
+            dashboard.style.display = "none";
+        }
+        if (authSection) {
+            authSection.style.display = "block";
+        }
+    }
+});
