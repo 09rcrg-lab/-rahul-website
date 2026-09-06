@@ -1,747 +1,563 @@
-/* =========================================
-   RAHUL SOCIAL HUB
-   ORDER + QR + LOCAL STORAGE SYSTEM
-========================================= */
+// ==========================================
+// RAHUL SOCIAL HUB - ORDER SYSTEM
+// D1 DATABASE + OFFLINE BACKUP
+// ==========================================
 
-const STORAGE_KEY = "rahul_orders";
+const API_BASE =
+  "https://rahulsocialhub-db.09rcrg.workers.dev";
 
-/* -----------------------------------------
-   SERVICES
------------------------------------------ */
+// Owner WhatsApp number
+// Customer को यह number website पर नहीं दिखेगा.
+const OWNER_WHATSAPP = "919131922170";
 
-const SERVICES = [
-  {
-    id: "followers50",
+// ==========================================
+// SERVICES
+// ==========================================
+
+const SERVICES = {
+  1: {
     name: "1,000 Followers",
     price: 50,
-    quantity: 1000,
+    unit: 1000,
     referral: false,
-    refill: false
+    lifetimeRefill: false
   },
-  {
-    id: "followers100",
-    name: "1,000 Followers",
+
+  2: {
+    name: "1,000 Followers - Lifetime Refill",
     price: 100,
-    quantity: 1000,
+    unit: 1000,
     referral: false,
-    refill: true
+    lifetimeRefill: true
   },
-  {
-    id: "likes20",
+
+  3: {
     name: "1,000 Likes",
     price: 20,
-    quantity: 1000,
+    unit: 1000,
     referral: true,
-    refill: false
+    lifetimeRefill: false
   },
-  {
-    id: "live10",
+
+  4: {
     name: "1,000 Live",
     price: 10,
-    quantity: 1000,
+    unit: 1000,
     referral: false,
-    refill: false
+    lifetimeRefill: false
   },
-  {
-    id: "shares20",
+
+  5: {
     name: "1,000 Shares",
     price: 20,
-    quantity: 1000,
+    unit: 1000,
     referral: false,
-    refill: false
+    lifetimeRefill: false
   },
-  {
-    id: "views10",
+
+  6: {
     name: "10,000 Views",
     price: 10,
-    quantity: 10000,
+    unit: 10000,
     referral: false,
-    refill: false
+    lifetimeRefill: false
   }
-];
+};
 
 
-/* -----------------------------------------
-   STORAGE
------------------------------------------ */
+// ==========================================
+// GENERATE ORDER ID
+// ==========================================
 
-function getOrders() {
+function generateOrderId() {
+  const random = Math.random()
+    .toString(36)
+    .substring(2, 8)
+    .toUpperCase();
+
+  return "RH" + Date.now().toString().slice(-8) + random;
+}
+
+
+// ==========================================
+// SAVE OFFLINE
+// ==========================================
+
+function saveOfflineOrder(order) {
+  const orders =
+    JSON.parse(localStorage.getItem("rahul_orders") || "[]");
+
+  const exists = orders.some(
+    item => item.id === order.id
+  );
+
+  if (!exists) {
+    orders.unshift({
+      ...order,
+      syncStatus: "offline"
+    });
+
+    localStorage.setItem(
+      "rahul_orders",
+      JSON.stringify(orders)
+    );
+  }
+}
+
+
+// ==========================================
+// SAVE ORDER TO LOCAL HISTORY
+// ==========================================
+
+function saveLocalOrder(order) {
+  const orders =
+    JSON.parse(localStorage.getItem("rahul_orders") || "[]");
+
+  const index = orders.findIndex(
+    item => item.id === order.id
+  );
+
+  if (index >= 0) {
+    orders[index] = order;
+  } else {
+    orders.unshift(order);
+  }
+
+  localStorage.setItem(
+    "rahul_orders",
+    JSON.stringify(orders)
+  );
+}
+
+
+// ==========================================
+// SEND ORDER TO D1
+// ==========================================
+
+async function saveOrderToD1(order) {
 
   try {
 
-    const data =
-      localStorage.getItem(STORAGE_KEY);
+    const response = await fetch(
+      `${API_BASE}/api/orders`,
+      {
+        method: "POST",
 
-    return data ? JSON.parse(data) : [];
+        headers: {
+          "Content-Type": "application/json"
+        },
+
+        body: JSON.stringify(order)
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok || !data.success) {
+      throw new Error(
+        data.error || "Database error"
+      );
+    }
+
+    return true;
 
   } catch (error) {
 
-    console.error("Storage error:", error);
+    console.log(
+      "D1 unavailable:",
+      error.message
+    );
 
-    return [];
-
+    return false;
   }
 }
 
 
-function saveOrders(orders) {
+// ==========================================
+// WHATSAPP NOTIFICATION
+// ==========================================
 
-  localStorage.setItem(
-    STORAGE_KEY,
-    JSON.stringify(orders)
+function sendOrderToWhatsApp(order) {
+
+  const message = `
+🚨 NEW ORDER - RAHUL SOCIAL HUB
+
+🆔 Order ID:
+${order.id}
+
+📦 Service:
+${order.serviceName}
+
+🔢 Quantity:
+${order.quantity}
+
+📊 Units:
+${order.units}
+
+💰 Amount:
+₹${order.amount}
+
+👤 Customer:
+${order.customerName || "Customer"}
+
+📱 Username:
+${order.username || "Not provided"}
+
+📌 Status:
+${order.status}
+
+━━━━━━━━━━━━━━
+Rahul Social Hub
+  `.trim();
+
+  const whatsappURL =
+    `https://wa.me/${OWNER_WHATSAPP}?text=` +
+    encodeURIComponent(message);
+
+  window.open(
+    whatsappURL,
+    "_blank"
   );
-
 }
 
 
-/* -----------------------------------------
-   ORDER ID
------------------------------------------ */
+// ==========================================
+// CREATE ORDER
+// ==========================================
 
-function generateOrderId() {
+async function createOrder(options = {}) {
 
-  const random =
-    Math.floor(
-      1000 +
-      Math.random() * 9000
-    );
+  const serviceId =
+    Number(options.serviceId);
 
-  return "RH" + Date.now().toString().slice(-6) + random;
+  const quantity =
+    Number(options.quantity || 1);
 
-}
+  const customerName =
+    options.customerName || "";
 
-
-/* -----------------------------------------
-   CREATE ORDER
------------------------------------------ */
-
-function createNewOrder({
-  customerName,
-  username,
-  serviceId,
-  quantity
-}) {
+  const username =
+    options.username || "";
 
   const service =
-    SERVICES.find(
-      item => item.id === serviceId
-    );
-
+    SERVICES[serviceId];
 
   if (!service) {
-    throw new Error("Service not found");
+    alert("Service select करें");
+    return null;
   }
 
-
-  const qty =
-    Number(quantity);
-
-
-  if (!qty || qty < 1) {
-    throw new Error("Invalid quantity");
+  if (quantity < 1) {
+    alert("Quantity कम से कम 1 होनी चाहिए");
+    return null;
   }
-
 
   const units =
-    service.quantity * qty;
+    service.unit * quantity;
 
-
-  const total =
-    service.price * qty;
-
+  const amount =
+    service.price * quantity;
 
   const order = {
 
     id: generateOrderId(),
 
-    customerName:
-      customerName.trim(),
+    customerName,
 
-    username:
-      username.trim(),
+    username,
 
-    serviceId:
-      service.id,
+    serviceId,
 
-    serviceName:
-      service.name,
+    serviceName: service.name,
 
-    quantity:
-      qty,
+    quantity,
 
-    units:
-      units,
+    units,
 
-    amount:
-      total,
+    amount,
 
-    referral:
-      service.referral,
+    referral: service.referral,
 
     lifetimeRefill:
-      service.refill,
+      service.lifetimeRefill,
 
-    status:
-      "Pending",
+    status: "Pending",
 
     createdAt:
       new Date().toISOString()
-
   };
 
 
-  const orders =
-    getOrders();
+  // पहले local history
+  saveLocalOrder(order);
 
 
-  orders.unshift(order);
-
-  saveOrders(orders);
-
-
-  return order;
-
-}
+  // D1 में save
+  const online =
+    await saveOrderToD1(order);
 
 
-/* -----------------------------------------
-   FIND ORDER
------------------------------------------ */
+  if (online) {
 
-function findOrder(orderId) {
+    order.syncStatus = "synced";
 
-  if (!orderId) {
-    return null;
+    saveLocalOrder(order);
+
+  } else {
+
+    saveOfflineOrder(order);
   }
 
 
-  const cleanId =
-    String(orderId)
-      .trim()
-      .toUpperCase();
+  // WhatsApp notification
+  sendOrderToWhatsApp(order);
 
 
-  return getOrders().find(
-    order =>
-      String(order.id)
-        .toUpperCase() === cleanId
-  ) || null;
+  // Order ID दिखाएं
+  alert(
+    "Order successfully placed!\\n\\n" +
+    "Order ID: " +
+    order.id +
+    "\\n\\n" +
+    "Status: Pending"
+  );
 
+
+  return order;
 }
 
 
-/* -----------------------------------------
-   UPDATE ORDER STATUS
------------------------------------------ */
+// ==========================================
+// GET ORDER FROM D1
+// ==========================================
 
-function updateOrderStatus(
+async function getOrderFromD1(orderId) {
+
+  try {
+
+    const response =
+      await fetch(
+        `${API_BASE}/api/orders/${encodeURIComponent(orderId)}`
+      );
+
+    const data =
+      await response.json();
+
+    if (
+      !response.ok ||
+      !data.success
+    ) {
+      return null;
+    }
+
+    return data.order;
+
+  } catch (error) {
+
+    console.log(
+      "Unable to load order:",
+      error.message
+    );
+
+    return null;
+  }
+}
+
+
+// ==========================================
+// GET LOCAL ORDER
+// ==========================================
+
+function getLocalOrder(orderId) {
+
+  const orders =
+    JSON.parse(
+      localStorage.getItem("rahul_orders") ||
+      "[]"
+    );
+
+  return (
+    orders.find(
+      order => order.id === orderId
+    ) || null
+  );
+}
+
+
+// ==========================================
+// GET ORDER
+// ONLINE FIRST
+// ==========================================
+
+async function getOrder(orderId) {
+
+  const onlineOrder =
+    await getOrderFromD1(orderId);
+
+  if (onlineOrder) {
+    return onlineOrder;
+  }
+
+  return getLocalOrder(orderId);
+}
+
+
+// ==========================================
+// UPDATE ORDER STATUS LOCALLY
+// ==========================================
+
+function updateLocalOrderStatus(
   orderId,
-  newStatus
+  status
 ) {
 
   const orders =
-    getOrders();
-
+    JSON.parse(
+      localStorage.getItem("rahul_orders") ||
+      "[]"
+    );
 
   const index =
     orders.findIndex(
-      order =>
-        order.id === orderId
+      order => order.id === orderId
     );
-
 
   if (index === -1) {
     return false;
   }
 
-
-  orders[index].status =
-    newStatus;
-
+  orders[index].status = status;
 
   orders[index].updatedAt =
     new Date().toISOString();
 
-
-  saveOrders(orders);
-
-  return true;
-
-}
-
-
-/* -----------------------------------------
-   STATUS TEXT
------------------------------------------ */
-
-function getStatusText(status) {
-
-  const statusMap = {
-
-    Pending:
-      "⏳ Order Pending",
-
-    Processing:
-      "⚙️ Order Processing",
-
-    Completed:
-      "✅ Order Completed",
-
-    Cancelled:
-      "❌ Order Cancelled"
-
-  };
-
-
-  return (
-    statusMap[status] ||
-    status
+  localStorage.setItem(
+    "rahul_orders",
+    JSON.stringify(orders)
   );
 
+  return true;
 }
 
 
-/* -----------------------------------------
-   CUSTOMER ORDER PAGE
------------------------------------------ */
+// ==========================================
+// ORDER HISTORY
+// ==========================================
 
-function showCustomerOrder(order) {
+function getOrderHistory() {
 
-  const box =
-    document.getElementById(
-      "customerOrder"
-    );
-
-
-  if (!box) {
-    return;
-  }
-
-
-  if (!order) {
-
-    box.innerHTML = `
-      <div class="order">
-        <h3>❌ Order नहीं मिला</h3>
-        <p>
-          कृपया सही Order ID से QR खोलें।
-        </p>
-      </div>
-    `;
-
-    return;
-
-  }
-
-
-  box.innerHTML = `
-
-    <div class="order">
-
-      <div class="order-id">
-        Order ID: ${escapeHTML(order.id)}
-      </div>
-
-      <h3>
-        ${escapeHTML(order.serviceName)}
-      </h3>
-
-      <p>
-        📦 Quantity:
-        ${order.quantity}
-      </p>
-
-      <p>
-        🔢 Total Units:
-        ${Number(order.units)
-          .toLocaleString("en-IN")}
-      </p>
-
-      <p>
-        💰 Amount:
-        ₹${Number(order.amount)
-          .toLocaleString("en-IN")}
-      </p>
-
-      <p>
-        📊 Status:
-        <strong>
-          ${getStatusText(order.status)}
-        </strong>
-      </p>
-
-      ${
-        order.lifetimeRefill
-        ? `
-          <p>
-            ♾️ Lifetime Refill:
-            Available
-          </p>
-        `
-        : ""
-      }
-
-      <p class="small">
-        Order Date:
-        ${formatDate(order.createdAt)}
-      </p>
-
-    </div>
-
-  `;
-
+  return JSON.parse(
+    localStorage.getItem("rahul_orders") ||
+    "[]"
+  );
 }
 
 
-/* -----------------------------------------
-   QR URL
------------------------------------------ */
+// ==========================================
+// CREATE CUSTOMER QR URL
+// ==========================================
 
 function getOrderQRUrl(orderId) {
 
   const base =
-    window.location.origin +
-    window.location.pathname;
-
+    window.location.origin;
 
   return (
-    base +
-    "?order=" +
+    `${base}/customer.html?order=` +
     encodeURIComponent(orderId)
   );
-
 }
 
 
-/* -----------------------------------------
-   GENERATE QR
------------------------------------------ */
-
-function generateOrderQR(orderId) {
-
-  const qrImage =
-    document.getElementById(
-      "qrImage"
-    );
-
-
-  if (!qrImage) {
-    return;
-  }
-
-
-  const url =
-    getOrderQRUrl(orderId);
-
-
-  qrImage.src =
-    "https://api.qrserver.com/v1/create-qr-code/" +
-    "?size=300x300&data=" +
-    encodeURIComponent(url);
-
-}
-
-
-/* -----------------------------------------
-   CHECK QR URL
------------------------------------------ */
-
-function checkOrderFromURL() {
-
-  const params =
-    new URLSearchParams(
-      window.location.search
-    );
-
-
-  const orderId =
-    params.get("order");
-
-
-  if (!orderId) {
-    return;
-  }
-
-
-  const order =
-    findOrder(orderId);
-
-
-  showCustomerOrder(order);
-
-}
-
-
-/* -----------------------------------------
-   WHATSAPP
------------------------------------------ */
-
-function sendOrderToWhatsApp(order) {
-
-  /*
-    यह नंबर केवल owner notification
-    के लिए है।
-
-    Customer page पर इसे display
-    नहीं किया जाता।
-  */
-
-  const ownerNumber =
-    "919131922170";
-
-
-  const message = `
-🛒 नया Order
-
-Order ID: ${order.id}
-
-Service:
-${order.serviceName}
-
-Username:
-${order.username}
-
-Quantity:
-${order.quantity}
-
-Total Units:
-${order.units}
-
-Amount:
-₹${order.amount}
-
-Referral:
-${order.referral ? "हाँ" : "नहीं"}
-
-Lifetime Refill:
-${order.lifetimeRefill ? "हाँ" : "नहीं"}
-
-Status:
-${order.status}
-`;
-
-
-  const url =
-    "https://wa.me/" +
-    ownerNumber +
-    "?text=" +
-    encodeURIComponent(message);
-
-
-  window.open(
-    url,
-    "_blank"
-  );
-
-}
-
-
-/* -----------------------------------------
-   DATE
------------------------------------------ */
-
-function formatDate(date) {
-
-  if (!date) {
-    return "-";
-  }
-
-
-  try {
-
-    return new Date(date)
-      .toLocaleString(
-        "hi-IN",
-        {
-          dateStyle: "medium",
-          timeStyle: "short"
-        }
-      );
-
-  } catch {
-
-    return date;
-
-  }
-
-}
-
-
-/* -----------------------------------------
-   SECURITY
------------------------------------------ */
-
-function escapeHTML(value) {
-
-  return String(value)
-
-    .replaceAll(
-      "&",
-      "&amp;"
-    )
-
-    .replaceAll(
-      "<",
-      "&lt;"
-    )
-
-    .replaceAll(
-      ">",
-      "&gt;"
-    )
-
-    .replaceAll(
-      '"',
-      "&quot;"
-    )
-
-    .replaceAll(
-      "'",
-      "&#039;"
-    );
-
-}
-
-
-/* -----------------------------------------
-   EXPORT ORDERS
------------------------------------------ */
-
-function exportOrders() {
+// ==========================================
+// SYNC OFFLINE ORDERS
+// ==========================================
+
+async function syncOfflineOrders() {
 
   const orders =
-    getOrders();
-
-
-  const blob =
-    new Blob(
-      [
-        JSON.stringify(
-          orders,
-          null,
-          2
-        )
-      ],
-      {
-        type:
-          "application/json"
-      }
+    JSON.parse(
+      localStorage.getItem("rahul_orders") ||
+      "[]"
     );
 
+  let synced = 0;
 
-  const url =
-    URL.createObjectURL(blob);
+  for (const order of orders) {
 
+    if (
+      order.syncStatus === "synced"
+    ) {
+      continue;
+    }
 
-  const a =
-    document.createElement("a");
+    const success =
+      await saveOrderToD1(order);
 
+    if (success) {
 
-  a.href = url;
+      order.syncStatus =
+        "synced";
 
-  a.download =
-    "rahul-social-hub-orders.json";
-
-
-  a.click();
-
-
-  URL.revokeObjectURL(url);
-
-}
-
-
-/* -----------------------------------------
-   IMPORT ORDERS
------------------------------------------ */
-
-function importOrders(file) {
-
-  if (!file) {
-    return;
+      synced++;
+    }
   }
 
+  localStorage.setItem(
+    "rahul_orders",
+    JSON.stringify(orders)
+  );
 
-  const reader =
-    new FileReader();
-
-
-  reader.onload =
-    function () {
-
-      try {
-
-        const orders =
-          JSON.parse(
-            reader.result
-          );
-
-
-        if (!Array.isArray(orders)) {
-          throw new Error();
-        }
-
-
-        saveOrders(orders);
-
-
-        alert(
-          "Order History वापस आ गई।"
-        );
-
-
-        location.reload();
-
-
-      } catch {
-
-        alert(
-          "गलत backup file है।"
-        );
-
-      }
-
-    };
-
-
-  reader.readAsText(file);
-
+  return synced;
 }
 
 
-/* -----------------------------------------
-   START
------------------------------------------ */
+// ==========================================
+// AUTO SYNC WHEN INTERNET RETURNS
+// ==========================================
 
-document.addEventListener(
-  "DOMContentLoaded",
-  function () {
+window.addEventListener(
+  "online",
+  async () => {
 
-    checkOrderFromURL();
+    console.log(
+      "Internet वापस आ गया — orders syncing..."
+    );
 
+    const count =
+      await syncOfflineOrders();
+
+    if (count > 0) {
+
+      console.log(
+        `${count} order synced`
+      );
+    }
   }
 );
 
 
-/*
--------------------------------------------
-IMPORTANT
+// ==========================================
+// GLOBAL ACCESS
+// ==========================================
 
-Customer को:
-- Owner WhatsApp number
-- Owner phone number
-- Internal order data
+window.RahulOrders = {
 
-नहीं दिखाया जाता।
+  SERVICES,
 
-Customer QR खोलने पर केवल:
-- Order ID
-- Service
-- Quantity
-- Amount
-- Status
-- Refill information
+  createOrder,
 
-दिखेगी।
--------------------------------------------
-*/
+  getOrder,
+
+  getOrderFromD1,
+
+  getLocalOrder,
+
+  getOrderHistory,
+
+  updateLocalOrderStatus,
+
+  getOrderQRUrl,
+
+  syncOfflineOrders
+};
