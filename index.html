@@ -1,179 +1,756 @@
 <!DOCTYPE html>
 <html lang="hi">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Rahul Social Hub</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Rahul Social Hub</title>
+
+<style>
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:#050505;
+  color:white;
+}
+
+header{
+  padding:20px;
+  text-align:center;
+  background:#0b0b0b;
+  border-bottom:1px solid #222;
+}
+
+header h1{
+  margin:0;
+  font-size:25px;
+}
+
+.container{
+  max-width:650px;
+  margin:auto;
+  padding:18px;
+}
+
+.card{
+  background:#101010;
+  border:1px solid #252525;
+  border-radius:16px;
+  padding:18px;
+  margin-bottom:18px;
+}
+
+.service{
+  background:#151515;
+  border:1px solid #292929;
+  border-radius:13px;
+  padding:15px;
+  margin:10px 0;
+  cursor:pointer;
+}
+
+.service.selected{
+  border:2px solid #20d66b;
+}
+
+.service-title{
+  font-size:17px;
+  font-weight:bold;
+}
+
+.price{
+  color:#20d66b;
+  font-size:20px;
+  font-weight:bold;
+  margin-top:6px;
+}
+
+.badge{
+  display:inline-block;
+  padding:5px 8px;
+  border-radius:20px;
+  background:#222;
+  color:#bbb;
+  font-size:12px;
+  margin-top:7px;
+}
+
+input{
+  width:100%;
+  padding:14px;
+  margin:7px 0;
+  border-radius:10px;
+  border:1px solid #333;
+  background:#181818;
+  color:white;
+  font-size:16px;
+}
+
+button{
+  width:100%;
+  padding:14px;
+  border:0;
+  border-radius:11px;
+  background:#20d66b;
+  color:#000;
+  font-size:16px;
+  font-weight:bold;
+  margin-top:10px;
+}
+
+.total{
+  font-size:24px;
+  font-weight:bold;
+  text-align:center;
+  margin:15px 0;
+}
+
+.order{
+  background:#151515;
+  border:1px solid #292929;
+  border-radius:12px;
+  padding:14px;
+  margin-top:12px;
+}
+
+.order-id{
+  color:#20d66b;
+  font-weight:bold;
+}
+
+.small{
+  color:#999;
+  font-size:13px;
+}
+
+#qrBox{
+  display:none;
+  text-align:center;
+}
+
+#qrBox img{
+  width:220px;
+  background:white;
+  padding:10px;
+  border-radius:10px;
+}
+
+.status{
+  display:inline-block;
+  padding:5px 9px;
+  border-radius:20px;
+  background:#222;
+  font-size:12px;
+}
+</style>
 </head>
+
 <body>
-  <!-- LOGIN / REGISTER -->
-  <div id="authPage" class="auth-page">
-    <div class="auth-box">
-      <h1>Rahul Social Hub</h1>
-      <p class="subtitle">Social Media Services</p>
-      <div class="tabs">
-        <button id="loginTab" class="active" onclick="showLogin()">Login</button>
-        <button id="registerTab" onclick="showRegister()">Register</button>
-      </div>
-      <!-- LOGIN -->
-      <form id="loginForm">
-        <input
-          type="text"
-          id="loginUsername"
-          placeholder="Username"
-          required
-        >
-        <input
-          type="password"
-          id="loginPassword"
-          placeholder="Password"
-          required
-        >
-        <button type="submit" class="main-btn">
-          Login
-        </button>
-      </form>
-      <!-- REGISTER -->
-      <form id="registerForm" style="display:none;">
-        <input
-          type="text"
-          id="registerUsername"
-          placeholder="Username"
-          required
-        >
-        <input
-          type="email"
-          id="registerEmail"
-          placeholder="Email"
-          required
-        >
-        <input
-          type="password"
-          id="registerPassword"
-          placeholder="Password"
-          required
-        >
-        <input
-          type="text"
-          id="referralCode"
-          placeholder="Referral Code (Optional)"
-        >
-        <button type="submit" class="main-btn">
-          Create Account
-        </button>
-      </form>
-      <p id="authMessage"></p>
-    </div>
+
+<header>
+  <h1>Rahul Social Hub</h1>
+  <div class="small">Social Media Services</div>
+</header>
+
+
+<div class="container">
+
+<!-- SERVICES -->
+
+<div class="card">
+
+<h2>🛍️ Services</h2>
+
+<div class="service" onclick="selectService(1)">
+  <div class="service-title">
+    1,000 Followers
   </div>
-  <!-- DASHBOARD -->
-  <div id="dashboardPage" style="display:none;">
-    <header class="topbar">
-      <div>
-        <h2>Rahul Social Hub</h2>
-      </div>
-      <button onclick="logout()" class="logout-btn">
-        Logout
-      </button>
-    </header>
-    <main class="dashboard">
-      <section class="welcome">
-        <h1>Welcome 👋</h1>
-        <p id="welcomeUser"></p>
-      </section>
-      <!-- SERVICES -->
-      <section>
-        <h2 class="section-title">Our Services</h2>
-        <div class="services-grid">
-          <div class="service-card">
-            <h3>👥 1,000 Followers</h3>
-            <p>Without Referral</p>
-            <strong>₹50</strong>
-            <button onclick="openOrder('1000 Followers', 50)">
-              Order Now
-            </button>
-          </div>
-          <div class="service-card">
-            <h3>👥 1,000 Followers</h3>
-            <p>With Referral</p>
-            <strong>₹100</strong>
-            <button onclick="openOrder('1000 Followers + Referral', 100)">
-              Order Now
-            </button>
-          </div>
-          <div class="service-card">
-            <h3>👁️ 10,000 Views</h3>
-            <strong>₹10</strong>
-            <button onclick="openOrder('10,000 Views', 10)">
-              Order Now
-            </button>
-          </div>
-          <div class="service-card">
-            <h3>❤️ 1,000 Likes</h3>
-            <strong>₹20</strong>
-            <button onclick="openOrder('1,000 Likes', 20)">
-              Order Now
-            </button>
-          </div>
-          <div class="service-card">
-            <h3>💬 Comments</h3>
-            <strong>₹50</strong>
-            <button onclick="openOrder('Comments', 50)">
-              Order Now
-            </button>
-          </div>
+  <div class="price">₹50</div>
+  <span class="badge">Referral ❌</span>
+</div>
+
+
+<div class="service" onclick="selectService(2)">
+  <div class="service-title">
+    1,000 Followers
+  </div>
+  <div class="price">₹100</div>
+  <span class="badge">
+    Lifetime Refill
+  </span>
+</div>
+
+
+<div class="service" onclick="selectService(3)">
+  <div class="service-title">
+    1,000 Likes
+  </div>
+  <div class="price">₹20</div>
+  <span class="badge">
+    Referral ✅
+  </span>
+</div>
+
+
+<div class="service" onclick="selectService(4)">
+  <div class="service-title">
+    1,000 Live
+  </div>
+  <div class="price">₹10</div>
+  <span class="badge">
+    Referral ❌
+  </span>
+</div>
+
+
+<div class="service" onclick="selectService(5)">
+  <div class="service-title">
+    1,000 Shares
+  </div>
+  <div class="price">₹20</div>
+</div>
+
+
+<div class="service" onclick="selectService(6)">
+  <div class="service-title">
+    10,000 Views
+  </div>
+  <div class="price">₹10</div>
+</div>
+
+</div>
+
+
+<!-- ORDER -->
+
+<div class="card">
+
+<h2>🛒 Create Order</h2>
+
+<input
+  id="customerName"
+  placeholder="Customer Name"
+>
+
+<input
+  id="username"
+  placeholder="Instagram / Social Media Username"
+>
+
+<input
+  id="quantity"
+  type="number"
+  value="1"
+  min="1"
+  placeholder="Quantity"
+  oninput="calculatePrice()"
+>
+
+<div id="selectedService"
+     class="small">
+  कोई Service select नहीं की गई
+</div>
+
+<div class="total">
+  Total: ₹<span id="total">0</span>
+</div>
+
+<button onclick="createOrder()">
+  ✅ Order करें
+</button>
+
+</div>
+
+
+<!-- ORDER HISTORY -->
+
+<div class="card">
+
+<h2>📦 Order History</h2>
+
+<div id="orderHistory"></div>
+
+</div>
+
+
+<!-- QR -->
+
+<div class="card" id="qrBox">
+
+<h2>🔳 Order QR</h2>
+
+<img id="qrImage">
+
+<p id="qrText" class="small"></p>
+
+</div>
+
+</div>
+
+
+<script>
+
+/* =========================
+   WHATSAPP
+========================= */
+
+const WHATSAPP_NUMBER = "919131922170";
+
+
+/* =========================
+   SERVICES
+========================= */
+
+const services = {
+
+  1:{
+    name:"1,000 Followers",
+    price:50,
+    unit:1000,
+    referral:false,
+    refill:false
+  },
+
+  2:{
+    name:"1,000 Followers - Lifetime Refill",
+    price:100,
+    unit:1000,
+    referral:false,
+    refill:true
+  },
+
+  3:{
+    name:"1,000 Likes",
+    price:20,
+    unit:1000,
+    referral:true,
+    refill:false
+  },
+
+  4:{
+    name:"1,000 Live",
+    price:10,
+    unit:1000,
+    referral:false,
+    refill:false
+  },
+
+  5:{
+    name:"1,000 Shares",
+    price:20,
+    unit:1000,
+    referral:false,
+    refill:false
+  },
+
+  6:{
+    name:"10,000 Views",
+    price:10,
+    unit:10000,
+    referral:false,
+    refill:false
+  }
+
+};
+
+
+let selectedService = null;
+
+
+/* =========================
+   SELECT SERVICE
+========================= */
+
+function selectService(id){
+
+  selectedService = services[id];
+
+  document.querySelectorAll(".service")
+    .forEach(x =>
+      x.classList.remove("selected")
+    );
+
+  event.currentTarget
+    .classList.add("selected");
+
+  document.getElementById("selectedService")
+    .innerHTML =
+    "Selected: <b>" +
+    selectedService.name +
+    "</b>";
+
+  calculatePrice();
+}
+
+
+/* =========================
+   PRICE
+========================= */
+
+function calculatePrice(){
+
+  if(!selectedService){
+
+    document.getElementById("total")
+      .innerText="0";
+
+    return;
+  }
+
+  let quantity =
+    Number(
+      document.getElementById("quantity").value
+    );
+
+  if(quantity < 1)
+    quantity=1;
+
+  let total =
+    selectedService.price * quantity;
+
+  document.getElementById("total")
+    .innerText =
+    total.toLocaleString("en-IN");
+}
+
+
+/* =========================
+   GET ORDERS
+========================= */
+
+function getOrders(){
+
+  try{
+
+    return JSON.parse(
+      localStorage.getItem(
+        "rahul_orders"
+      )
+    ) || [];
+
+  }catch(e){
+
+    return [];
+
+  }
+
+}
+
+
+/* =========================
+   SAVE ORDERS
+========================= */
+
+function saveOrders(orders){
+
+  localStorage.setItem(
+    "rahul_orders",
+    JSON.stringify(orders)
+  );
+
+}
+
+
+/* =========================
+   CREATE ORDER
+========================= */
+
+function createOrder(){
+
+  if(!selectedService){
+
+    alert("पहले Service select करें।");
+    return;
+
+  }
+
+
+  const customer =
+    document.getElementById(
+      "customerName"
+    ).value.trim();
+
+
+  const username =
+    document.getElementById(
+      "username"
+    ).value.trim();
+
+
+  const quantity =
+    Number(
+      document.getElementById(
+        "quantity"
+      ).value
+    );
+
+
+  if(!customer ||
+     !username ||
+     !quantity){
+
+    alert(
+      "Customer Name, Username और Quantity भरें।"
+    );
+
+    return;
+  }
+
+
+  const total =
+    selectedService.price *
+    quantity;
+
+
+  const orderId =
+    "RH" +
+    Date.now()
+      .toString()
+      .slice(-8);
+
+
+  const order = {
+
+    id:orderId,
+
+    customer:customer,
+
+    username:username,
+
+    service:selectedService.name,
+
+    quantity:quantity,
+
+    amount:total,
+
+    referral:selectedService.referral,
+
+    refill:selectedService.refill,
+
+    status:"Pending",
+
+    date:new Date()
+      .toLocaleString("hi-IN")
+
+  };
+
+
+  const orders = getOrders();
+
+  orders.unshift(order);
+
+  saveOrders(orders);
+
+  showOrders();
+
+  createQR(orderId);
+
+
+  /* =========================
+     WHATSAPP MESSAGE
+  ========================= */
+
+  let message =
+`🛒 नया Order प्राप्त हुआ
+
+Order ID: ${orderId}
+
+Service: ${selectedService.name}
+
+Username: ${username}
+
+Quantity: ${quantity}
+
+Amount: ₹${total}
+
+Referral: ${
+  selectedService.referral
+  ? "हाँ"
+  : "नहीं"
+}
+
+${
+  selectedService.refill
+  ? "Lifetime Refill: हाँ"
+  : ""
+}
+
+Status: Pending`;
+
+
+  const whatsappURL =
+    "https://wa.me/" +
+    WHATSAPP_NUMBER +
+    "?text=" +
+    encodeURIComponent(message);
+
+
+  window.open(
+    whatsappURL,
+    "_blank"
+  );
+
+
+  alert(
+    "Order सफलतापूर्वक बन गया।\nOrder ID: " +
+    orderId
+  );
+
+
+  document.getElementById(
+    "customerName"
+  ).value="";
+
+  document.getElementById(
+    "username"
+  ).value="";
+
+}
+
+
+/* =========================
+   ORDER HISTORY
+========================= */
+
+function showOrders(){
+
+  const box =
+    document.getElementById(
+      "orderHistory"
+    );
+
+  const orders =
+    getOrders();
+
+
+  if(!orders.length){
+
+    box.innerHTML =
+      `<p class="small">
+        अभी कोई Order नहीं है।
+      </p>`;
+
+    return;
+
+  }
+
+
+  box.innerHTML =
+    orders.map(order => `
+
+      <div class="order">
+
+        <div class="order-id">
+          ${escapeHTML(order.id)}
         </div>
-      </section>
-      <!-- PAYMENT -->
-      <section class="payment-panel">
-        <h2>💳 Payment</h2>
-        <p>Payment Number</p>
-        <div class="payment-number">
-          9131922170
-        </div>
-        <div class="qr-box">
-          <p>Payment QR / Scanner</p>
-          <!-- बाद में यहाँ आपका असली QR लगाया जाएगा -->
-          <div class="qr-placeholder">
-            QR SCANNER
-          </div>
-        </div>
+
         <p>
-          Payment करने के बाद screenshot भेजें।
+          🛍️ ${escapeHTML(order.service)}
         </p>
-        <button onclick="sendPaymentWhatsApp()" class="whatsapp-btn">
-          📲 Payment Screenshot WhatsApp पर भेजें
+
+        <p>
+          👤 ${escapeHTML(order.username)}
+        </p>
+
+        <p>
+          📦 Quantity: ${order.quantity}
+        </p>
+
+        <p>
+          💰 ₹${Number(order.amount)
+            .toLocaleString("en-IN")}
+        </p>
+
+        <p>
+          <span class="status">
+            ${escapeHTML(order.status)}
+          </span>
+        </p>
+
+        <p class="small">
+          ${escapeHTML(order.date)}
+        </p>
+
+        <button
+          onclick="createQR('${escapeHTML(order.id)}')">
+          🔳 QR
         </button>
-      </section>
-      <!-- ORDER HISTORY -->
-      <section>
-        <h2 class="section-title">📦 My Orders</h2>
-        <div id="orderHistory" class="orders">
-          अभी कोई order नहीं है।
-        </div>
-      </section>
-    </main>
-  </div>
-  <!-- ORDER MODAL -->
-  <div id="orderModal" class="modal">
-    <div class="modal-box">
-      <button class="close-btn" onclick="closeOrder()">×</button>
-      <h2>Confirm Order</h2>
-      <p id="selectedService"></p>
-      <div class="price-box">
-        ₹<span id="selectedPrice"></span>
+
       </div>
-      <input
-        type="text"
-        id="instagramUsername"
-        placeholder="Instagram Username"
-      >
-      <button onclick="createOrder()" class="main-btn">
-        Confirm Order
-      </button>
-      <p id="orderMessage"></p>
-    </div>
-  </div>
-  <script src="script.js"></script>
+
+    `).join("");
+
+}
+
+
+/* =========================
+   QR CODE
+========================= */
+
+function createQR(orderId){
+
+  const qrBox =
+    document.getElementById(
+      "qrBox"
+    );
+
+  const qrImage =
+    document.getElementById(
+      "qrImage"
+    );
+
+  const qrText =
+    document.getElementById(
+      "qrText"
+    );
+
+
+  const qrData =
+    location.origin +
+    location.pathname +
+    "?order=" +
+    encodeURIComponent(orderId);
+
+
+  qrImage.src =
+    "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=" +
+    encodeURIComponent(qrData);
+
+
+  qrText.innerText =
+    "Order ID: " + orderId;
+
+
+  qrBox.style.display =
+    "block";
+
+}
+
+
+/* =========================
+   HTML SECURITY
+========================= */
+
+function escapeHTML(value){
+
+  return String(value)
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+
+}
+
+
+/* =========================
+   START
+========================= */
+
+showOrders();
+
+</script>
+
 </body>
 </html>
