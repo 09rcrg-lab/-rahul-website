@@ -1,32 +1,34 @@
--- ==========================================
--- RAHUL SOCIAL HUB DATABASE
--- ==========================================
--- USERS
-CREATE TABLE IF NOT EXISTS users (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    username TEXT NOT NULL UNIQUE,
-    email TEXT NOT NULL UNIQUE,
-    password_hash TEXT NOT NULL,
-    referral_code TEXT,
-    created_at TEXT NOT NULL DEFAULT (datetime('now'))
-);
--- ORDERS
+-- =========================================
+-- RAHUL SOCIAL HUB - ORDERS TABLE
+-- =========================================
+
 CREATE TABLE IF NOT EXISTS orders (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    order_id TEXT NOT NULL UNIQUE,
-    username TEXT NOT NULL,
-    service TEXT NOT NULL,
-    instagram_username TEXT NOT NULL,
-    amount REAL NOT NULL,
-    payment_status TEXT NOT NULL DEFAULT 'Pending',
-    order_status TEXT NOT NULL DEFAULT 'New',
-    payment_screenshot TEXT,
-    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    id TEXT PRIMARY KEY,
+
+    customer_name TEXT,
+    username TEXT,
+
+    service_id TEXT NOT NULL,
+    service_name TEXT NOT NULL,
+
+    quantity INTEGER NOT NULL,
+    units INTEGER NOT NULL,
+
+    amount INTEGER NOT NULL,
+
+    referral INTEGER NOT NULL DEFAULT 0,
+    lifetime_refill INTEGER NOT NULL DEFAULT 0,
+
+    status TEXT NOT NULL DEFAULT 'Pending',
+
+    created_at TEXT NOT NULL,
+    updated_at TEXT
 );
--- INDEXES
-CREATE INDEX IF NOT EXISTS idx_users_username
-ON users(username);
-CREATE INDEX IF NOT EXISTS idx_orders_username
-ON orders(username);
-CREATE INDEX IF NOT EXISTS idx_orders_order_id
-ON orders(order_id);
+
+-- Fast order search
+CREATE INDEX IF NOT EXISTS idx_orders_created_at
+ON orders(created_at);
+
+-- Fast status search
+CREATE INDEX IF NOT EXISTS idx_orders_status
+ON orders(status);
