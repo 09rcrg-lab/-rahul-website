@@ -1,255 +1,178 @@
 <!DOCTYPE html>
 <html lang="hi">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Order Status | Rahul Social Hub</title>
+  <title>Order Status - Rahul Social Hub</title>
 
-<style>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
 
-*{
-  box-sizing:border-box;
-}
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #050505;
+      color: #fff;
+      min-height: 100vh;
+      padding: 20px;
+    }
 
-body{
-  margin:0;
-  min-height:100vh;
-  background:#050505;
-  color:#fff;
-  font-family:Arial,sans-serif;
-}
+    .container {
+      max-width: 500px;
+      margin: auto;
+    }
 
-.header{
-  padding:22px 18px;
-  text-align:center;
-  background:#0b0b0b;
-  border-bottom:1px solid #222;
-}
+    .logo {
+      text-align: center;
+      font-size: 28px;
+      font-weight: bold;
+      margin: 25px 0;
+    }
 
-.logo{
-  font-size:24px;
-  font-weight:bold;
-}
+    .logo span {
+      color: #39ff14;
+    }
 
-.subtitle{
-  color:#888;
-  margin-top:5px;
-  font-size:13px;
-}
+    .card {
+      background: #111;
+      border: 1px solid #222;
+      border-radius: 18px;
+      padding: 22px;
+      box-shadow: 0 0 25px rgba(57,255,20,0.08);
+    }
 
-.container{
-  width:100%;
-  max-width:550px;
-  margin:auto;
-  padding:20px;
-}
+    h2 {
+      margin-top: 0;
+      text-align: center;
+    }
 
-.card{
-  background:#101010;
-  border:1px solid #252525;
-  border-radius:18px;
-  padding:20px;
-  margin-bottom:18px;
-}
+    .order-id {
+      text-align: center;
+      color: #39ff14;
+      font-size: 20px;
+      font-weight: bold;
+      margin: 15px 0 25px;
+      word-break: break-all;
+    }
 
-h2{
-  margin-top:0;
-}
+    .row {
+      display: flex;
+      justify-content: space-between;
+      gap: 15px;
+      padding: 14px 0;
+      border-bottom: 1px solid #222;
+    }
 
-input{
-  width:100%;
-  padding:15px;
-  background:#181818;
-  color:#fff;
-  border:1px solid #333;
-  border-radius:11px;
-  outline:none;
-  font-size:16px;
-}
+    .row:last-child {
+      border-bottom: 0;
+    }
 
-button{
-  width:100%;
-  padding:15px;
-  margin-top:10px;
-  border:0;
-  border-radius:11px;
-  background:#20d66b;
-  color:#000;
-  font-size:16px;
-  font-weight:bold;
-}
+    .label {
+      color: #aaa;
+    }
 
-.order-box{
-  margin-top:18px;
-  background:#151515;
-  border:1px solid #292929;
-  border-radius:14px;
-  padding:17px;
-}
+    .value {
+      text-align: right;
+      font-weight: bold;
+    }
 
-.order-id{
-  color:#20d66b;
-  font-size:18px;
-  font-weight:bold;
-}
+    .status {
+      display: inline-block;
+      padding: 8px 14px;
+      border-radius: 20px;
+      background: #222;
+    }
 
-.service{
-  font-size:20px;
-  font-weight:bold;
-  margin:12px 0;
-}
+    .pending {
+      color: #ffd400;
+    }
 
-.row{
-  display:flex;
-  justify-content:space-between;
-  gap:15px;
-  padding:11px 0;
-  border-bottom:1px solid #252525;
-}
+    .processing {
+      color: #00c8ff;
+    }
 
-.row:last-child{
-  border-bottom:0;
-}
+    .completed {
+      color: #39ff14;
+    }
 
-.label{
-  color:#888;
-}
+    .cancelled {
+      color: #ff4444;
+    }
 
-.value{
-  text-align:right;
-}
+    .loading {
+      text-align: center;
+      padding: 30px;
+      color: #aaa;
+    }
 
-.status{
-  margin-top:18px;
-  padding:13px;
-  border-radius:11px;
-  text-align:center;
-  background:#202020;
-  font-weight:bold;
-}
+    .error {
+      text-align: center;
+      color: #ff4444;
+      line-height: 1.6;
+    }
 
-.success{
-  border:1px solid #20d66b;
-}
+    .retry {
+      margin-top: 20px;
+      width: 100%;
+      padding: 13px;
+      border: 0;
+      border-radius: 10px;
+      background: #39ff14;
+      color: #000;
+      font-weight: bold;
+      font-size: 16px;
+    }
 
-.pending{
-  border:1px solid #777;
-}
-
-.cancelled{
-  border:1px solid #e44;
-}
-
-.error{
-  text-align:center;
-  color:#ff5555;
-  padding:15px;
-}
-
-.empty{
-  text-align:center;
-  color:#888;
-  padding:20px;
-}
-
-.footer{
-  text-align:center;
-  color:#666;
-  font-size:12px;
-  padding:25px;
-}
-
-</style>
+    .footer {
+      text-align: center;
+      color: #777;
+      margin-top: 25px;
+      font-size: 13px;
+    }
+  </style>
 </head>
-
 
 <body>
 
+  <div class="container">
 
-<div class="header">
+    <div class="logo">
+      Rahul <span>Social Hub</span>
+    </div>
 
-  <div class="logo">
-    Rahul Social Hub
-  </div>
+    <div class="card">
 
-  <div class="subtitle">
-    Order Status
-  </div>
+      <h2>📦 Order Status</h2>
 
-</div>
-
-
-
-<div class="container">
-
-
-  <!-- SEARCH -->
-
-  <div class="card">
-
-    <h2>🔎 अपना Order देखें</h2>
-
-    <p style="color:#888;font-size:13px;">
-      QR से आने पर Order ID अपने-आप भर जाएगी।
-    </p>
-
-    <input
-      id="orderId"
-      placeholder="Order ID जैसे RH123456"
-      autocomplete="off"
-    >
-
-    <button onclick="searchOrder()">
-      🔍 Order देखें
-    </button>
-
-  </div>
-
-
-
-  <!-- RESULT -->
-
-  <div class="card">
-
-    <h2>📦 Order Details</h2>
-
-    <div id="result">
-
-      <div class="empty">
-        Order ID डालकर अपना Order देखें।
+      <div id="content">
+        <div class="loading">
+          Order information load हो रही है...
+        </div>
       </div>
 
+    </div>
+
+    <div class="footer">
+      © 2026 Rahul Social Hub
     </div>
 
   </div>
 
 
-</div>
-
-
-
-<div class="footer">
-  Rahul Social Hub © 2026
-</div>
-
-
-
 <script>
 
-/* =====================================
-   IMPORTANT
-
-   Customer page owner का phone number
-   बिल्कुल use/display नहीं करता।
-===================================== */
+const API_BASE =
+  "https://rahulsocialhub-db.09rcrg.workers.dev";
 
 
-/* -------------------------------------
-   GET ORDER ID FROM URL
-------------------------------------- */
+// ==========================================
+// GET ORDER ID FROM URL
+// ==========================================
 
-function getOrderIdFromURL(){
+function getOrderId() {
 
   const params =
     new URLSearchParams(
@@ -257,324 +180,301 @@ function getOrderIdFromURL(){
     );
 
   return params.get("order");
-
 }
 
 
-/* -------------------------------------
-   GET ORDERS
-------------------------------------- */
+// ==========================================
+// LOAD ORDER FROM D1
+// ==========================================
 
-function getOrders(){
+async function loadOrder() {
 
-  try{
+  const content =
+    document.getElementById("content");
 
-    const data =
-      localStorage.getItem(
-        "rahul_orders"
+  const orderId =
+    getOrderId();
+
+
+  if (!orderId) {
+
+    content.innerHTML = `
+      <div class="error">
+        ❌ Order ID नहीं मिला।
+        <br><br>
+        कृपया QR code से दोबारा खोलें।
+      </div>
+    `;
+
+    return;
+  }
+
+
+  try {
+
+    const response =
+      await fetch(
+        `${API_BASE}/api/orders/${encodeURIComponent(orderId)}`
       );
 
-    return data
-      ? JSON.parse(data)
-      : [];
 
-  }catch(error){
+    const data =
+      await response.json();
 
-    return [];
 
-  }
+    if (
+      !response.ok ||
+      !data.success ||
+      !data.order
+    ) {
 
-}
+      throw new Error(
+        data.error || "Order not found"
+      );
+    }
 
 
-/* -------------------------------------
-   SEARCH ORDER
-------------------------------------- */
+    showOrder(data.order);
 
-function searchOrder(){
 
-  const input =
-    document.getElementById(
-      "orderId"
-    );
+  } catch (error) {
 
-  const id =
-    input.value
-      .trim()
-      .toUpperCase();
+    // Offline fallback
+    const localOrders =
+      JSON.parse(
+        localStorage.getItem(
+          "rahul_orders"
+        ) || "[]"
+      );
 
 
-  if(!id){
+    const localOrder =
+      localOrders.find(
+        order =>
+          order.id === orderId
+      );
 
-    showError(
-      "कृपया Order ID डालें।"
-    );
 
-    return;
+    if (localOrder) {
 
-  }
+      showOrder(localOrder);
 
-
-  const orders =
-    getOrders();
-
-
-  const order =
-    orders.find(
-      item =>
-        String(item.id)
-          .toUpperCase() === id
-    );
-
-
-  if(!order){
-
-    showError(
-      "यह Order नहीं मिला।"
-    );
-
-    return;
-
-  }
-
-
-  showOrder(order);
-
-}
-
-
-/* -------------------------------------
-   SHOW ORDER
-------------------------------------- */
-
-function showOrder(order){
-
-  const result =
-    document.getElementById(
-      "result"
-    );
-
-
-  let statusClass =
-    "pending";
-
-
-  if(order.status === "Completed"){
-
-    statusClass =
-      "success";
-
-  }
-
-
-  if(order.status === "Cancelled"){
-
-    statusClass =
-      "cancelled";
-
-  }
-
-
-  let statusText =
-    "⏳ Pending";
-
-
-  if(order.status === "Processing"){
-
-    statusText =
-      "⚙️ Processing";
-
-  }
-
-
-  if(order.status === "Completed"){
-
-    statusText =
-      "✅ Completed";
-
-  }
-
-
-  if(order.status === "Cancelled"){
-
-    statusText =
-      "❌ Cancelled";
-
-  }
-
-
-  result.innerHTML = `
-
-    <div class="order-box">
-
-      <div class="order-id">
-
-        Order ID:
-        ${safe(order.id)}
-
-      </div>
-
-
-      <div class="service">
-
-        ${safe(order.serviceName)}
-
-      </div>
-
-
-      <div class="row">
-
-        <span class="label">
-          Quantity
-        </span>
-
-        <span class="value">
-          ${safe(order.quantity)}
-        </span>
-
-      </div>
-
-
-      <div class="row">
-
-        <span class="label">
-          Total Units
-        </span>
-
-        <span class="value">
-          ${Number(order.units || 0)
-            .toLocaleString("en-IN")}
-        </span>
-
-      </div>
-
-
-      <div class="row">
-
-        <span class="label">
-          Amount
-        </span>
-
-        <span class="value">
-          ₹${Number(order.amount || 0)
-            .toLocaleString("en-IN")}
-        </span>
-
-      </div>
-
-
-      ${
-        order.lifetimeRefill
-        ? `
-
-          <div class="row">
-
-            <span class="label">
-              Refill
-            </span>
-
-            <span class="value">
-              ♾️ Lifetime Refill
-            </span>
-
-          </div>
-
-        `
-        : ""
-      }
-
-
-      <div class="status ${statusClass}">
-
-        ${statusText}
-
-      </div>
-
-
-      <p
-        style="
-          color:#777;
-          font-size:12px;
-          text-align:center;
-          margin-bottom:0;
-        "
-      >
-
-        यह Order ID संभालकर रखें।
-
-      </p>
-
-    </div>
-
-  `;
-
-}
-
-
-/* -------------------------------------
-   ERROR
-------------------------------------- */
-
-function showError(message){
-
-  document.getElementById(
-    "result"
-  ).innerHTML = `
-
-    <div class="error">
-
-      ❌ ${safe(message)}
-
-    </div>
-
-  `;
-
-}
-
-
-/* -------------------------------------
-   SECURITY
-------------------------------------- */
-
-function safe(value){
-
-  return String(value ?? "")
-    .replaceAll("&","&amp;")
-    .replaceAll("<","&lt;")
-    .replaceAll(">","&gt;")
-    .replaceAll('"',"&quot;")
-    .replaceAll("'","&#039;");
-
-}
-
-
-/* -------------------------------------
-   QR AUTO LOAD
-------------------------------------- */
-
-window.addEventListener(
-  "DOMContentLoaded",
-  function(){
-
-    const orderId =
-      getOrderIdFromURL();
-
-
-    if(!orderId){
       return;
     }
 
 
-    document.getElementById(
-      "orderId"
-    ).value =
-      orderId;
+    content.innerHTML = `
+      <div class="error">
 
+        ❌ Order नहीं मिला।
 
-    searchOrder();
+        <br><br>
 
+        Order ID:
+        <strong>${escapeHTML(orderId)}</strong>
+
+        <br><br>
+
+        Internet connection check करें।
+
+        <button
+          class="retry"
+          onclick="loadOrder()"
+        >
+          🔄 फिर से कोशिश करें
+        </button>
+
+      </div>
+    `;
   }
-);
+}
+
+
+// ==========================================
+// SHOW ORDER
+// ==========================================
+
+function showOrder(order) {
+
+  const content =
+    document.getElementById("content");
+
+
+  const status =
+    String(
+      order.status || "Pending"
+    );
+
+
+  const statusClass =
+    status.toLowerCase()
+      .replace(/\s+/g, "");
+
+
+  const date =
+    order.createdAt ||
+    order.created_at ||
+    "";
+
+
+  let formattedDate = date;
+
+
+  if (date) {
+
+    try {
+
+      formattedDate =
+        new Date(date)
+          .toLocaleString("hi-IN");
+
+    } catch (e) {}
+  }
+
+
+  content.innerHTML = `
+
+    <div class="order-id">
+      ${escapeHTML(order.id)}
+    </div>
+
+    <div class="row">
+      <div class="label">
+        Service
+      </div>
+
+      <div class="value">
+        ${escapeHTML(
+          order.serviceName ||
+          order.service_name ||
+          "-"
+        )}
+      </div>
+    </div>
+
+
+    <div class="row">
+      <div class="label">
+        Quantity
+      </div>
+
+      <div class="value">
+        ${Number(
+          order.quantity || 0
+        )}
+      </div>
+    </div>
+
+
+    <div class="row">
+      <div class="label">
+        Units
+      </div>
+
+      <div class="value">
+        ${Number(
+          order.units || 0
+        ).toLocaleString("en-IN")}
+      </div>
+    </div>
+
+
+    <div class="row">
+      <div class="label">
+        Amount
+      </div>
+
+      <div class="value">
+        ₹${Number(
+          order.amount || 0
+        ).toLocaleString("en-IN")}
+      </div>
+    </div>
+
+
+    <div class="row">
+      <div class="label">
+        Lifetime Refill
+      </div>
+
+      <div class="value">
+        ${
+          order.lifetimeRefill
+            ? "✅ Yes"
+            : "❌ No"
+        }
+      </div>
+    </div>
+
+
+    <div class="row">
+      <div class="label">
+        Referral
+      </div>
+
+      <div class="value">
+        ${
+          order.referral
+            ? "✅ Yes"
+            : "❌ No"
+        }
+      </div>
+    </div>
+
+
+    <div class="row">
+      <div class="label">
+        Status
+      </div>
+
+      <div class="value">
+
+        <span class="status ${statusClass}">
+          ${escapeHTML(status)}
+        </span>
+
+      </div>
+    </div>
+
+
+    <div class="row">
+
+      <div class="label">
+        Order Date
+      </div>
+
+      <div class="value">
+        ${escapeHTML(
+          formattedDate || "-"
+        )}
+      </div>
+
+    </div>
+
+  `;
+}
+
+
+// ==========================================
+// SECURITY
+// ==========================================
+
+function escapeHTML(value) {
+
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+
+// ==========================================
+// START
+// ==========================================
+
+loadOrder();
 
 </script>
 
