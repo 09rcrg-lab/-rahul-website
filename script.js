@@ -1,11 +1,5 @@
-// ===============================
-// CONFIGURATION
-// ===============================
-const API_URL = ""; 
+const API_URL = "https://rahulsocialhub-db.09rcrg.workers.dev";
 const WHATSAPP_NUMBER = "919131922170";
-// ===============================
-// PAGE ELEMENTS
-// ===============================
 const authPage = document.getElementById("authPage");
 const dashboardPage = document.getElementById("dashboardPage");
 const loginForm = document.getElementById("loginForm");
@@ -50,66 +44,37 @@ registerForm.addEventListener("submit", async function(event) {
     document.getElementById("registerPassword").value;
   const referral =
     document.getElementById("referralCode").value.trim();
-  if (!username || !email || !password) {
-    authMessage.textContent = "सभी जरूरी जानकारी भरें।";
-    return;
-  }
-  // Backend connected होने पर यह request जाएगी
-  if (API_URL) {
-    try {
-      const response = await fetch(
-        API_URL + "/api/register",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            username,
-            email,
-            password,
-            referral
-          })
-        }
-      );
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.message || "Registration failed");
+  authMessage.textContent = "Account बनाया जा रहा है...";
+  try {
+    const response = await fetch(
+      API_URL + "/api/register",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          username,
+          email,
+          password,
+          referral
+        })
       }
-      authMessage.textContent =
-        "Account बन गया। अब Login करें।";
-      registerForm.reset();
-      showLogin();
-    } catch (error) {
-      authMessage.textContent =
-        error.message || "Registration में समस्या हुई।";
+    );
+    const data = await response.json();
+    if (!response.ok || !data.success) {
+      throw new Error(
+        data.message || "Registration failed."
+      );
     }
-    return;
-  }
-  // Temporary local testing
-  const users =
-    JSON.parse(localStorage.getItem("rahul_users") || "[]");
-  const alreadyExists =
-    users.some(user => user.username === username);
-  if (alreadyExists) {
+    registerForm.reset();
     authMessage.textContent =
-      "यह username पहले से मौजूद है।";
-    return;
+      "✅ Account बन गया। अब Login करें।";
+    showLogin();
+  } catch (error) {
+    authMessage.textContent =
+      "❌ " + error.message;
   }
-  users.push({
-    username,
-    email,
-    password,
-    referral
-  });
-  localStorage.setItem(
-    "rahul_users",
-    JSON.stringify(users)
-  );
-  authMessage.textContent =
-    "Account बन गया। अब Login करें।";
-  registerForm.reset();
-  showLogin();
 });
 // ===============================
 // LOGIN
@@ -120,66 +85,40 @@ loginForm.addEventListener("submit", async function(event) {
     document.getElementById("loginUsername").value.trim();
   const password =
     document.getElementById("loginPassword").value;
-  if (!username || !password) {
-    authMessage.textContent =
-      "Username और Password डालें।";
-    return;
-  }
-  // Backend login
-  if (API_URL) {
-    try {
-      const response = await fetch(
-        API_URL + "/api/login",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            username,
-            password
-          })
-        }
-      );
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.message || "Login failed");
+  authMessage.textContent = "Login हो रहा है...";
+  try {
+    const response = await fetch(
+      API_URL + "/api/login",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          username,
+          password
+        })
       }
-      localStorage.setItem(
-        "rahul_session",
-        JSON.stringify(data.user || { username })
-      );
-      openDashboard(
-        data.user || { username }
-      );
-    } catch (error) {
-      authMessage.textContent =
-        error.message || "Login में समस्या हुई।";
-    }
-    return;
-  }
-  // Temporary local login
-  const users =
-    JSON.parse(localStorage.getItem("rahul_users") || "[]");
-  const user =
-    users.find(
-      item =>
-        item.username === username &&
-        item.password === password
     );
-  if (!user) {
+    const data = await response.json();
+    if (!response.ok || !data.success) {
+      throw new Error(
+        data.message || "Login failed."
+      );
+    }
+    localStorage.setItem(
+      "rahul_session",
+      JSON.stringify(data.user)
+    );
+    loginForm.reset();
+    openDashboard(data.user);
+  } catch (error) {
     authMessage.textContent =
-      "Username या Password गलत है।";
-    return;
+      "❌ " + error.message;
   }
-  localStorage.setItem(
-    "rahul_session",
-    JSON.stringify(user)
-  );
-  openDashboard(user);
 });
 // ===============================
-// OPEN DASHBOARD
+// DASHBOARD
 // ===============================
 function openDashboard(user) {
   authPage.style.display = "none";
@@ -195,11 +134,10 @@ function logout() {
   localStorage.removeItem("rahul_session");
   dashboardPage.style.display = "none";
   authPage.style.display = "flex";
-  loginForm.reset();
   showLogin();
 }
 // ===============================
-// CHECK SESSION
+// SESSION CHECK
 // ===============================
 function checkSession() {
   const session =
@@ -226,8 +164,6 @@ function openOrder(service, price) {
     localStorage.getItem("rahul_session");
   if (!session) {
     alert("पहले Login करें।");
-    authPage.style.display = "flex";
-    dashboardPage.style.display = "none";
     return;
   }
   currentService = service;
@@ -253,7 +189,7 @@ function closeOrder() {
 // ===============================
 // CREATE ORDER
 // ===============================
-function createOrder() {
+async function createOrder() {
   const instagramUsername =
     document
       .getElementById("instagramUsername")
@@ -270,102 +206,133 @@ function createOrder() {
     JSON.parse(
       localStorage.getItem("rahul_session")
     );
-  const orderId =
-    "RSH-" +
-    Date.now().toString().slice(-8);
-  const order = {
-    id: orderId,
-    username: session.username,
-    service: currentService,
-    price: currentPrice,
-    instagram: instagramUsername,
-    status: "Payment Pending",
-    date: new Date().toLocaleString("en-IN")
-  };
-  const orders =
-    JSON.parse(
-      localStorage.getItem("rahul_orders") || "[]"
+  const button =
+    document.querySelector(
+      "#orderModal .main-btn"
     );
-  orders.unshift(order);
-  localStorage.setItem(
-    "rahul_orders",
-    JSON.stringify(orders)
-  );
-  closeOrder();
-  loadOrders();
-  sendOrderWhatsApp(order);
+  button.disabled = true;
+  button.textContent = "Order बनाया जा रहा है...";
+  try {
+    const response = await fetch(
+      API_URL + "/api/orders",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          username: session.username,
+          service: currentService,
+          price: currentPrice,
+          instagram: instagramUsername
+        })
+      }
+    );
+    const data = await response.json();
+    if (!response.ok || !data.success) {
+      throw new Error(
+        data.message || "Order failed."
+      );
+    }
+    closeOrder();
+    loadOrders();
+    sendOrderWhatsApp(data.order);
+  } catch (error) {
+    document.getElementById(
+      "orderMessage"
+    ).textContent =
+      "❌ " + error.message;
+  } finally {
+    button.disabled = false;
+    button.textContent = "Confirm Order";
+  }
 }
 // ===============================
-// LOAD ORDERS
+// LOAD ORDERS FROM D1
 // ===============================
-function loadOrders() {
+async function loadOrders() {
   const session =
-    JSON.parse(
-      localStorage.getItem("rahul_session")
-    );
+    localStorage.getItem("rahul_session");
   if (!session) return;
-  const orders =
-    JSON.parse(
-      localStorage.getItem("rahul_orders") || "[]"
-    );
-  const myOrders =
-    orders.filter(
-      order =>
-        order.username === session.username
-    );
-  if (myOrders.length === 0) {
-    orderHistory.innerHTML =
-      "अभी कोई order नहीं है।";
-    return;
-  }
+  const user =
+    JSON.parse(session);
   orderHistory.innerHTML =
-    myOrders.map(order => `
-      <div style="
-        background:#080808;
-        border:1px solid #252525;
-        border-radius:12px;
-        padding:15px;
-        margin-bottom:10px;
-      ">
+    "Orders loading...";
+  try {
+    const response = await fetch(
+      API_URL +
+      "/api/orders?username=" +
+      encodeURIComponent(user.username)
+    );
+    const data = await response.json();
+    if (!response.ok || !data.success) {
+      throw new Error(
+        data.message || "Orders load नहीं हुए।"
+      );
+    }
+    if (!data.orders || data.orders.length === 0) {
+      orderHistory.innerHTML =
+        "अभी कोई order नहीं है।";
+      return;
+    }
+    orderHistory.innerHTML =
+      data.orders.map(order => `
         <div style="
-          color:#39ff14;
-          font-weight:bold;
-          margin-bottom:7px;
+          background:#080808;
+          border:1px solid #252525;
+          border-radius:12px;
+          padding:15px;
+          margin-bottom:10px;
         ">
-          ${escapeHTML(order.id)}
+          <div style="
+            color:#39ff14;
+            font-weight:bold;
+          ">
+            ${escapeHTML(order.order_id)}
+          </div>
+          <div style="margin-top:7px;">
+            ${escapeHTML(order.service)}
+          </div>
+          <div style="
+            color:#39ff14;
+            margin-top:5px;
+          ">
+            ₹${escapeHTML(String(order.amount))}
+          </div>
+          <div style="
+            color:#aaa;
+            font-size:13px;
+            margin-top:5px;
+          ">
+            @${escapeHTML(order.instagram_username)}
+          </div>
+          <div style="
+            color:#ffd166;
+            font-size:13px;
+            margin-top:8px;
+          ">
+            Payment: ${escapeHTML(order.payment_status)}
+          </div>
+          <div style="
+            color:#aaa;
+            font-size:13px;
+            margin-top:5px;
+          ">
+            Order: ${escapeHTML(order.order_status)}
+          </div>
+          <div style="
+            color:#777;
+            font-size:12px;
+            margin-top:7px;
+          ">
+            ${escapeHTML(order.created_at)}
+          </div>
         </div>
-        <div>
-          ${escapeHTML(order.service)}
-        </div>
-        <div style="
-          color:#39ff14;
-          margin-top:5px;
-        ">
-          ₹${escapeHTML(String(order.price))}
-        </div>
-        <div style="
-          color:#aaa;
-          font-size:13px;
-          margin-top:5px;
-        ">
-          @${escapeHTML(order.instagram)}
-        </div>
-        <div style="
-          color:#aaa;
-          font-size:12px;
-          margin-top:7px;
-        ">
-          ${escapeHTML(order.date)}
-        </div>
-        <div style="
-          margin-top:8px;
-          color:#ffd166;
-          font-size:13px;
-        ">
-          ${escapeHTML(order.status)}
-        </div>
-      </div>
-    `).join("");
+      `).join("");
+  } catch (error) {
+    orderHistory.innerHTML =
+      "❌ Orders load नहीं हुए।";
+  }
 }
 // ===============================
 // WHATSAPP ORDER
@@ -373,7 +340,8 @@ function loadOrders() {
 function sendOrderWhatsApp(order) {
   const message =
 `🚀 NEW ORDER - RAHUL SOCIAL HUB
-🧾 Order ID: ${order.id}
+🧾 Order ID:
+${order.orderId}
 👤 Customer:
 @${order.username}
 📱 Instagram:
@@ -381,36 +349,37 @@ function sendOrderWhatsApp(order) {
 🛒 Service:
 ${order.service}
 💰 Amount:
-₹${order.price}
+₹${order.amount}
 💳 Payment:
 Pending
 कृपया payment verify करें।`;
-  const url =
-    "https://wa.me/" +
-    WHATSAPP_NUMBER +
-    "?text=" +
-    encodeURIComponent(message);
-  window.open(url, "_blank");
+  openWhatsApp(message);
 }
 // ===============================
 // PAYMENT WHATSAPP
 // ===============================
 function sendPaymentWhatsApp() {
   const session =
-    JSON.parse(
-      localStorage.getItem("rahul_session")
-    );
+    localStorage.getItem("rahul_session");
   if (!session) {
     alert("पहले Login करें।");
     return;
   }
+  const user =
+    JSON.parse(session);
   const message =
 `💳 PAYMENT SCREENSHOT
 👤 Username:
-@${session.username}
+@${user.username}
 मैंने Rahul Social Hub पर payment किया है।
-📸 मैं payment screenshot WhatsApp पर भेज रहा/रही हूँ।
+📸 Payment screenshot भेज रहा/रही हूँ।
 कृपया payment verify करें।`;
+  openWhatsApp(message);
+}
+// ===============================
+// OPEN WHATSAPP
+// ===============================
+function openWhatsApp(message) {
   const url =
     "https://wa.me/" +
     WHATSAPP_NUMBER +
@@ -419,7 +388,7 @@ function sendPaymentWhatsApp() {
   window.open(url, "_blank");
 }
 // ===============================
-// HTML SECURITY
+// SECURITY
 // ===============================
 function escapeHTML(value) {
   return String(value)
@@ -430,7 +399,7 @@ function escapeHTML(value) {
     .replaceAll("'", "&#039;");
 }
 // ===============================
-// MODAL OUTSIDE CLICK
+// MODAL CLOSE
 // ===============================
 orderModal.addEventListener(
   "click",
@@ -441,6 +410,6 @@ orderModal.addEventListener(
   }
 );
 // ===============================
-// START WEBSITE
+// START
 // ===============================
 checkSession();
