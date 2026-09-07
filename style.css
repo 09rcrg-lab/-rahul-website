@@ -410,4 +410,53 @@ button {
   .payment-number {
     font-size: 17px;
   }
+}body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  color:white;
+
+  background:
+    linear-gradient(
+      rgba(0,0,0,0.58),
+      rgba(0,0,0,0.78)
+    ),
+    url("hanuman-bg.png");
+
+  background-size:cover;
+  background-position:center top;
+  background-attachment:fixed;
+  background-repeat:no-repeat;
+}
+
+.hanuman-message{
+  margin:15px auto;
+  max-width:620px;
+  padding:16px 18px;
+  text-align:center;
+
+  background:rgba(0,0,0,0.72);
+  border:1px solid #20d66b;
+  border-radius:16px;
+
+  color:#20d66b;
+  font-size:20px;
+  font-weight:bold;
+
+  box-shadow:0 0 20px rgba(32,214,107,0.25);
+}
+
+.hanuman-message span{
+  display:block;
+  margin-top:7px;
+  color:white;
+  font-size:15px;
+  line-height:1.5;
+}
+
+.hanuman-message small{
+  display:block;
+  margin-top:5px;
+  color:#aaa;
+  font-size:12px;
+  font-weight:normal;
 }
